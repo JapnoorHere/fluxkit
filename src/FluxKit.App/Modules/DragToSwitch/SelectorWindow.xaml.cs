@@ -1,3 +1,4 @@
+using FluxKit.App.Theming;
 using FluxKit.Platform.VirtualDesktop;
 using FluxKit.Platform.VirtualDesktop.Interop;
 using FluxKit.Platform.Windows;
@@ -10,10 +11,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Shapes;
-using Microsoft.Win32;
 using Serilog;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics;
@@ -26,15 +24,11 @@ namespace FluxKit.App.Modules.DragToSwitch;
 /// </summary>
 public sealed partial class SelectorWindow : Window
 {
-    private static readonly TimeSpan Entrance = TimeSpan.FromMilliseconds(167);
-    private static readonly TimeSpan Exit = TimeSpan.FromMilliseconds(120);
-    private static readonly TimeSpan Hover = TimeSpan.FromMilliseconds(83);
-
     private readonly IVirtualDesktopService _desktops;
     private readonly ILogger _log;
     private readonly nint _hwnd;
-    private readonly List<CardVisual> _cards = [];
-    private readonly Dictionary<string, BitmapImage> _imageCache = [];
+    private readonly List<DesktopCardView> _cards = [];
+    private readonly WallpaperCache _wallpapers = new();
     private readonly DispatcherQueueTimerHolder _timers;
     private DragToSwitchSettings _settings = new();
     private SelectorGeometry? _geometry;
@@ -138,12 +132,12 @@ public sealed partial class SelectorWindow : Window
         if (AnimationsOn)
         {
             double from = geometry.AnchoredBottom ? 12 : -12;
-            Animate(Root, "Opacity", 0, 1, Entrance, decelerate: true);
-            Animate(RootTranslate, "Y", from, 0, Entrance, decelerate: true);
+            Motion.Animate(Root, "Opacity", 0, 1, Motion.Entrance, decelerate: true);
+            Motion.Animate(RootTranslate, "Y", from, 0, Motion.Entrance, decelerate: true);
             for (int i = 0; i < _cards.Count && i < 8; i++)
             {
                 _cards[i].Root.Opacity = 0;
-                Animate(_cards[i].Root, "Opacity", 0, 1, Entrance, decelerate: true, beginAfter: TimeSpan.FromMilliseconds(20 * i));
+                Motion.Animate(_cards[i].Root, "Opacity", 0, 1, Motion.Entrance, decelerate: true, beginAfter: TimeSpan.FromMilliseconds(20 * i));
             }
         }
         else
@@ -180,7 +174,7 @@ public sealed partial class SelectorWindow : Window
             return;
         }
 
-        CardVisual card = _cards[i];
+        DesktopCardView card = _cards[i];
         card.SetState(state, delay, AnimationsOn);
         switch (state)
         {
@@ -248,7 +242,7 @@ public sealed partial class SelectorWindow : Window
             {
                 if (AnimationsOn)
                 {
-                    Animate(Root, "Opacity", 1, 0.7, TimeSpan.FromMilliseconds(250), decelerate: true);
+                    Motion.Animate(Root, "Opacity", 1, 0.7, TimeSpan.FromMilliseconds(250), decelerate: true);
                 }
                 else
                 {
@@ -270,7 +264,7 @@ public sealed partial class SelectorWindow : Window
         Expanded.Visibility = Visibility.Visible;
         Root.Opacity = 1;
         Instruction.Text = HoldText;
-        foreach (CardVisual card in _cards)
+        foreach (DesktopCardView card in _cards)
         {
             card.SetState(CardVisualState.Rest, TimeSpan.Zero, animate: false);
         }
@@ -278,7 +272,7 @@ public sealed partial class SelectorWindow : Window
         Place(_geometry.Overlay);
         if (AnimationsOn)
         {
-            Animate(Root, "Opacity", 0.6, 1, Entrance, decelerate: true);
+            Motion.Animate(Root, "Opacity", 0.6, 1, Motion.Entrance, decelerate: true);
         }
     }
 
@@ -291,16 +285,16 @@ public sealed partial class SelectorWindow : Window
 
         _visible = false;
         int version = ++_showVersion;
-        foreach (CardVisual card in _cards)
+        foreach (DesktopCardView card in _cards)
         {
             card.StopAnimations();
         }
 
         if (AnimationsOn && Expanded.Visibility == Visibility.Visible)
         {
-            Animate(Root, "Opacity", Root.Opacity, 0, Exit, decelerate: false);
-            Animate(RootTranslate, "Y", 0, 8, Exit, decelerate: false);
-            _timers.Once(Exit, () =>
+            Motion.Animate(Root, "Opacity", Root.Opacity, 0, Motion.Exit, decelerate: false);
+            Motion.Animate(RootTranslate, "Y", 0, 8, Motion.Exit, decelerate: false);
+            _timers.Once(Motion.Exit, () =>
             {
                 if (version == _showVersion)
                 {
@@ -362,7 +356,7 @@ public sealed partial class SelectorWindow : Window
 
     private void BuildCards(IReadOnlyList<CardModel> cards, SelectorGeometry geometry)
     {
-        foreach (CardVisual old in _cards)
+        foreach (DesktopCardView old in _cards)
         {
             old.StopAnimations();
         }
@@ -370,38 +364,15 @@ public sealed partial class SelectorWindow : Window
         _cards.Clear();
         CardsPanel.Children.Clear();
         double scale = geometry.Scale;
-        string? fallbackWallpaper = _settings.PreviewStyle == PreviewStyle.Wallpaper ? CurrentWallpaper() : null;
+        string? fallbackWallpaper = _settings.PreviewStyle == PreviewStyle.Wallpaper ? WallpaperCache.CurrentWallpaper() : null;
         for (int i = 0; i < cards.Count; i++)
         {
             PixelRect rect = geometry.Cards[i];
-            var visual = new CardVisual(rect.Width / scale, rect.Height / scale, _settings.PreviewStyle != PreviewStyle.None, LoadImage);
+            var visual = new DesktopCardView(rect.Width / scale, rect.Height / scale, _settings.PreviewStyle != PreviewStyle.None, (path, widthDip) => _wallpapers.Load(path, (int)(widthDip * (_geometry?.Scale ?? 1))));
             visual.Bind(cards[i], fallbackWallpaper);
             _cards.Add(visual);
             CardsPanel.Children.Add(visual.Root);
         }
-    }
-
-    private BitmapImage? LoadImage(string? path, double widthDip)
-    {
-        if (string.IsNullOrEmpty(path) || !File.Exists(path))
-        {
-            return null;
-        }
-
-        string key = $"{path}|{File.GetLastWriteTimeUtc(path).Ticks}";
-        if (!_imageCache.TryGetValue(key, out BitmapImage? image))
-        {
-            image = new BitmapImage { DecodePixelWidth = (int)(widthDip * (_geometry?.Scale ?? 1)), UriSource = new Uri(path) };
-            _imageCache[key] = image;
-        }
-
-        return image;
-    }
-
-    private static string? CurrentWallpaper()
-    {
-        using RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop");
-        return key?.GetValue("WallPaper") as string;
     }
 
     private void Announce(string text)
@@ -416,272 +387,5 @@ public sealed partial class SelectorWindow : Window
         e.AcceptedOperation = DataPackageOperation.None;
         e.DragUIOverride.Caption = "Drop outside the picker";
         e.DragUIOverride.IsGlyphVisible = true;
-    }
-
-    private static void Animate(DependencyObject target, string property, double from, double to, TimeSpan duration, bool decelerate, TimeSpan? beginAfter = null)
-    {
-        var animation = new DoubleAnimation
-        {
-            From = from,
-            To = to,
-            Duration = duration,
-            BeginTime = beginAfter,
-            EasingFunction = new ExponentialEase { EasingMode = decelerate ? EasingMode.EaseOut : EasingMode.EaseIn, Exponent = 4.5 },
-        };
-        Storyboard.SetTarget(animation, target);
-        Storyboard.SetTargetProperty(animation, property);
-        var storyboard = new Storyboard();
-        storyboard.Children.Add(animation);
-        storyboard.Begin();
-    }
-
-    /// <summary>Visual tree and state for one desktop card.</summary>
-    private sealed class CardVisual
-    {
-        private readonly Border _border;
-        private readonly Border _preview;
-        private readonly Image _image;
-        private readonly TextBlock _bigNumber;
-        private readonly TextBlock _badge;
-        private readonly TextBlock _name;
-        private readonly TextBlock _status;
-        private readonly Rectangle _currentBar;
-        private readonly ScaleTransform _progressScale = new() { ScaleX = 0 };
-        private readonly ScaleTransform _cardScale = new() { ScaleX = 1, ScaleY = 1 };
-        private readonly Func<string?, double, BitmapImage?> _loadImage;
-        private readonly double _width;
-        private Storyboard? _progress;
-
-        public CardVisual(double width, double height, bool withPreview, Func<string?, double, BitmapImage?> loadImage)
-        {
-            _width = width;
-            _loadImage = loadImage;
-            Model = new CardModel(Guid.Empty, 0, string.Empty, null, false);
-
-            _image = new Image { Stretch = Stretch.UniformToFill };
-            _bigNumber = new TextBlock { FontSize = 28, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Foreground = Brush("TextFillColorTertiaryBrush") };
-            var previewContent = new Grid();
-            previewContent.Children.Add(_bigNumber);
-            previewContent.Children.Add(_image);
-            _preview = new Border
-            {
-                Margin = new Thickness(6, 6, 6, 0),
-                CornerRadius = new CornerRadius(4),
-                Background = Brush("SubtleFillColorSecondaryBrush"),
-                Child = previewContent,
-                Visibility = withPreview ? Visibility.Visible : Visibility.Collapsed,
-            };
-            // Always laid out (opacity toggles) so every card has identical geometry.
-            _currentBar = new Rectangle { Height = 2, Margin = new Thickness(6, 4, 6, 0), Fill = Brush("AccentFillColorDefaultBrush"), RadiusX = 1, RadiusY = 1, Opacity = 0 };
-
-            _badge = new TextBlock { FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-            var badgeBorder = new Border { MinWidth = 18, Height = 18, Padding = new Thickness(4, 0, 4, 0), CornerRadius = new CornerRadius(4), Background = Brush("SubtleFillColorSecondaryBrush"), Child = _badge, VerticalAlignment = VerticalAlignment.Center };
-            _name = new TextBlock { FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
-            var label = new Grid { ColumnSpacing = 8 };
-            label.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            label.ColumnDefinitions.Add(new ColumnDefinition());
-            label.Children.Add(badgeBorder);
-            Grid.SetColumn(_name, 1);
-            label.Children.Add(_name);
-            _status = new TextBlock { FontSize = 12, Margin = new Thickness(26, 0, 0, 0), Foreground = Brush("TextFillColorSecondaryBrush"), TextTrimming = TextTrimming.CharacterEllipsis };
-            var labelStack = new StackPanel { Margin = new Thickness(10, 8, 10, 10), Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
-            labelStack.Children.Add(label);
-            labelStack.Children.Add(_status);
-
-            var progress = new Rectangle
-            {
-                Height = 3,
-                VerticalAlignment = VerticalAlignment.Bottom,
-                Fill = Brush("AccentFillColorDefaultBrush"),
-                RenderTransform = _progressScale,
-                RenderTransformOrigin = new Windows.Foundation.Point(0, 0.5),
-            };
-
-            var layout = new Grid();
-            layout.RowDefinitions.Add(new RowDefinition { Height = withPreview ? new GridLength(1, GridUnitType.Star) : new GridLength(0) });
-            layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            layout.Children.Add(_preview);
-            Grid.SetRow(_currentBar, 1);
-            layout.Children.Add(_currentBar);
-            Grid.SetRow(labelStack, 2);
-            layout.Children.Add(labelStack);
-            Grid.SetRowSpan(progress, 3);
-            layout.Children.Add(progress);
-
-            _border = new Border
-            {
-                Width = width,
-                Height = height,
-                CornerRadius = new CornerRadius(8),
-                BorderThickness = new Thickness(1),
-                Background = Brush("CardBackgroundFillColorDefaultBrush"),
-                BorderBrush = Brush("CardStrokeColorDefaultBrush"),
-                Child = layout,
-                RenderTransform = _cardScale,
-                RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5),
-            };
-            Root = _border;
-        }
-
-        public FrameworkElement Root { get; }
-
-        public CardModel Model { get; private set; }
-
-        public CardVisualState State { get; private set; } = CardVisualState.Rest;
-
-        public void Bind(CardModel model, string? fallbackWallpaper = null)
-        {
-            Model = model;
-            _badge.Text = model.Number.ToString(System.Globalization.CultureInfo.CurrentCulture);
-            _bigNumber.Text = _badge.Text;
-            _name.Text = model.Name;
-            ToolTipService.SetToolTip(_border, model.Name);
-            _image.Source = _loadImage(model.WallpaperPath ?? fallbackWallpaper, _width) ?? _image.Source;
-            _currentBar.Opacity = model.IsCurrent ? 1 : 0;
-            if (State == CardVisualState.Rest || State == CardVisualState.Dwelling)
-            {
-                _status.Text = model.IsCurrent ? "● You're here" : model.Number <= 9 ? $"Hold, or press {model.Number}" : "Hold to go here";
-            }
-
-            AutomationProperties.SetName(_border, model.IsCurrent
-                ? $"Desktop {model.Number}, {model.Name}, current desktop"
-                : $"Desktop {model.Number}, {model.Name}. Hold to go here");
-        }
-
-        public void SetState(CardVisualState state, TimeSpan delay, bool animate)
-        {
-            State = state;
-            StopAnimations();
-            bool highContrast = new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
-            switch (state)
-            {
-                case CardVisualState.Dwelling:
-                    _border.BorderThickness = new Thickness(2);
-                    _border.BorderBrush = Brush(highContrast ? "SystemColorHighlightColorBrush" : "AccentFillColorDefaultBrush");
-                    ScaleCard(1.04, animate);
-                    _progressScale.ScaleX = 0;
-                    var grow = new DoubleAnimation { From = 0, To = 1, Duration = delay };
-                    Storyboard.SetTarget(grow, _progressScale);
-                    Storyboard.SetTargetProperty(grow, "ScaleX");
-                    _progress = new Storyboard();
-                    _progress.Children.Add(grow);
-                    _progress.Begin();
-                    break;
-                case CardVisualState.Switching:
-                    _progressScale.ScaleX = 1;
-                    _status.Text = "Switching…";
-                    break;
-                case CardVisualState.Switched:
-                    _progressScale.ScaleX = 1;
-                    _status.Text = "✓ Switched";
-                    break;
-                case CardVisualState.Error:
-                    _border.BorderThickness = new Thickness(2);
-                    _border.BorderBrush = Brush("SystemFillColorCriticalBrush");
-                    _progressScale.ScaleX = 0;
-                    _status.Text = "Couldn't switch";
-                    ScaleCard(1, animate);
-                    break;
-                default:
-                    _border.BorderThickness = new Thickness(1);
-                    _border.BorderBrush = Brush("CardStrokeColorDefaultBrush");
-                    _progressScale.ScaleX = 0;
-                    ScaleCard(1, animate);
-                    Bind(Model);
-                    break;
-            }
-        }
-
-        public void StopAnimations()
-        {
-            _progress?.Stop();
-            _progress = null;
-        }
-
-        private void ScaleCard(double to, bool animate)
-        {
-            if (!animate)
-            {
-                _cardScale.ScaleX = _cardScale.ScaleY = to;
-                return;
-            }
-
-            var storyboard = new Storyboard();
-            foreach (string axis in new[] { "ScaleX", "ScaleY" })
-            {
-                var a = new DoubleAnimation { To = to, Duration = Hover };
-                Storyboard.SetTarget(a, _cardScale);
-                Storyboard.SetTargetProperty(a, axis);
-                storyboard.Children.Add(a);
-            }
-
-            storyboard.Begin();
-        }
-
-        private static Brush Brush(string key) => (Brush)Application.Current.Resources[key];
-    }
-
-    /// <summary>Marshals coordinator calls (any thread) onto the UI thread without blocking.</summary>
-    private sealed class ViewAdapter(SelectorWindow window) : ISelectorView
-    {
-        public void Show(IReadOnlyList<CardModel> cards, SelectorGeometry geometry, DragToSwitchSettings settings, DragKind kind) =>
-            Post(() => window.ShowCore(cards, geometry, settings, kind));
-
-        public void UpdateCards(IReadOnlyList<CardModel> cards, SelectorGeometry geometry) => Post(() => window.UpdateCardsCore(cards, geometry));
-
-        public void SetCardState(int? index, CardVisualState state, TimeSpan delay, string? message = null) =>
-            Post(() => window.SetCardStateCore(index, state, delay, message));
-
-        public void SetCursorOverSelector(bool over) => Post(() => window.SetCursorOverSelectorCore(over));
-
-        public void Collapse(CardModel destination) => Post(() => window.CollapseCore(destination));
-
-        public void Expand() => Post(window.ExpandCore);
-
-        public void Hide() => Post(window.HideCore);
-
-        private void Post(Action action) => window.DispatcherQueue.TryEnqueue(() =>
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception ex)
-            {
-                window._log.Error(ex, "Selector UI update failed");
-            }
-        });
-    }
-}
-
-/// <summary>One-shot UI-thread timers that can all be cancelled together.</summary>
-internal sealed class DispatcherQueueTimerHolder(Microsoft.UI.Dispatching.DispatcherQueue queue)
-{
-    private readonly List<Microsoft.UI.Dispatching.DispatcherQueueTimer> _timers = [];
-
-    public void Once(TimeSpan after, Action action)
-    {
-        Microsoft.UI.Dispatching.DispatcherQueueTimer timer = queue.CreateTimer();
-        timer.Interval = after;
-        timer.IsRepeating = false;
-        timer.Tick += (t, _) =>
-        {
-            t.Stop();
-            _timers.Remove(t);
-            action();
-        };
-        _timers.Add(timer);
-        timer.Start();
-    }
-
-    public void StopAll()
-    {
-        foreach (Microsoft.UI.Dispatching.DispatcherQueueTimer timer in _timers)
-        {
-            timer.Stop();
-        }
-
-        _timers.Clear();
     }
 }
