@@ -2,6 +2,7 @@ using System.Reflection;
 using FluxKit.App.Modules.DragToSwitch;
 using FluxKit.App.Shell;
 using FluxKit.App.Theming;
+using FluxKit.Core;
 using FluxKit.Core.Logging;
 using FluxKit.Core.Settings;
 using FluxKit.Core.Utilities;
@@ -34,10 +35,9 @@ public sealed class AppHost
     {
         _dispatcher = dispatcher;
         Current = this;
-        string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        DataDirectory = Path.Combine(local, "FluxKit");
-        LogDirectory = Path.Combine(DataDirectory, "Logs");
-        SettingsPath = Path.Combine(DataDirectory, "settings.json");
+        DataDirectory = FluxKitPaths.Root;
+        LogDirectory = FluxKitPaths.LogsFolder;
+        SettingsPath = FluxKitPaths.SettingsFile;
         Version = typeof(AppHost).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+')[0] ?? "1.0.0";
     }
 
@@ -104,8 +104,8 @@ public sealed class AppHost
         DragToSwitch.StateChanged += (_, _) => _dispatcher.TryEnqueue(OnStatusChanged);
 
         Registry = new UtilityRegistry(
-            id => Settings.Read<UtilityToggle>("utilities/" + id).Enabled,
-            (id, enabled) => Settings.UpdateAsync<UtilityToggle>("utilities/" + id, t =>
+            id => Settings.Read<UtilityToggle>(SettingsKeys.Tool(id)).Enabled,
+            (id, enabled) => Settings.UpdateAsync<UtilityToggle>(SettingsKeys.Tool(id), t =>
             {
                 t.Enabled = enabled;
                 return t;

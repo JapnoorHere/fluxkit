@@ -2,6 +2,7 @@
 // Flags: --title <text> --desktop <guid> --bounds x,y,w,h --log <path>
 // Every drop is appended to the log as one JSON line. It always reports Copy, so sources are never deleted.
 using System.Text.Json;
+using FluxKit.Core;
 using FluxKit.Platform.VirtualDesktop.Interop;
 
 internal static class Program
@@ -15,8 +16,7 @@ internal static class Program
             return i >= 0 && i + 1 < args.Length ? args[i + 1] : fallback;
         }
 
-        string logPath = Arg("--log", Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FluxKit", "DropProbe", "drops.jsonl"));
+        string logPath = Arg("--log", FluxKitPaths.DropProbeLog);
         Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
 
         ApplicationConfiguration.Initialize();

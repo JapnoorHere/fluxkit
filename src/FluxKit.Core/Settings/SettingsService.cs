@@ -36,7 +36,7 @@ public interface ISettingsService
 /// <summary>
 /// JSON settings store with tolerant per-field loading, unknown-field preservation,
 /// schema migration, corrupt-file quarantine, debounced atomic writes and a .bak copy.
-/// Section keys are "global" or "utilities/&lt;id&gt;".
+/// Section keys come from <see cref="SettingsKeys"/>: "global" or "utilities/&lt;id&gt;".
 /// </summary>
 public sealed class SettingsService : ISettingsService, IDisposable
 {

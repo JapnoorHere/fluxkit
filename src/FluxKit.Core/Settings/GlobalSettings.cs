@@ -17,7 +17,7 @@ public enum LogVerbosity
 /// <summary>Shell-wide preferences stored in the "global" section.</summary>
 public sealed class GlobalSettings : ISettingsSection
 {
-    public const string Section = "global";
+    public const string Section = SettingsKeys.Global;
 
     public AppTheme Theme { get; set; } = AppTheme.System;
 
