@@ -1,6 +1,6 @@
 using FluxKit.Platform.Windows;
 
-namespace FluxKit.Utilities.DragToSwitch.Interaction;
+namespace FluxKit.Tools.DragToSwitch.Interaction;
 
 /// <summary>Window/system queries the coordinator needs; abstracted for tests.</summary>
 public interface IWindowProbe

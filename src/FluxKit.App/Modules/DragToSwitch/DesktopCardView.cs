@@ -1,5 +1,5 @@
 using FluxKit.App.Theming;
-using FluxKit.Utilities.DragToSwitch.Interaction;
+using FluxKit.Tools.DragToSwitch.Interaction;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;

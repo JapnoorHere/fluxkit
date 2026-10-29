@@ -1,4 +1,4 @@
-namespace FluxKit.Utilities.DragToSwitch.Interaction;
+namespace FluxKit.Tools.DragToSwitch.Interaction;
 
 /// <summary>What the user is dragging in a session.</summary>
 public enum DragKind

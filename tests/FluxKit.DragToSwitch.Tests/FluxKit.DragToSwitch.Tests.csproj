@@ -18,6 +18,6 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
-    <ProjectReference Include="..\..\src\FluxKit.Utilities.DragToSwitch\FluxKit.Utilities.DragToSwitch.csproj" />
+    <ProjectReference Include="..\..\src\FluxKit.Tools.DragToSwitch\FluxKit.Tools.DragToSwitch.csproj" />
   </ItemGroup>
 </Project>

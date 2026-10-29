@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
-using FluxKit.Core.Utilities;
-using FluxKit.Utilities.DragToSwitch.Interaction;
+using FluxKit.Core.Tools;
+using FluxKit.Tools.DragToSwitch.Interaction;
 using Microsoft.Win32;
 
 namespace FluxKit.App.Shell;
@@ -31,9 +31,9 @@ internal static class Diagnostics
         sb.AppendLine($"OS: {OsDescription}");
         sb.AppendLine($".NET: {Environment.Version}");
         sb.AppendLine($"Virtual desktops: {host.Desktops.Desktops.Count}, backend: {host.Desktops.BackendDescription}, pin: {host.Desktops.CanPinWindows}");
-        foreach (IFluxUtility utility in host.Registry.All)
+        foreach (IFluxTool tool in host.Registry.All)
         {
-            sb.AppendLine($"Utility {utility.Descriptor.Id}: {utility.State.Status} {utility.State.Detail}");
+            sb.AppendLine($"Tool {tool.Descriptor.Id}: {tool.State.Status} {tool.State.Detail}");
         }
 
         SessionSummary? last = host.DragToSwitch.LastSession;

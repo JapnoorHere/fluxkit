@@ -33,6 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FluxKit.Utilities.DragToSwitch\FluxKit.Utilities.DragToSwitch.csproj" />
+    <ProjectReference Include="..\FluxKit.Tools.DragToSwitch\FluxKit.Tools.DragToSwitch.csproj" />
   </ItemGroup>
 </Project>

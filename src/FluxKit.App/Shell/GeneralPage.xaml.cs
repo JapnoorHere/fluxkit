@@ -155,9 +155,9 @@ public sealed partial class GeneralPage : Page
             s.FirstRunCompleted = true;
             return s;
         });
-        foreach (Core.Utilities.IFluxUtility utility in _host.Registry.All)
+        foreach (Core.Tools.IFluxTool tool in _host.Registry.All)
         {
-            await _host.SetUtilityEnabledAsync(utility.Descriptor.Id, _host.Registry.IsEnabled(utility.Descriptor.Id));
+            await _host.SetToolEnabledAsync(tool.Descriptor.Id, _host.Registry.IsEnabled(tool.Descriptor.Id));
         }
 
         Load();

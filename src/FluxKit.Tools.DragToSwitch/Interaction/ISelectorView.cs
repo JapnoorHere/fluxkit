@@ -1,4 +1,4 @@
-namespace FluxKit.Utilities.DragToSwitch.Interaction;
+namespace FluxKit.Tools.DragToSwitch.Interaction;
 
 /// <summary>
 /// The selector UI as seen by the coordinator. Implementations marshal to their UI thread and must never block.

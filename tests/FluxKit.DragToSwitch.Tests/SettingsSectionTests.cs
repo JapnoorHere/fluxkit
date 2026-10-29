@@ -1,4 +1,4 @@
-using FluxKit.Utilities.DragToSwitch;
+using FluxKit.Tools.DragToSwitch;
 
 namespace FluxKit.DragToSwitch.Tests;
 

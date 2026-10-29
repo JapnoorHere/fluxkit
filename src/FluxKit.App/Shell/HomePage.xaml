@@ -20,7 +20,7 @@
             <InfoBar x:Name="AttentionBar" Margin="0,16,0,0" IsOpen="False" />
 
             <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Tools" />
-            <ItemsRepeater x:Name="UtilityCards">
+            <ItemsRepeater x:Name="ToolCards">
                 <ItemsRepeater.Layout>
                     <UniformGridLayout ItemsStretch="Fill" MinColumnSpacing="12" MinItemWidth="320" MinRowSpacing="12" />
                 </ItemsRepeater.Layout>

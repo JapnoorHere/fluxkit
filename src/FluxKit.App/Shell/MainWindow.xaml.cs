@@ -1,8 +1,8 @@
 using FluxKit.App.Modules.DragToSwitch;
 using FluxKit.Core.Settings;
-using FluxKit.Core.Utilities;
+using FluxKit.Core.Tools;
 using FluxKit.Platform.Windows;
-using FluxKit.Utilities.DragToSwitch;
+using FluxKit.Tools.DragToSwitch;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -16,14 +16,14 @@ namespace FluxKit.App.Shell;
 /// <summary>The settings window: Mica, custom title bar, registry-driven navigation.</summary>
 public sealed partial class MainWindow : Window
 {
-    /// <summary>Settings page for each utility id. Adding a utility adds one entry here.</summary>
-    private static readonly Dictionary<string, Type> UtilityPages = new()
+    /// <summary>Settings page for each tool id. Adding a tool adds one entry here.</summary>
+    private static readonly Dictionary<string, Type> ToolPages = new()
     {
-        [DragToSwitchUtility.Id] = typeof(DragToSwitchPage),
+        [DragToSwitchTool.Id] = typeof(DragToSwitchPage),
     };
 
     private readonly AppHost _host = AppHost.Current;
-    private readonly Dictionary<string, NavigationViewItem> _utilityItems = [];
+    private readonly Dictionary<string, NavigationViewItem> _toolItems = [];
     private bool _firstActivation = true;
 
     public MainWindow()
@@ -72,15 +72,15 @@ public sealed partial class MainWindow : Window
     {
         Nav.MenuItems.Add(new NavigationViewItem { Content = "Home", Tag = "home", Icon = new FontIcon { Glyph = "" } });
         Nav.MenuItems.Add(new NavigationViewItemHeader { Content = "Tools" });
-        foreach (IFluxUtility utility in _host.Registry.All)
+        foreach (IFluxTool tool in _host.Registry.All)
         {
             var item = new NavigationViewItem
             {
-                Content = utility.Descriptor.DisplayName,
-                Tag = utility.Descriptor.Id,
-                Icon = UtilityIcon(utility.Descriptor),
+                Content = tool.Descriptor.DisplayName,
+                Tag = tool.Descriptor.Id,
+                Icon = ToolIcon(tool.Descriptor),
             };
-            _utilityItems[utility.Descriptor.Id] = item;
+            _toolItems[tool.Descriptor.Id] = item;
             Nav.MenuItems.Add(item);
         }
 
@@ -88,7 +88,7 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>The tool's full-colour icon when it has one, otherwise its Fluent glyph.</summary>
-    public static IconElement UtilityIcon(UtilityDescriptor descriptor) => descriptor.IconAsset is { } asset
+    public static IconElement ToolIcon(ToolDescriptor descriptor) => descriptor.IconAsset is { } asset
         ? new BitmapIcon { UriSource = new Uri($"ms-appx:///Assets/{asset}"), ShowAsMonochrome = false }
         : new FontIcon { Glyph = descriptor.Glyph };
 
@@ -104,7 +104,7 @@ public sealed partial class MainWindow : Window
             "home" => typeof(HomePage),
             "general" => typeof(GeneralPage),
             "about" => typeof(AboutPage),
-            _ => UtilityPages.GetValueOrDefault(tag, typeof(HomePage)),
+            _ => ToolPages.GetValueOrDefault(tag, typeof(HomePage)),
         };
         if (ContentFrame.CurrentSourcePageType != page)
         {
@@ -114,14 +114,14 @@ public sealed partial class MainWindow : Window
 
     private void OnStatusChanged(object? sender, EventArgs e)
     {
-        foreach ((string id, NavigationViewItem item) in _utilityItems)
+        foreach ((string id, NavigationViewItem item) in _toolItems)
         {
-            UtilityState state = _host.Registry.Get(id)!.State;
+            ToolState state = _host.Registry.Get(id)!.State;
             string? style = state.Status switch
             {
-                UtilityStatus.Running => "SuccessDotInfoBadgeStyle",
-                UtilityStatus.Degraded => "CautionDotInfoBadgeStyle",
-                UtilityStatus.Faulted => "CriticalDotInfoBadgeStyle",
+                ToolStatus.Running => "SuccessDotInfoBadgeStyle",
+                ToolStatus.Degraded => "CautionDotInfoBadgeStyle",
+                ToolStatus.Faulted => "CriticalDotInfoBadgeStyle",
                 _ => null,
             };
             item.InfoBadge = style is null ? null : new InfoBadge { Style = (Style)Application.Current.Resources[style] };
@@ -245,7 +245,7 @@ public sealed partial class MainWindow : Window
         });
         if (result == ContentDialogResult.Secondary)
         {
-            NavigateTo(DragToSwitchUtility.Id);
+            NavigateTo(DragToSwitchTool.Id);
         }
     }
 

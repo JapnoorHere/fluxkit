@@ -1,13 +1,13 @@
-namespace FluxKit.Core.Utilities;
+namespace FluxKit.Core.Tools;
 
-/// <summary>A self-contained FluxKit utility (module) hosted by the shell.</summary>
-public interface IFluxUtility : IAsyncDisposable
+/// <summary>A self-contained FluxKit tool (module) hosted by the shell.</summary>
+public interface IFluxTool : IAsyncDisposable
 {
-    UtilityDescriptor Descriptor { get; }
+    ToolDescriptor Descriptor { get; }
 
-    UtilityState State { get; }
+    ToolState State { get; }
 
-    event EventHandler<UtilityState>? StateChanged;
+    event EventHandler<ToolState>? StateChanged;
 
     /// <summary>Starts background work. Must be idempotent and must not throw for expected failures; report them via <see cref="State"/>.</summary>
     Task StartAsync(CancellationToken cancellationToken);
@@ -20,9 +20,9 @@ public interface IFluxUtility : IAsyncDisposable
 /// <param name="Id">Stable kebab-case id; also the settings section key.</param>
 /// <param name="Glyph">Segoe Fluent Icons code point, used where no <paramref name="IconAsset"/> is set.</param>
 /// <param name="IconAsset">Optional full-colour icon file name under the app's Assets folder, e.g. "DragToSwitch.png".</param>
-public sealed record UtilityDescriptor(string Id, string DisplayName, string Description, string Glyph, int Order, string? IconAsset = null);
+public sealed record ToolDescriptor(string Id, string DisplayName, string Description, string Glyph, int Order, string? IconAsset = null);
 
-public enum UtilityStatus
+public enum ToolStatus
 {
     Disabled,
     Starting,
@@ -32,13 +32,13 @@ public enum UtilityStatus
 }
 
 /// <summary>Current runtime state; <see cref="Detail"/> explains Degraded/Faulted in user-facing words.</summary>
-public sealed record UtilityState(UtilityStatus Status, string? Detail = null)
+public sealed record ToolState(ToolStatus Status, string? Detail = null)
 {
-    public static UtilityState Disabled { get; } = new(UtilityStatus.Disabled);
+    public static ToolState Disabled { get; } = new(ToolStatus.Disabled);
 
-    public static UtilityState Starting { get; } = new(UtilityStatus.Starting);
+    public static ToolState Starting { get; } = new(ToolStatus.Starting);
 
-    public static UtilityState Running { get; } = new(UtilityStatus.Running);
+    public static ToolState Running { get; } = new(ToolStatus.Running);
 
-    public bool IsActive => Status is UtilityStatus.Running or UtilityStatus.Degraded;
+    public bool IsActive => Status is ToolStatus.Running or ToolStatus.Degraded;
 }

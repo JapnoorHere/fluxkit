@@ -3,7 +3,7 @@ using FluxKit.Platform.VirtualDesktop;
 using FluxKit.Platform.Windows;
 using Serilog;
 
-namespace FluxKit.Utilities.DragToSwitch.Interaction;
+namespace FluxKit.Tools.DragToSwitch.Interaction;
 
 /// <summary>
 /// The Drag-to-Switch state machine (Docs/PLAN.md §7). All entry points are serialized by a lock and are
@@ -125,7 +125,7 @@ public sealed class DragInteractionCoordinator : IDisposable
 
     public bool NeedsTicks => Phase is SessionPhase.Suspected or SessionPhase.Active or SessionPhase.Switching or SessionPhase.Collapsed;
 
-    /// <summary>Ends any live session immediately (utility disabled or app exiting).</summary>
+    /// <summary>Ends any live session immediately (tool disabled or app exiting).</summary>
     public void Abort(string reason)
     {
         lock (_sync)

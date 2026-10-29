@@ -49,7 +49,7 @@ All settings can be changed in the FluxKit window. This page documents the file 
 
 | Key | Values | Default | Meaning |
 |---|---|---|---|
-| `enabled` | bool | `true` | Utility on or off. Off removes the input hooks. |
+| `enabled` | bool | `true` | Tool on or off. Off removes the input hooks. |
 | `trigger` | `OnDragStart`, `EdgeSummon` | `OnDragStart` | Show the selector as soon as a drag starts, or only when the file reaches the screen edge. |
 | `hoverDelayMs` | 200–1500 | 600 | Hold time over a card before switching. Values outside the range are clamped. |
 | `sources` | `ExplorerAndDesktop`, `AnyApp` | `ExplorerAndDesktop` | Which apps a drag must start in. |

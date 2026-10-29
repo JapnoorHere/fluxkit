@@ -1,11 +1,11 @@
-using FluxKit.Core.Utilities;
+using FluxKit.Core.Tools;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
 namespace FluxKit.App.Shell;
 
-/// <summary>Overview: one card per registered utility plus anything that needs the user's attention.</summary>
+/// <summary>Overview: one card per registered tool plus anything that needs the user's attention.</summary>
 public sealed partial class HomePage : Page
 {
     private readonly AppHost _host = AppHost.Current;
@@ -25,7 +25,7 @@ public sealed partial class HomePage : Page
 
     private void Refresh()
     {
-        UtilityCards.ItemsSource = _host.Registry.All.Select(BuildCard).ToList();
+        ToolCards.ItemsSource = _host.Registry.All.Select(BuildCard).ToList();
         UpdateAttention();
     }
 
@@ -37,12 +37,12 @@ public sealed partial class HomePage : Page
             return;
         }
 
-        IFluxUtility? troubled = _host.Registry.All.FirstOrDefault(u => u.State.Status is UtilityStatus.Degraded or UtilityStatus.Faulted);
+        IFluxTool? troubled = _host.Registry.All.FirstOrDefault(u => u.State.Status is ToolStatus.Degraded or ToolStatus.Faulted);
         if (troubled is not null)
         {
             Show(
-                troubled.State.Status == UtilityStatus.Faulted ? InfoBarSeverity.Error : InfoBarSeverity.Warning,
-                troubled.State.Status == UtilityStatus.Faulted ? $"{troubled.Descriptor.DisplayName} has stopped" : $"{troubled.Descriptor.DisplayName} is running in limited mode",
+                troubled.State.Status == ToolStatus.Faulted ? InfoBarSeverity.Error : InfoBarSeverity.Warning,
+                troubled.State.Status == ToolStatus.Faulted ? $"{troubled.Descriptor.DisplayName} has stopped" : $"{troubled.Descriptor.DisplayName} is running in limited mode",
                 troubled.State.Detail ?? string.Empty);
             return;
         }
@@ -58,13 +58,13 @@ public sealed partial class HomePage : Page
         AttentionBar.IsOpen = true;
     }
 
-    private UIElement BuildCard(IFluxUtility utility)
+    private UIElement BuildCard(IFluxTool tool)
     {
-        UtilityDescriptor d = utility.Descriptor;
+        ToolDescriptor d = tool.Descriptor;
         bool enabled = _host.Registry.IsEnabled(d.Id);
         var toggle = new ToggleSwitch { IsOn = enabled, OnContent = "On", OffContent = "Off", MinWidth = 0 };
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(toggle, $"Turn on {d.DisplayName}");
-        toggle.Toggled += async (_, _) => await _host.SetUtilityEnabledAsync(d.Id, toggle.IsOn);
+        toggle.Toggled += async (_, _) => await _host.SetToolEnabledAsync(d.Id, toggle.IsOn);
 
         var header = new Grid { ColumnSpacing = 12 };
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -79,12 +79,12 @@ public sealed partial class HomePage : Page
         header.Children.Add(title);
         header.Children.Add(toggle);
 
-        string status = utility.State.Status switch
+        string status = tool.State.Status switch
         {
-            UtilityStatus.Running => "On and ready",
-            UtilityStatus.Degraded => "Limited mode. " + (utility.State.Detail ?? string.Empty),
-            UtilityStatus.Faulted => "Stopped because of an error",
-            UtilityStatus.Starting => "Starting…",
+            ToolStatus.Running => "On and ready",
+            ToolStatus.Degraded => "Limited mode. " + (tool.State.Detail ?? string.Empty),
+            ToolStatus.Faulted => "Stopped because of an error",
+            ToolStatus.Starting => "Starting…",
             _ => "Off",
         };
 

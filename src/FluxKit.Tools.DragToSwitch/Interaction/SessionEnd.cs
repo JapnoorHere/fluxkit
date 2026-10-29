@@ -1,4 +1,4 @@
-namespace FluxKit.Utilities.DragToSwitch.Interaction;
+namespace FluxKit.Tools.DragToSwitch.Interaction;
 
 /// <summary>How a drag session ended. FluxKit never knows whether a drop was delivered.</summary>
 public enum SessionEnd

@@ -1,6 +1,6 @@
 using FluxKit.Platform.Windows;
 
-namespace FluxKit.Utilities.DragToSwitch.Interaction;
+namespace FluxKit.Tools.DragToSwitch.Interaction;
 
 /// <summary>One desktop card as shown in the selector.</summary>
 public sealed record CardModel(Guid DesktopId, int Number, string Name, string? WallpaperPath, bool IsCurrent);

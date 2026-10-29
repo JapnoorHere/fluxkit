@@ -1,4 +1,4 @@
-namespace FluxKit.Utilities.DragToSwitch.Interaction;
+namespace FluxKit.Tools.DragToSwitch.Interaction;
 
 /// <summary>Where the coordinator is in a drag session.</summary>
 public enum SessionPhase

@@ -1,5 +1,5 @@
 using FluxKit.Core.Settings;
-using FluxKit.Utilities.DragToSwitch;
+using FluxKit.Tools.DragToSwitch;
 using Microsoft.UI.Xaml;
 
 namespace FluxKit.App.Theming;

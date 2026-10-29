@@ -1,7 +1,7 @@
 using FluxKit.App.Shell;
-using FluxKit.Core.Utilities;
-using FluxKit.Utilities.DragToSwitch;
-using FluxKit.Utilities.DragToSwitch.Interaction;
+using FluxKit.Core.Tools;
+using FluxKit.Tools.DragToSwitch;
+using FluxKit.Tools.DragToSwitch.Interaction;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -40,7 +40,7 @@ public sealed partial class DragToSwitchPage : Page
     {
         _loading = true;
         DragToSwitchSettings s = Current;
-        EnabledToggle.IsOn = _host.Registry.IsEnabled(DragToSwitchUtility.Id);
+        EnabledToggle.IsOn = _host.Registry.IsEnabled(DragToSwitchTool.Id);
         TriggerCombo.SelectedIndex = (int)s.Trigger;
         DelaySlider.Value = s.HoverDelayMs;
         DelayText.Text = $"{s.HoverDelayMs} ms";
@@ -66,17 +66,17 @@ public sealed partial class DragToSwitchPage : Page
 
     private void RefreshStatus()
     {
-        UtilityState state = _host.DragToSwitch.State;
-        bool enabled = _host.Registry.IsEnabled(DragToSwitchUtility.Id);
+        ToolState state = _host.DragToSwitch.State;
+        bool enabled = _host.Registry.IsEnabled(DragToSwitchTool.Id);
         OptionsPanel.Opacity = enabled ? 1 : 0.5;
         OptionsPanel.IsHitTestVisible = enabled;
         int count = _host.Desktops.Desktops.Count;
         (InfoBarSeverity severity, string title, string message) = state.Status switch
         {
-            UtilityStatus.Running => (InfoBarSeverity.Success, "Ready", $"{count} desktops found."),
-            UtilityStatus.Degraded => (InfoBarSeverity.Warning, "Limited mode", state.Detail ?? string.Empty),
-            UtilityStatus.Faulted => (InfoBarSeverity.Error, "Stopped", state.Detail ?? "Open the log folder for details."),
-            UtilityStatus.Starting => (InfoBarSeverity.Informational, "Starting", string.Empty),
+            ToolStatus.Running => (InfoBarSeverity.Success, "Ready", $"{count} desktops found."),
+            ToolStatus.Degraded => (InfoBarSeverity.Warning, "Limited mode", state.Detail ?? string.Empty),
+            ToolStatus.Faulted => (InfoBarSeverity.Error, "Stopped", state.Detail ?? "Open the log folder for details."),
+            ToolStatus.Starting => (InfoBarSeverity.Informational, "Starting", string.Empty),
             _ => (InfoBarSeverity.Informational, "Off", "Turn on Drag-to-Switch to use the desktop picker."),
         };
         if (state.IsActive && count < 2)
@@ -115,7 +115,7 @@ public sealed partial class DragToSwitchPage : Page
             return;
         }
 
-        await _host.SetUtilityEnabledAsync(DragToSwitchUtility.Id, EnabledToggle.IsOn);
+        await _host.SetToolEnabledAsync(DragToSwitchTool.Id, EnabledToggle.IsOn);
         RefreshStatus();
     }
 
@@ -193,11 +193,11 @@ public sealed partial class DragToSwitchPage : Page
     private async void OnRedetect(object sender, RoutedEventArgs e)
     {
         await _host.Desktops.ReinitializeAsync();
-        bool enabled = _host.Registry.IsEnabled(DragToSwitchUtility.Id);
+        bool enabled = _host.Registry.IsEnabled(DragToSwitchTool.Id);
         if (enabled)
         {
-            await _host.SetUtilityEnabledAsync(DragToSwitchUtility.Id, false);
-            await _host.SetUtilityEnabledAsync(DragToSwitchUtility.Id, true);
+            await _host.SetToolEnabledAsync(DragToSwitchTool.Id, false);
+            await _host.SetToolEnabledAsync(DragToSwitchTool.Id, true);
         }
 
         RefreshStatus();

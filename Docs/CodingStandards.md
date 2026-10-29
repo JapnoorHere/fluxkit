@@ -21,7 +21,7 @@ These are the rules every change to FluxKit follows. Mechanical rules (formattin
 src/
   FluxKit.Core/                 Settings, logging, the tool registry (no Windows APIs)
   FluxKit.Platform/             Native/  Input/  Threading/  Windows/  Shell/  System/  VirtualDesktop/
-  FluxKit.Utilities.<Name>/     One project per tool: the tool class, its settings, its logic folders
+  FluxKit.Tools.<Name>/     One project per tool: the tool class, its settings, its logic folders
   FluxKit.App/
     Shell/                      Main window and the Home, General and About pages
     Controls/                   Reusable XAML controls
@@ -87,7 +87,7 @@ XAML: when an element has more than three attributes, put one per line with `x:N
 
 ## 6. Reuse and modules
 
-- **A tool is a module.** It is an `IFluxUtility`, plus a settings class (`ISettingsSection`), plus a settings page. The shell finds it through the registry. Adding a tool needs one registration line in the shell and nothing else.
+- **A tool is a module.** It is an `IFluxTool`, plus a settings class (`ISettingsSection`), plus a settings page. The shell finds it through the registry. Adding a tool needs one registration line in the shell and nothing else.
 - **Shared UI first.**
   - Build settings pages from the shared controls in `FluxKit.App/Controls`.
   - Don't hand-build `Border`/`StackPanel` trees in code-behind.

@@ -33,7 +33,7 @@ More detail is in [Docs/Setup.md](Docs/Setup.md).
 |---|---|---|
 | `src/FluxKit.Core` | Settings, logging, the tool registry | No Windows-specific code, so it's easy to test |
 | `src/FluxKit.Platform` | Windows APIs: input hooks, virtual desktops, windows, tray | No UI |
-| `src/FluxKit.Utilities.<Tool>` | One project per tool, holding its logic and settings | No XAML, so the logic can be unit tested |
+| `src/FluxKit.Tools.<Tool>` | One project per tool, holding its logic and settings | No XAML, so the logic can be unit tested |
 | `src/FluxKit.App` | The WinUI app: shell, pages, tool UI under `Modules/<Tool>` | Composition root |
 | `tests/` | xUnit tests for Core and each tool | |
 | `tools/`, `spikes/` | Test helpers and experiments | Not shipped |
@@ -45,13 +45,13 @@ References only point down: App → Tool → Platform → Core.
 
 A tool is a module that the FluxKit shell hosts. The shell builds its navigation item, Home card, status dot and tray toggle automatically.
 
-1. **Create the project.** Add `src/FluxKit.Utilities.<Name>`, referencing `FluxKit.Platform`, and add it to `FluxKit.slnx`.
-2. **Add settings.** Create a class that implements `ISettingsSection` with a `Section` constant such as `"utilities/my-tool"`. Give every property a sensible default. The settings file must never break the app, so check and clamp values.
-3. **Implement `IFluxUtility`.**
+1. **Create the project.** Add `src/FluxKit.Tools.<Name>`, referencing `FluxKit.Platform`, and add it to `FluxKit.slnx`.
+2. **Add settings.** Create a class that implements `ISettingsSection` with a `Section` constant built from `SettingsKeys`, such as `SettingsKeys.ToolPrefix + MyTool.Id` (this gives `"utilities/my-tool"`; the saved prefix stays "utilities", see ADR-013). Give every property a sensible default. The settings file must never break the app, so check and clamp values.
+3. **Implement `IFluxTool`.**
    - `Descriptor`: a unique kebab-case id, a display name, a one-line description, a [Segoe Fluent Icons](https://learn.microsoft.com/windows/apps/design/style/segoe-fluent-icons-font) glyph, a sort order, and optionally a colour icon file name.
    - `StartAsync`/`StopAsync`: these must be safe to call more than once. Report problems through `State` (`Degraded` or `Faulted` with a short message for the user) instead of throwing.
 4. **Add an icon (optional).** Draw it in `scripts/generate-icons.ps1`, run the script, and set the file name (for example `"MyTool.png"`) as the descriptor's `IconAsset`.
-5. **Add the settings page.** Put it under `src/FluxKit.App/Modules/<Name>/` and map it in `MainWindow.UtilityPages`.
+5. **Add the settings page.** Put it under `src/FluxKit.App/Modules/<Name>/` and map it in `MainWindow.ToolPages`.
 6. **Register the tool.** In `AppHost.StartAsync`, add `Registry.Register(new MyTool(...))`.
 7. **Write tests** in `tests/FluxKit.<Name>.Tests`. Use fakes for Windows APIs and `FakeTimeProvider` for timing.
 8. **Document it.** Add a row to the tool table in the README, its settings to [Docs/Configuration.md](Docs/Configuration.md), and anything it can't do to [Docs/KnownLimitations.md](Docs/KnownLimitations.md).

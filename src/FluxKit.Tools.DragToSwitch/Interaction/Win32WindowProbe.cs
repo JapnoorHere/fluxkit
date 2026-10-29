@@ -1,6 +1,6 @@
 using FluxKit.Platform.Windows;
 
-namespace FluxKit.Utilities.DragToSwitch.Interaction;
+namespace FluxKit.Tools.DragToSwitch.Interaction;
 
 /// <summary>Production probe backed by Win32.</summary>
 public sealed class Win32WindowProbe : IWindowProbe, IDisposable

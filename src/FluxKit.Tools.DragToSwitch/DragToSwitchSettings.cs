@@ -1,6 +1,6 @@
 using FluxKit.Core.Settings;
 
-namespace FluxKit.Utilities.DragToSwitch;
+namespace FluxKit.Tools.DragToSwitch;
 
 public enum SelectorTrigger
 {
@@ -47,7 +47,7 @@ public enum OverlayTheme
 /// <summary>Persisted settings for Drag-to-Switch ("utilities/drag-to-switch").</summary>
 public sealed class DragToSwitchSettings : ISettingsSection
 {
-    public const string Section = SettingsKeys.ToolPrefix + DragToSwitchUtility.Id;
+    public const string Section = SettingsKeys.ToolPrefix + DragToSwitchTool.Id;
     public const int MinHoverDelayMs = 200;
     public const int MaxHoverDelayMs = 1500;
     public const int DefaultHoverDelayMs = 600;

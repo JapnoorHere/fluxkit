@@ -5,13 +5,13 @@ using FluxKit.App.Theming;
 using FluxKit.Core;
 using FluxKit.Core.Logging;
 using FluxKit.Core.Settings;
-using FluxKit.Core.Utilities;
+using FluxKit.Core.Tools;
 using FluxKit.Platform.Input;
 using FluxKit.Platform.Shell;
 using FluxKit.Platform.Startup;
 using FluxKit.Platform.VirtualDesktop;
-using FluxKit.Utilities.DragToSwitch;
-using FluxKit.Utilities.DragToSwitch.Interaction;
+using FluxKit.Tools.DragToSwitch;
+using FluxKit.Tools.DragToSwitch.Interaction;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
@@ -20,7 +20,7 @@ using Serilog;
 namespace FluxKit.App;
 
 /// <summary>
-/// Composition root and application lifecycle: settings, logging, theme, virtual desktops, utilities,
+/// Composition root and application lifecycle: settings, logging, theme, virtual desktops, tools,
 /// tray icon and windows. Pages reach shared services through <see cref="Current"/>.
 /// </summary>
 public sealed class AppHost
@@ -57,9 +57,9 @@ public sealed class AppHost
 
     public IVirtualDesktopService Desktops { get; private set; } = null!;
 
-    public UtilityRegistry Registry { get; private set; } = null!;
+    public ToolRegistry Registry { get; private set; } = null!;
 
-    public DragToSwitchUtility DragToSwitch { get; private set; } = null!;
+    public DragToSwitchTool DragToSwitch { get; private set; } = null!;
 
     public StartupRegistration Startup { get; } = new("FluxKit", Environment.ProcessPath ?? "FluxKit.exe");
 
@@ -93,7 +93,7 @@ public sealed class AppHost
         _selector = new SelectorWindow(Desktops, Serilog.Log.Logger);
         _selector.ApplyTheme(ResolveOverlayTheme());
 
-        DragToSwitch = new DragToSwitchUtility(
+        DragToSwitch = new DragToSwitchTool(
             Settings,
             Desktops,
             () => _selector.View,
@@ -103,9 +103,9 @@ public sealed class AppHost
             Serilog.Log.Logger);
         DragToSwitch.StateChanged += (_, _) => _dispatcher.TryEnqueue(OnStatusChanged);
 
-        Registry = new UtilityRegistry(
-            id => Settings.Read<UtilityToggle>(SettingsKeys.Tool(id)).Enabled,
-            (id, enabled) => Settings.UpdateAsync<UtilityToggle>(SettingsKeys.Tool(id), t =>
+        Registry = new ToolRegistry(
+            id => Settings.Read<ToolToggle>(SettingsKeys.Tool(id)).Enabled,
+            (id, enabled) => Settings.UpdateAsync<ToolToggle>(SettingsKeys.Tool(id), t =>
             {
                 t.Enabled = enabled;
                 return t;
@@ -120,7 +120,7 @@ public sealed class AppHost
         bool background = args.Contains("--background", StringComparer.OrdinalIgnoreCase);
         if (!global.FirstRunCompleted || !background)
         {
-            ShowMainWindow(args.Contains("--settings", StringComparer.OrdinalIgnoreCase) ? DragToSwitchUtility.Id : null);
+            ShowMainWindow(args.Contains("--settings", StringComparer.OrdinalIgnoreCase) ? DragToSwitchTool.Id : null);
         }
 
         if (args.Contains("--preview-selector", StringComparer.OrdinalIgnoreCase))
@@ -154,7 +154,7 @@ public sealed class AppHost
         }
     }
 
-    public async Task SetUtilityEnabledAsync(string id, bool enabled)
+    public async Task SetToolEnabledAsync(string id, bool enabled)
     {
         await Registry.SetEnabledAsync(id, enabled);
         OnStatusChanged();

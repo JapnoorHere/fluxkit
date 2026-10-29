@@ -1,5 +1,5 @@
 using FluxKit.Platform.Windows;
-using FluxKit.Utilities.DragToSwitch.Interaction;
+using FluxKit.Tools.DragToSwitch.Interaction;
 
 namespace FluxKit.DragToSwitch.Tests.Fakes;
 

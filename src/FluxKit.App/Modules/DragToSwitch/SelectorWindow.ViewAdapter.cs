@@ -1,5 +1,5 @@
-using FluxKit.Utilities.DragToSwitch;
-using FluxKit.Utilities.DragToSwitch.Interaction;
+using FluxKit.Tools.DragToSwitch;
+using FluxKit.Tools.DragToSwitch.Interaction;
 
 namespace FluxKit.App.Modules.DragToSwitch;
 

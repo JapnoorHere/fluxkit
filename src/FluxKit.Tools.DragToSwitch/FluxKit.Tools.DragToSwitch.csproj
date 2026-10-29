@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Drag-to-Switch utility: detection, interaction state machine and geometry. No XAML (views live in the App). -->
+  <!-- Drag-to-Switch tool: detection, interaction state machine and geometry. No XAML (views live in the App). -->
   <PropertyGroup>
     <TargetFramework>$(FluxWindowsTfm)</TargetFramework>
     <TargetPlatformMinVersion>$(FluxMinWindows)</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>$(FluxMinWindows)</SupportedOSPlatformVersion>
-    <RootNamespace>FluxKit.Utilities.DragToSwitch</RootNamespace>
+    <RootNamespace>FluxKit.Tools.DragToSwitch</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

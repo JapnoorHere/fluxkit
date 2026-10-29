@@ -1,17 +1,17 @@
 using FluxKit.Core.Settings;
-using FluxKit.Core.Utilities;
+using FluxKit.Core.Tools;
 using FluxKit.Platform.Input;
 using FluxKit.Platform.VirtualDesktop;
-using FluxKit.Utilities.DragToSwitch.Interaction;
+using FluxKit.Tools.DragToSwitch.Interaction;
 using Serilog;
 
-namespace FluxKit.Utilities.DragToSwitch;
+namespace FluxKit.Tools.DragToSwitch;
 
 /// <summary>
-/// The Drag-to-Switch utility: owns the input hook, the interaction coordinator and its pump loop.
+/// The Drag-to-Switch tool: owns the input hook, the interaction coordinator and its pump loop.
 /// The selector view is supplied by the host (the App) so this assembly stays free of XAML.
 /// </summary>
-public sealed class DragToSwitchUtility : IFluxUtility
+public sealed class DragToSwitchTool : IFluxTool
 {
     public const string Id = "drag-to-switch";
 
@@ -27,7 +27,7 @@ public sealed class DragToSwitchUtility : IFluxUtility
     private CancellationTokenSource? _loopCts;
     private Task? _loop;
 
-    public DragToSwitchUtility(ISettingsService settings, IVirtualDesktopService desktops, Func<ISelectorView> viewFactory, Func<ISystemInputSource> inputFactory, IWindowProbe probe, TimeProvider time, ILogger log)
+    public DragToSwitchTool(ISettingsService settings, IVirtualDesktopService desktops, Func<ISelectorView> viewFactory, Func<ISystemInputSource> inputFactory, IWindowProbe probe, TimeProvider time, ILogger log)
     {
         _settings = settings;
         _desktops = desktops;
@@ -35,11 +35,11 @@ public sealed class DragToSwitchUtility : IFluxUtility
         _inputFactory = inputFactory;
         _probe = probe;
         _time = time;
-        _log = log.ForContext<DragToSwitchUtility>();
+        _log = log.ForContext<DragToSwitchTool>();
         _settings.SettingsChanged += OnSettingsChanged;
     }
 
-    public UtilityDescriptor Descriptor { get; } = new(
+    public ToolDescriptor Descriptor { get; } = new(
         Id,
         "Drag-to-Switch",
         "Move files and windows to another virtual desktop while you drag them.",
@@ -47,11 +47,11 @@ public sealed class DragToSwitchUtility : IFluxUtility
         10,
         "DragToSwitch.png");
 
-    public UtilityState State { get; private set; } = UtilityState.Disabled;
+    public ToolState State { get; private set; } = ToolState.Disabled;
 
     public SessionSummary? LastSession => _coordinator?.LastSession;
 
-    public event EventHandler<UtilityState>? StateChanged;
+    public event EventHandler<ToolState>? StateChanged;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -60,12 +60,12 @@ public sealed class DragToSwitchUtility : IFluxUtility
             return Task.CompletedTask;
         }
 
-        SetState(UtilityState.Starting);
+        SetState(ToolState.Starting);
         try
         {
             if (_desktops.Backend == VirtualDesktopBackend.Unavailable)
             {
-                SetState(new UtilityState(UtilityStatus.Degraded, _desktops.BackendDescription));
+                SetState(new ToolState(ToolStatus.Degraded, _desktops.BackendDescription));
                 return Task.CompletedTask;
             }
 
@@ -77,13 +77,13 @@ public sealed class DragToSwitchUtility : IFluxUtility
             _loopCts = new CancellationTokenSource();
             _loop = Task.Run(() => PumpAsync(coordinator, _input, _loopCts.Token), CancellationToken.None);
             SetState(_desktops.Backend == VirtualDesktopBackend.Keyboard
-                ? new UtilityState(UtilityStatus.Degraded, _desktops.BackendDescription)
-                : UtilityState.Running);
+                ? new ToolState(ToolStatus.Degraded, _desktops.BackendDescription)
+                : ToolState.Running);
         }
         catch (Exception ex)
         {
             _log.Error(ex, "Drag-to-Switch failed to start");
-            SetState(new UtilityState(UtilityStatus.Faulted, "Drag-to-Switch couldn't start. Open the log folder for details."));
+            SetState(new ToolState(ToolStatus.Faulted, "Drag-to-Switch couldn't start. Open the log folder for details."));
             _ = StopAsync(CancellationToken.None);
         }
 
@@ -92,7 +92,7 @@ public sealed class DragToSwitchUtility : IFluxUtility
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _coordinator?.Abort("utility stopped");
+        _coordinator?.Abort("tool stopped");
         if (_loopCts is not null)
         {
             await _loopCts.CancelAsync().ConfigureAwait(false);
@@ -122,7 +122,7 @@ public sealed class DragToSwitchUtility : IFluxUtility
         _coordinator = null;
         _loopCts = null;
         _loop = null;
-        SetState(UtilityState.Disabled);
+        SetState(ToolState.Disabled);
     }
 
     public async ValueTask DisposeAsync()
@@ -172,7 +172,7 @@ public sealed class DragToSwitchUtility : IFluxUtility
         catch (Exception ex)
         {
             _log.Error(ex, "Drag-to-Switch input loop failed");
-            SetState(new UtilityState(UtilityStatus.Faulted, "Drag-to-Switch stopped unexpectedly. Turn it off and on again to restart it."));
+            SetState(new ToolState(ToolStatus.Faulted, "Drag-to-Switch stopped unexpectedly. Turn it off and on again to restart it."));
         }
     }
 
@@ -184,7 +184,7 @@ public sealed class DragToSwitchUtility : IFluxUtility
         }
     }
 
-    private void SetState(UtilityState state)
+    private void SetState(ToolState state)
     {
         State = state;
         StateChanged?.Invoke(this, state);

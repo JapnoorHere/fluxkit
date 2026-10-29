@@ -1,4 +1,4 @@
-using FluxKit.Core.Utilities;
+using FluxKit.Core.Tools;
 using FluxKit.Platform.Shell;
 using Microsoft.Win32;
 
@@ -10,11 +10,11 @@ internal static class TrayMenu
     public static List<TrayMenuItem> Build(AppHost host)
     {
         var items = new List<TrayMenuItem> { new("Open FluxKit", () => host.ShowMainWindow()), TrayMenuItem.Separator };
-        foreach (IFluxUtility utility in host.Registry.All)
+        foreach (IFluxTool tool in host.Registry.All)
         {
-            string id = utility.Descriptor.Id;
+            string id = tool.Descriptor.Id;
             bool enabled = host.Registry.IsEnabled(id);
-            items.Add(new TrayMenuItem(utility.Descriptor.DisplayName, () => _ = host.SetUtilityEnabledAsync(id, !enabled), Checked: enabled));
+            items.Add(new TrayMenuItem(tool.Descriptor.DisplayName, () => _ = host.SetToolEnabledAsync(id, !enabled), Checked: enabled));
         }
 
         items.Add(TrayMenuItem.Separator);
@@ -26,7 +26,7 @@ internal static class TrayMenu
     }
 
     /// <summary>The "off" icon when no tool is running, otherwise the one that matches the taskbar colour.</summary>
-    public static string IconPath(UtilityRegistry registry)
+    public static string IconPath(ToolRegistry registry)
     {
         bool enabled = registry.All.Any(u => u.State.IsActive);
         using RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
@@ -36,12 +36,12 @@ internal static class TrayMenu
     }
 
     /// <summary>"FluxKit" followed by one line per tool, e.g. "Drag-to-Switch: on".</summary>
-    public static string Tooltip(UtilityRegistry registry) => "FluxKit" + string.Concat(registry.All.Select(u => $"\n{u.Descriptor.DisplayName}: " + u.State.Status switch
+    public static string Tooltip(ToolRegistry registry) => "FluxKit" + string.Concat(registry.All.Select(u => $"\n{u.Descriptor.DisplayName}: " + u.State.Status switch
     {
-        UtilityStatus.Running => "on",
-        UtilityStatus.Degraded => "limited mode",
-        UtilityStatus.Faulted => "stopped",
-        UtilityStatus.Starting => "starting",
+        ToolStatus.Running => "on",
+        ToolStatus.Degraded => "limited mode",
+        ToolStatus.Faulted => "stopped",
+        ToolStatus.Starting => "starting",
         _ => "off",
     }));
 }

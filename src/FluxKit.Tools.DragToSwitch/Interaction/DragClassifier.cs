@@ -1,7 +1,7 @@
 using FluxKit.Platform.Windows;
 using Serilog;
 
-namespace FluxKit.Utilities.DragToSwitch.Interaction;
+namespace FluxKit.Tools.DragToSwitch.Interaction;
 
 /// <summary>What <see cref="DragClassifier.Classify"/> decided about a suspected drag.</summary>
 internal enum DragClass

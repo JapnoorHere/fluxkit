@@ -36,8 +36,11 @@ Hook thread, STA shell thread and UI thread, connected by channels and dispatche
 ## ADR-010 — JSON settings with schema version, atomic writes and quarantine
 Settings are robust to hand edits and crashes. Each field is bound independently, unknown fields are preserved, and a newer schema opens read-only.
 
-## ADR-011 — Utility registry
-Navigation, Home cards, tray toggles and status come from `UtilityRegistry`. A new utility doesn't change the shell.
+## ADR-011 — Tool registry
+Navigation, Home cards, tray toggles and status come from `ToolRegistry`. A new tool doesn't change the shell.
 
 ## ADR-012 — Hand-written P/Invoke (deviation from the plan's CsWin32)
 The interop surface is about 40 functions. Hand-written `LibraryImport` declarations keep it small, reviewable and free of a source generator. **Lesson recorded:** `LibraryImport` doesn't add the `W` suffix, so string or message APIs must name their `...W` entry point explicitly (a bug found on first launch).
+
+## ADR-013 — "Tool" in code, "utilities" in saved settings (2026-10-30)
+**Context:** the app calls each feature a *tool*, but the code said *utility* (`IFluxUtility`, `FluxKit.Utilities.DragToSwitch`), so contributors had to translate between the two. **Decision:** the code now uses the same word as the UI: `IFluxTool`, `ToolRegistry`, `ToolDescriptor`, `ToolState`, `DragToSwitchTool`, `FluxKit.Core.Tools` and `FluxKit.Tools.<Name>` projects. The saved settings keys are **not** renamed: tool sections stay `"utilities/<id>"` under the `"utilities"` node, built only by `SettingsKeys`. **Consequences:** existing settings files keep working with no migration, and tests pin the saved keys. `Docs/PLAN.md` and the changelog keep the old word because they record history. ADR-011 was renamed with the rest.

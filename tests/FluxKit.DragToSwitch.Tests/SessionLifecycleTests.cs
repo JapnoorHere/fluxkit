@@ -2,8 +2,8 @@ using FluxKit.DragToSwitch.Tests.Fakes;
 using FluxKit.Platform.Input;
 using FluxKit.Platform.VirtualDesktop;
 using FluxKit.Platform.Windows;
-using FluxKit.Utilities.DragToSwitch;
-using FluxKit.Utilities.DragToSwitch.Interaction;
+using FluxKit.Tools.DragToSwitch;
+using FluxKit.Tools.DragToSwitch.Interaction;
 using Microsoft.Extensions.Time.Testing;
 using Serilog;
 

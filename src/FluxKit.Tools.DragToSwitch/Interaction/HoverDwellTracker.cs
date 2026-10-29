@@ -1,6 +1,6 @@
 using FluxKit.Platform.Windows;
 
-namespace FluxKit.Utilities.DragToSwitch.Interaction;
+namespace FluxKit.Tools.DragToSwitch.Interaction;
 
 /// <summary>Hit-tests card rectangles with hysteresis so a cursor wobbling on an edge keeps its card.</summary>
 public static class CardHitTester
