@@ -75,6 +75,15 @@
                             MaxLines="1"
                             TextTrimming="CharacterEllipsis"
                             Visibility="Collapsed" />
+                        <!-- The volume level, in place of the title while the wheel changes it. -->
+                        <Grid
+                            x:Name="CompactLevel"
+                            Width="132"
+                            Height="6"
+                            Visibility="Collapsed">
+                            <Border Background="#33FFFFFF" CornerRadius="3" />
+                            <Border x:Name="CompactLevelFill" CornerRadius="3" />
+                        </Grid>
                     </StackPanel>
                     <StackPanel
                         Grid.Column="2"

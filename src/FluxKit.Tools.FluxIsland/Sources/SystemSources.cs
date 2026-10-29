@@ -14,5 +14,6 @@ public static class SystemSources
         Privacy = () => new PrivacySource(log),
         Clipboard = () => new ClipboardSource(log),
         FullScreen = () => new FullScreenSource(log),
+        Volume = () => new VolumeSource(),
     };
 }

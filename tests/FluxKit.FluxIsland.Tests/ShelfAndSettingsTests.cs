@@ -1,6 +1,7 @@
 using FluxKit.Tools.FluxIsland;
 using FluxKit.Tools.FluxIsland.Abstractions;
 using FluxKit.Tools.FluxIsland.Activities;
+using FluxKit.Tools.FluxIsland.Sources;
 
 namespace FluxKit.FluxIsland.Tests;
 
@@ -17,6 +18,20 @@ public sealed class ShelfAndSettingsTests
         Assert.True(changed);
         Assert.Equal([@"c:\B.TXT", @"C:\a.txt"], shelf.Items);
         Assert.False(shelf.Add([@"C:\b.txt"]));
+    }
+
+    [Theory]
+    [InlineData(50, 1, 52)]
+    [InlineData(50, -3, 44)]
+    [InlineData(51, 1, 52)]
+    [InlineData(51, -1, 50)]
+    [InlineData(99, 5, 100)]
+    [InlineData(1, -1, 0)]
+    public void Volume_steps_by_two_and_lands_on_even_levels(int current, int notches, int expected)
+    {
+        int target = VolumeSource.StepTarget(current, notches);
+
+        Assert.Equal(expected, target);
     }
 
     [Fact]

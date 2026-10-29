@@ -2,10 +2,12 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using FluxKit.Tools.FluxIsland.Abstractions;
 using FluxKit.Tools.FluxIsland.Activities;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
@@ -32,6 +34,7 @@ public sealed partial class IslandPill : UserControl
     private const double RailRoom = 34;
     private const float HoverScale = 1.04f;
     private const float PressScale = 0.94f;
+    private const int WheelNotch = 120;
     private static readonly Size IdleSize = new(120, 32);
     private static readonly Size BareSize = new(88, 28);
     private static readonly Size PeekSize = new(320, 52);
@@ -54,6 +57,7 @@ public sealed partial class IslandPill : UserControl
     private IslandScene _scene = IslandScene.Empty;
     private bool _dragging;
     private bool _previewDrop;
+    private int _wheel;
     private PillMode _mode;
     private PanelPage? _page;
     private UIElement? _shownView;
@@ -69,6 +73,7 @@ public sealed partial class IslandPill : UserControl
         var secondary = new SolidColorBrush(IslandPalette.TextSecondary);
         CompactSubtitle.Foreground = secondary;
         CompactBurst.Stroke = new SolidColorBrush(IslandPalette.Orange);
+        CompactLevelFill.Background = new SolidColorBrush(IslandPalette.TextPrimary);
         Stage.Width = StageWidth;
         Stage.Height = StageHeight;
         Surface.Margin = new Thickness(0, TopInset, 0, 0);
@@ -112,6 +117,7 @@ public sealed partial class IslandPill : UserControl
         Surface.PointerReleased += OnPointerReleased;
         Surface.PointerCaptureLost += (_, _) => Unpress();
         Surface.PointerCanceled += (_, _) => Unpress();
+        Surface.PointerWheelChanged += OnWheel;
         Surface.DragEnter += OnDragEnter;
         Surface.DragOver += OnDragOver;
         Surface.DragLeave += OnDragLeave;
@@ -284,6 +290,14 @@ public sealed partial class IslandPill : UserControl
         CompactGlyph.Glyph = content.Glyph;
         CompactGlyph.Visibility = content.Glyph.Length > 0 && !art && !charging ? Visibility.Visible : Visibility.Collapsed;
         CompactGlyph.Foreground = new SolidColorBrush(content.Accent);
+        bool level = activity?.Kind == ActivityKind.Volume;
+        CompactLevel.Visibility = level ? Visibility.Visible : Visibility.Collapsed;
+        CompactTitle.Visibility = level ? Visibility.Collapsed : Visibility.Visible;
+        if (level)
+        {
+            SetLevel(activity!.Value);
+        }
+
         CompactTitle.Text = content.Title;
         CompactSubtitle.Text = content.Subtitle ?? string.Empty;
         CompactSubtitle.Visibility = twoLines ? Visibility.Visible : Visibility.Collapsed;
@@ -301,6 +315,39 @@ public sealed partial class IslandPill : UserControl
         CompactView.Measure(new Size(double.PositiveInfinity, CompactHeight));
         double width = Math.Clamp(Math.Ceiling(CompactView.DesiredSize.Width / 4) * 4, MinCompactWidth, MaxCompactWidth);
         return (CompactView, key, new Size(width, CompactHeight));
+    }
+
+    /// <summary>The level bar fills with a soft spring, so each wheel notch nudges it rather than jumping.</summary>
+    private void SetLevel(int percent)
+    {
+        Visual fill = ElementCompositionPreview.GetElementVisual(CompactLevelFill);
+        float scale = Math.Clamp(percent, 0, 100) / 100f;
+        fill.CenterPoint = Vector3.Zero;
+        if (!Springs)
+        {
+            fill.Scale = new Vector3(scale, 1, 1);
+            return;
+        }
+
+        SpringVector3NaturalMotionAnimation spring = fill.Compositor.CreateSpringVector3Animation();
+        spring.DampingRatio = 0.7f;
+        spring.Period = TimeSpan.FromMilliseconds(40);
+        spring.FinalValue = new Vector3(scale, 1, 1);
+        fill.StartAnimation("Scale", spring);
+    }
+
+    /// <summary>The mouse wheel over the island changes the volume (the tool ignores it when that setting is off).</summary>
+    private void OnWheel(object sender, PointerRoutedEventArgs e)
+    {
+        _wheel += e.GetCurrentPoint(Surface).Properties.MouseWheelDelta;
+        int notches = _wheel / WheelNotch;
+        if (notches != 0)
+        {
+            _wheel -= notches * WheelNotch;
+            Commands?.StepVolume(notches);
+        }
+
+        e.Handled = true;
     }
 
     private (UIElement View, string Key, Size Size) BuildPanel(DateTimeOffset now)
