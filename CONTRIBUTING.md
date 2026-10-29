@@ -69,15 +69,15 @@ A tool is a module that the FluxKit shell hosts. The shell builds its navigation
 
 ## Code style
 
+- Follow [Docs/CodingStandards.md](Docs/CodingStandards.md): principles, folders, names, formatting, reuse and tests. Run `./scripts/build.ps1 -Verify` before you push; it checks formatting too.
 - C# with nullable reference types on. Warnings are treated as errors, so the build must stay at 0 warnings.
-- Follow `.editorconfig`. Match the style of the code around your change.
 - Write user-facing text in plain, friendly English: short sentences, everyday words, no jargon. Say "Turn on", not "Enable". Say "couldn't", not "could not be performed".
 - Use theme resources for colours (`{ThemeResource …}`), so light, dark and high-contrast modes all work.
 - Give controls accessible names when their text alone isn't clear.
 
 ## Pull request checklist
 
-- [ ] `./scripts/build.ps1` builds with 0 warnings.
+- [ ] `./scripts/build.ps1 -Verify` builds with 0 warnings and clean formatting.
 - [ ] `./scripts/test.ps1` passes, and new behaviour has tests.
 - [ ] You ran the app and tried the change yourself.
 - [ ] Docs are updated (README, Configuration, KnownLimitations, CHANGELOG) when behaviour changes.

@@ -123,6 +123,7 @@ Contributions are welcome: bug reports, ideas for new tools, docs fixes and code
 |---|---|
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute and how to add a tool |
 | [Docs/Architecture.md](Docs/Architecture.md) | Projects, threads, the drag state machine |
+| [Docs/CodingStandards.md](Docs/CodingStandards.md) | Coding standards: principles, folders, names, formatting, reuse |
 | [Docs/Configuration.md](Docs/Configuration.md) | Every setting and where files are stored |
 | [Docs/Troubleshooting.md](Docs/Troubleshooting.md) | Fixes for common problems |
 | [Docs/KnownLimitations.md](Docs/KnownLimitations.md) | What doesn't work yet, and why |

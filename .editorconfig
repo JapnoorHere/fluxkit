@@ -3,6 +3,8 @@ root = true
 # All files
 [*]
 indent_style = space
+end_of_line = lf
+charset = utf-8
 
 # Xml files
 [*.xml]
@@ -29,13 +31,13 @@ indent_size = 4
 tab_width = 4
 
 # New line preferences
-insert_final_newline = false
+insert_final_newline = true
 
 #### .NET Coding Conventions ####
 [*.{cs,vb}]
 
 # Organize usings
-dotnet_separate_import_directive_groups = true
+dotnet_separate_import_directive_groups = false
 dotnet_sort_system_directives_first = true
 file_header_template = unset
 
@@ -126,7 +128,7 @@ csharp_style_prefer_readonly_struct_member = true:suggestion
 # Code-block preferences
 csharp_prefer_braces = true:silent
 csharp_prefer_simple_using_statement = true:suggestion
-csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_style_namespace_declarations = file_scoped:warning
 csharp_style_prefer_method_group_conversion = true:silent
 csharp_style_prefer_primary_constructors = true:suggestion
 csharp_style_prefer_top_level_statements = true:silent
@@ -201,11 +203,11 @@ csharp_preserve_single_line_statements = true
 
 # Naming rules
 
-dotnet_naming_rule.types_and_namespaces_should_be_pascalcase.severity = suggestion
+dotnet_naming_rule.types_and_namespaces_should_be_pascalcase.severity = warning
 dotnet_naming_rule.types_and_namespaces_should_be_pascalcase.symbols = types_and_namespaces
 dotnet_naming_rule.types_and_namespaces_should_be_pascalcase.style = pascalcase
 
-dotnet_naming_rule.interfaces_should_be_ipascalcase.severity = suggestion
+dotnet_naming_rule.interfaces_should_be_ipascalcase.severity = warning
 dotnet_naming_rule.interfaces_should_be_ipascalcase.symbols = interfaces
 dotnet_naming_rule.interfaces_should_be_ipascalcase.style = ipascalcase
 
@@ -213,15 +215,15 @@ dotnet_naming_rule.type_parameters_should_be_tpascalcase.severity = suggestion
 dotnet_naming_rule.type_parameters_should_be_tpascalcase.symbols = type_parameters
 dotnet_naming_rule.type_parameters_should_be_tpascalcase.style = tpascalcase
 
-dotnet_naming_rule.methods_should_be_pascalcase.severity = suggestion
+dotnet_naming_rule.methods_should_be_pascalcase.severity = warning
 dotnet_naming_rule.methods_should_be_pascalcase.symbols = methods
 dotnet_naming_rule.methods_should_be_pascalcase.style = pascalcase
 
-dotnet_naming_rule.properties_should_be_pascalcase.severity = suggestion
+dotnet_naming_rule.properties_should_be_pascalcase.severity = warning
 dotnet_naming_rule.properties_should_be_pascalcase.symbols = properties
 dotnet_naming_rule.properties_should_be_pascalcase.style = pascalcase
 
-dotnet_naming_rule.events_should_be_pascalcase.severity = suggestion
+dotnet_naming_rule.events_should_be_pascalcase.severity = warning
 dotnet_naming_rule.events_should_be_pascalcase.symbols = events
 dotnet_naming_rule.events_should_be_pascalcase.style = pascalcase
 
@@ -241,13 +243,13 @@ dotnet_naming_rule.public_fields_should_be_pascalcase.severity = suggestion
 dotnet_naming_rule.public_fields_should_be_pascalcase.symbols = public_fields
 dotnet_naming_rule.public_fields_should_be_pascalcase.style = pascalcase
 
-dotnet_naming_rule.private_fields_should_be__camelcase.severity = suggestion
+dotnet_naming_rule.private_fields_should_be__camelcase.severity = warning
 dotnet_naming_rule.private_fields_should_be__camelcase.symbols = private_fields
 dotnet_naming_rule.private_fields_should_be__camelcase.style = _camelcase
 
 dotnet_naming_rule.private_static_fields_should_be_s_camelcase.severity = suggestion
 dotnet_naming_rule.private_static_fields_should_be_s_camelcase.symbols = private_static_fields
-dotnet_naming_rule.private_static_fields_should_be_s_camelcase.style = s_camelcase
+dotnet_naming_rule.private_static_fields_should_be_s_camelcase.style = _camelcase
 
 dotnet_naming_rule.public_constant_fields_should_be_pascalcase.severity = suggestion
 dotnet_naming_rule.public_constant_fields_should_be_pascalcase.symbols = public_constant_fields
@@ -273,7 +275,7 @@ dotnet_naming_rule.local_functions_should_be_pascalcase.severity = suggestion
 dotnet_naming_rule.local_functions_should_be_pascalcase.symbols = local_functions
 dotnet_naming_rule.local_functions_should_be_pascalcase.style = pascalcase
 
-dotnet_naming_rule.non_field_members_should_be_pascalcase.severity = suggestion
+dotnet_naming_rule.non_field_members_should_be_pascalcase.severity = warning
 dotnet_naming_rule.non_field_members_should_be_pascalcase.symbols = non_field_members
 dotnet_naming_rule.non_field_members_should_be_pascalcase.style = pascalcase
 
@@ -387,3 +389,12 @@ dotnet_naming_style.s_camelcase.required_suffix =
 dotnet_naming_style.s_camelcase.word_separator = 
 dotnet_naming_style.s_camelcase.capitalization = camel_case
 
+
+# PowerShell scripts keep Windows line endings
+[*.ps1]
+end_of_line = crlf
+
+# Test names read as sentences: Scenario_expected_result
+[tests/**.cs]
+dotnet_naming_rule.methods_should_be_pascalcase.severity = none
+dotnet_naming_rule.non_field_members_should_be_pascalcase.severity = none

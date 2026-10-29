@@ -16,7 +16,7 @@ jobs:
           global-json-file: global.json
       - name: Build
         shell: pwsh
-        run: ./scripts/build.ps1 -Configuration Release
+        run: ./scripts/build.ps1 -Configuration Release -Verify
       - name: Unit tests
         shell: pwsh
         run: ./scripts/test.ps1 -Configuration Release -Coverage

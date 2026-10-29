@@ -1,6 +1,7 @@
-* text=auto
-*.cs text diff=csharp
-*.xaml text
+# Source and docs are stored and checked out with LF line endings (see .editorconfig).
+* text=auto eol=lf
+*.cs text diff=csharp eol=lf
+*.xaml text eol=lf
 *.ps1 text eol=crlf
 *.ico binary
 *.png binary

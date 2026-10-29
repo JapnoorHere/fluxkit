@@ -153,7 +153,7 @@ internal sealed class HarnessRun(HarnessOptions options, SourceForm source)
             return RunWindowScenario(origin, target, desktops);
         }
 
-        string logPath =Path.Combine(Path.GetTempPath(), $"fluxkit-probe-{Guid.NewGuid():N}.jsonl");
+        string logPath = Path.Combine(Path.GetTempPath(), $"fluxkit-probe-{Guid.NewGuid():N}.jsonl");
         using Process probe = Process.Start(options.ProbePath,
             ["--title", "DropProbe (target)", "--desktop", target.Id.ToString("B"), "--bounds", $"{ProbeBounds.X},{ProbeBounds.Y},{ProbeBounds.Width},{ProbeBounds.Height}", "--log", logPath])!;
         try
