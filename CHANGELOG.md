@@ -2,6 +2,17 @@
 
 All notable changes to FluxKit are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- New FluxKit design. A slim side rail replaces the old navigation, Home is a launchpad with a tile per tool, and settings sit in grouped cards under a brand-coloured page header.
+- The Drag-to-Switch page shows a live preview of the picker that follows your settings (position, size, previews, theme, hold time and animations).
+- All app text, including the picker and tray menu, now comes from one resource file, ready for translation.
+- The code says "tool" everywhere, the same as the app. Saved settings keep their old keys, so nothing is lost (ADR-013).
+
+### Added
+- `--page <name>` opens FluxKit on a chosen page.
+
 ## [1.0.0-preview.1] — 2026-10-26
 
 ### Added

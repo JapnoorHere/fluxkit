@@ -64,6 +64,8 @@ FluxKit isn't code-signed yet, so Windows SmartScreen may warn you the first tim
 
 FluxKit is one app that hosts many tools. The app provides the parts every tool needs: the settings window, the tray icon, settings storage, logging and startup. Each tool is a separate module that plugs in.
 
+**The window.** A slim rail on the left lists Home, each tool, General and About. Home has a tile for every tool, with its on/off switch and status. Each tool has its own page, with a live preview of the tool next to its settings. Changes are saved as soon as you make them.
+
 ```
 FluxKit.exe
 ├─ Shell: settings window, tray icon, start with Windows

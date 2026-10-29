@@ -42,6 +42,10 @@ Reuse these instead of writing another copy (see [CodingStandards.md](CodingStan
 | `FluxKitPaths` | `Core` | Every folder or file under `%LOCALAPPDATA%\FluxKit` |
 | `Motion` | `App/Theming` | Standard animation timings and one-off property animations |
 | `ThemeService` | `App/Theming` | Turning theme settings into a window theme |
+| `ThemeResources` | `App/Theming` | Theme brushes and styles needed from code, by name instead of key strings |
+| `Brand.xaml`, `Tokens.xaml`, `Styles.xaml` | `App/Theming` | Brand colours, spacing and sizes, and the shared styles |
+| `Strings` | `App` | All user-visible text, read from `Strings/en-US/Resources.resw` |
+| `PageHeader`, `SettingsGroup`, `SettingRow`, `ToolPageLayout`, `ToolTile`, `NavRail` | `App/Controls` | Building pages: header band, grouped settings cards, preview-and-settings layout, Home tiles, the side rail |
 | `WallpaperCache` | `App/Modules/DragToSwitch` | Decoded wallpaper previews |
 
 In the Drag-to-Switch tool, `DragClassifier` decides what a drag is (window move, file drag or neither) and `DragInteractionCoordinator` runs the session state machine below.
@@ -83,4 +87,4 @@ FluxKit is a collection of tools, and each one implements `IFluxTool`. In short:
 3. Register it in `AppHost.StartAsync`: `Registry.Register(new MyTool(...))`.
 4. Add its settings page to `MainWindow.ToolPages`.
 
-The navigation item, Home card, status dot, tray toggle and tray tooltip are all generated from the registry. The full step-by-step guide, with the rules every tool must follow, is in [CONTRIBUTING.md](../CONTRIBUTING.md#adding-a-tool).
+The rail item, Home tile, status dot, tray toggle and tray tooltip are all generated from the registry. The full step-by-step guide, with the rules every tool must follow, is in [CONTRIBUTING.md](../CONTRIBUTING.md#adding-a-tool).

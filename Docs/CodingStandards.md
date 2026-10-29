@@ -93,6 +93,10 @@ XAML: when an element has more than three attributes, put one per line with `x:N
   - Don't hand-build `Border`/`StackPanel` trees in code-behind.
   - Colours come from theme resources, so light, dark and high contrast all work.
 - **User text in resources.** Visible text belongs in `Strings/en-US/Resources.resw`. Use format strings, and never glue sentences together.
+  - In XAML, give the element an `x:Uid` and add `<Uid>.<Property>` keys, such as `General_Startup.Header`.
+  - In code, use `Strings.Get("Key")` or `Strings.Format("KeyFormat", ...)`. Keys used from code have no dot, and format keys end in `Format`.
+  - Prefix keys with the page or area (`Home_`, `General_`, `DragToSwitch_`, `Picker_`, `Tray_`). A missing key shows up as the key itself, so gaps are easy to spot.
+- **Brushes from code** go through `ThemeResources`, never `Application.Current.Resources["..."]`.
 - **One helper per job.** Settings keys, app folders, message-loop threads and Win32 declarations each have one implementation that everything else reuses.
 
 ## 7. Tests
