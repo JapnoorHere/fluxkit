@@ -5,19 +5,6 @@ using Serilog;
 
 namespace FluxKit.Utilities.DragToSwitch.Interaction;
 
-public enum SessionPhase
-{
-    Idle,
-    Armed,
-    Suspected,
-    Active,
-    Switching,
-    Collapsed,
-
-    /// <summary>The drag was ignored or cancelled; wait for the button to come up.</summary>
-    WaitingForRelease,
-}
-
 /// <summary>
 /// The Drag-to-Switch state machine (Docs/PLAN.md §7). All entry points are serialized by a lock and are
 /// deterministic given the injected <see cref="TimeProvider"/>, so the whole lifecycle is unit-testable.
@@ -50,15 +37,11 @@ public sealed class DragInteractionCoordinator : IDisposable
     private readonly ILogger _log;
     private readonly HoverDwellTracker _dwell = new(HoverGrace);
     private readonly SwitchGuard _guard = new(SwitchCooldown);
+    private readonly DragClassifier _classifier;
 
     private DragToSwitchSettings _settings;
     private int _downX, _downY, _lastX, _lastY;
     private DateTimeOffset _suspectedAt, _sessionStart;
-    private string _sourceProcess = string.Empty;
-    private nint _sourceWindow;
-    private bool _fileSourceAllowed;
-    private DateTimeOffset? _payloadCheckStart;
-    private bool _carriesFiles;
     private DragKind _kind;
     private nint _movingWindow;
     private bool _windowMoved;
@@ -77,6 +60,7 @@ public sealed class DragInteractionCoordinator : IDisposable
         _settings = settings.Clone();
         _time = time;
         _log = log.ForContext<DragInteractionCoordinator>();
+        _classifier = new DragClassifier(probe, _log);
         _desktops.DesktopsChanged += OnDesktopsChanged;
     }
 
@@ -157,19 +141,6 @@ public sealed class DragInteractionCoordinator : IDisposable
 
     public void Dispose() => _desktops.DesktopsChanged -= OnDesktopsChanged;
 
-    /// <summary>
-    /// Root window classes of shell surfaces whose drags never carry files: dragging a taskbar button reorders it
-    /// and dragging a tray icon moves it. They belong to explorer.exe, so they must be excluded explicitly; the app
-    /// behind a taskbar button can't be moved along either (no API maps a button to one window).
-    /// </summary>
-    private static readonly HashSet<string> NonFileShellSurfaces = new(StringComparer.Ordinal)
-    {
-        "Shell_TrayWnd",
-        "Shell_SecondaryTrayWnd",
-        "NotifyIconOverflowWindow",
-        "TopLevelWindowForOverflowXamlIsland",
-    };
-
     private static bool IsDigit(int vk) => vk is >= VkDigit1 and <= VkDigit9 or >= VkNumpad1 and <= VkNumpad9;
 
     private void OnLeftDown(int x, int y)
@@ -179,24 +150,19 @@ public sealed class DragInteractionCoordinator : IDisposable
             End(SessionEnd.Aborted, "unexpected button press");
         }
 
-        StopPayloadCheck();
-        _carriesFiles = false;
+        _classifier.StopPayloadCheck();
         Phase = SessionPhase.Idle;
         if (!_settings.Enabled || _probe.IsFullScreenAppRunning())
         {
             return;
         }
 
-        WindowInfo? source = _probe.GetWindowAt(x, y);
-        if (source is not null && NonFileShellSurfaces.Contains(source.ClassName))
+        if (!_classifier.BeginDrag(_probe.GetWindowAt(x, y), _settings.Sources, out bool fileSourceAllowed))
         {
             return;
         }
 
-        _sourceProcess = source?.ProcessName ?? string.Empty;
-        _sourceWindow = source?.RootWindow ?? 0;
-        _fileSourceAllowed = _settings.Sources == DragSources.AnyApp || string.Equals(_sourceProcess, "explorer", StringComparison.OrdinalIgnoreCase);
-        if (!_fileSourceAllowed && !WindowMovesAvailable)
+        if (!fileSourceAllowed && !WindowMovesAvailable)
         {
             return;
         }
@@ -219,98 +185,17 @@ public sealed class DragInteractionCoordinator : IDisposable
                 _suspectedAt = now;
             }
         }
-        else if (Phase == SessionPhase.Suspected && _payloadCheckStart is not null)
+        else if (Phase == SessionPhase.Suspected)
         {
-            _probe.MovePayloadCheck(_lastX, _lastY);
+            _classifier.OnMove(_lastX, _lastY);
         }
     }
 
     private bool WindowMovesAvailable => _settings.MoveWindowsEnabled && _desktops.CanMoveWindows;
 
-    private enum DragClass
-    {
-        Ignore,
-        Pending,
-        Start,
-    }
-
-    /// <summary>
-    /// Decides whether the suspected drag is a window move (title-bar drag), a file drag, or neither
-    /// (resize, menu, text selection, scrollbar, or a source that isn't allowed). A file drag counts only once the
-    /// app has really started an OLE drag; until then (up to <see cref="FileDragConfirmTimeout"/>) it is pending.
-    /// Drags that don't start in File Explorer can carry text or links too, so for those a payload check then
-    /// confirms that files are being dragged.
-    /// </summary>
-    private DragClass Classify(DateTimeOffset now)
-    {
-        nint moving = _probe.GetWindowBeingMoved();
-        if (moving != 0)
-        {
-            StopPayloadCheck();
-            _kind = DragKind.Window;
-            _movingWindow = moving;
-            return WindowMovesAvailable ? DragClass.Start : DragClass.Ignore;
-        }
-
-        _kind = DragKind.File;
-        _movingWindow = 0;
-        if (!_fileSourceAllowed || _probe.IsForegroundInMoveSizeOrMenu())
-        {
-            return DragClass.Ignore;
-        }
-
-        if (_payloadCheckStart is null && !_probe.IsFileDragInProgress(_sourceWindow))
-        {
-            return now - _suspectedAt < FileDragConfirmTimeout ? DragClass.Pending : DragClass.Ignore;
-        }
-
-        // File Explorer and the desktop only start OLE drags for files and folders.
-        if (_carriesFiles || string.Equals(_sourceProcess, "explorer", StringComparison.OrdinalIgnoreCase))
-        {
-            return DragClass.Start;
-        }
-
-        if (_payloadCheckStart is null)
-        {
-            _payloadCheckStart = now;
-            _probe.BeginPayloadCheck(_lastX, _lastY);
-            return DragClass.Pending;
-        }
-
-        switch (_probe.PayloadCheckResult)
-        {
-            case DragPayload.Files:
-                StopPayloadCheck();
-                _carriesFiles = true; // remembered while waiting for the screen edge (EdgeSummon)
-                return DragClass.Start;
-            case DragPayload.Other:
-                StopPayloadCheck();
-                _log.Information("Drag from {Source} ignored: it doesn't carry files", _sourceProcess);
-                return DragClass.Ignore;
-            default:
-                if (now - _payloadCheckStart.Value < PayloadCheckTimeout)
-                {
-                    return DragClass.Pending;
-                }
-
-                StopPayloadCheck();
-                _log.Information("Drag from {Source} ignored: couldn't tell what it carries", _sourceProcess);
-                return DragClass.Ignore;
-        }
-    }
-
-    private void StopPayloadCheck()
-    {
-        if (_payloadCheckStart is not null)
-        {
-            _payloadCheckStart = null;
-            _probe.EndPayloadCheck();
-        }
-    }
-
     private void OnLeftUp()
     {
-        StopPayloadCheck();
+        _classifier.StopPayloadCheck();
         if (Phase is SessionPhase.Active or SessionPhase.Switching or SessionPhase.Collapsed)
         {
             End(SessionEnd.Released, null);
@@ -321,7 +206,7 @@ public sealed class DragInteractionCoordinator : IDisposable
 
     private void OnEscape()
     {
-        StopPayloadCheck();
+        _classifier.StopPayloadCheck();
         if (Phase is SessionPhase.Active or SessionPhase.Switching or SessionPhase.Collapsed)
         {
             bool switched = _desktops.CurrentDesktopId != _originDesktop;
@@ -372,10 +257,13 @@ public sealed class DragInteractionCoordinator : IDisposable
         switch (Phase)
         {
             case SessionPhase.Suspected when now - _suspectedAt >= SuspectDebounce:
-                DragClass drag = Classify(now);
+                DragDecision decision = _classifier.Classify(now, _suspectedAt, _lastX, _lastY, WindowMovesAvailable);
+                _kind = decision.Kind;
+                _movingWindow = decision.MovingWindow;
+                DragClass drag = decision.Class;
                 if (drag == DragClass.Ignore)
                 {
-                    StopPayloadCheck();
+                    _classifier.StopPayloadCheck();
                     Phase = SessionPhase.WaitingForRelease;
                     return;
                 }
@@ -428,7 +316,7 @@ public sealed class DragInteractionCoordinator : IDisposable
         _windowMoved = false;
         Phase = SessionPhase.Active;
         Volatile.Write(ref _swallowDigits, _settings.NumberKeysEnabled);
-        _log.Information("Drag session {Session} started: kind={Kind} source={Source} desktops={Count} trigger={Trigger}", _sessionId, _kind, _sourceProcess, _cards.Count, _settings.Trigger);
+        _log.Information("Drag session {Session} started: kind={Kind} source={Source} desktops={Count} trigger={Trigger}", _sessionId, _kind, _classifier.SourceProcess, _cards.Count, _settings.Trigger);
         _view.Show(_cards, _geometry, _settings, _kind);
     }
 
@@ -521,7 +409,7 @@ public sealed class DragInteractionCoordinator : IDisposable
             _guard.Complete(now, result.Succeeded);
             _dwell.Reset();
             CardModel card = _cards[index];
-            _pendingSummary = new SessionSummary(_sessionStart, _sourceProcess, from, card.Number, (int)result.Elapsed.TotalMilliseconds, SessionEnd.Released, null);
+            _pendingSummary = new SessionSummary(_sessionStart, _classifier.SourceProcess, from, card.Number, (int)result.Elapsed.TotalMilliseconds, SessionEnd.Released, null);
             if (result.Succeeded)
             {
                 _windowMoved |= _kind == DragKind.Window;
@@ -591,7 +479,7 @@ public sealed class DragInteractionCoordinator : IDisposable
     {
         Volatile.Write(ref _swallowDigits, false);
         _view.Hide();
-        SessionSummary summary = (_pendingSummary ?? new SessionSummary(_sessionStart, _sourceProcess, null, null, null, end, detail)) with { End = end, Detail = detail };
+        SessionSummary summary = (_pendingSummary ?? new SessionSummary(_sessionStart, _classifier.SourceProcess, null, null, null, end, detail)) with { End = end, Detail = detail };
         _pendingSummary = null;
         _sessionId++;
         _dwell.Reset();
