@@ -12,11 +12,12 @@ public sealed partial class AboutPage : Page
     public AboutPage()
     {
         InitializeComponent();
-        VersionText.Text = $"Version {_host.Version} · {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}";
+        Header.StatusText = Strings.Format("About_VersionFormat", _host.Version, System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
         OsRow.Description = Diagnostics.OsDescription;
-        BackendRow.Description = $"{_host.Desktops.BackendDescription} · {_host.Desktops.Desktops.Count} desktops";
+        BackendRow.Description = Strings.Format("About_BackendFormat", _host.Desktops.BackendDescription, _host.Desktops.Desktops.Count);
         SettingsRow.Description = _host.SettingsPath;
         LogsRow.Description = _host.LogDirectory;
+        CopyButton.Content = Strings.Get("About_Copy");
     }
 
     private async void OnCopyDiagnostics(object sender, RoutedEventArgs e)
@@ -24,9 +25,9 @@ public sealed partial class AboutPage : Page
         var package = new DataPackage();
         package.SetText(Diagnostics.Build(_host));
         Clipboard.SetContent(package);
-        CopyButton.Content = "Copied";
+        CopyButton.Content = Strings.Get("Common_Copied");
         await Task.Delay(2000);
-        CopyButton.Content = "Copy";
+        CopyButton.Content = Strings.Get("About_Copy");
     }
 
     private void OnOpenDocs(object sender, RoutedEventArgs e) => AppHost.OpenFolder(Path.Combine(AppContext.BaseDirectory, "Docs"));

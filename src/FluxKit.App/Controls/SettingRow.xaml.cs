@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace FluxKit.App.Controls;
 
-/// <summary>Settings card used on every FluxKit page. The trailing control is the element's content.</summary>
+/// <summary>A setting inside a <see cref="SettingsGroup"/>. The trailing control is the element's content.</summary>
 [ContentProperty(Name = nameof(Action))]
 public sealed partial class SettingRow : UserControl
 {
@@ -52,7 +52,14 @@ public sealed partial class SettingRow : UserControl
         set => SetValue(ActionProperty, value);
     }
 
-    // The trailing control is named after the row so screen readers announce e.g. "Hover delay, slider".
+    /// <summary>The hairline above the row. <see cref="SettingsGroup"/> hides it on the first row.</summary>
+    public bool ShowDivider
+    {
+        get => Divider.Visibility == Visibility.Visible;
+        set => Divider.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    // The trailing control is named after the row so screen readers announce e.g. "Hold time, slider".
     private static void OnHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var row = (SettingRow)d;

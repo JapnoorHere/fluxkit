@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="FluxKit.App.Controls.NavRail"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Tab moves into the rail once; arrow keys move between items. -->
+    <Grid Width="{StaticResource RailWidth}" Padding="0,4,0,12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel
+            x:Name="TopItems"
+            Spacing="4"
+            TabFocusNavigation="Once"
+            XYFocusKeyboardNavigation="Enabled" />
+        <StackPanel
+            x:Name="BottomItems"
+            Grid.Row="1"
+            Spacing="4"
+            TabFocusNavigation="Once"
+            XYFocusKeyboardNavigation="Enabled" />
+    </Grid>
+</UserControl>

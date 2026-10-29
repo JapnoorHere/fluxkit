@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="FluxKit.App.Controls.SettingsGroup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- One card per section: the title sits inside the card, rows are separated by hairlines. -->
+    <Border Style="{StaticResource GroupCardStyle}">
+        <StackPanel>
+            <Grid x:Name="HeaderPanel" Padding="{StaticResource GroupHeaderPadding}" ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <FontIcon
+                    x:Name="GlyphElement"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                    Glyph="{x:Bind Glyph, Mode=OneWay}" />
+                <StackPanel Grid.Column="1" Spacing="2">
+                    <TextBlock Style="{StaticResource GroupHeaderStyle}" Text="{x:Bind Header, Mode=OneWay}" />
+                    <TextBlock x:Name="CaptionElement" Style="{StaticResource TertiaryCaptionStyle}" Text="{x:Bind Caption, Mode=OneWay}" />
+                </StackPanel>
+            </Grid>
+            <ContentPresenter x:Name="BodyPresenter" Margin="0,0,0,4" Content="{x:Bind Body, Mode=OneWay}" />
+        </StackPanel>
+    </Border>
+</UserControl>

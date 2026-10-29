@@ -36,8 +36,8 @@ public sealed partial class GeneralPage : Page
     {
         (bool open, InfoBarSeverity severity, string message, bool fixable) = state switch
         {
-            StartupState.StalePath => (true, InfoBarSeverity.Warning, "FluxKit is set to start from an older copy of the app. Select Fix to use this copy.", true),
-            StartupState.DisabledByUser => (true, InfoBarSeverity.Informational, "FluxKit is turned off in Windows Settings › Apps › Startup. Turn it on there to start FluxKit with Windows.", false),
+            StartupState.StalePath => (true, InfoBarSeverity.Warning, Strings.Get("General_StartupStale"), true),
+            StartupState.DisabledByUser => (true, InfoBarSeverity.Informational, Strings.Get("General_StartupDisabledInWindows"), false),
             _ => (false, InfoBarSeverity.Informational, string.Empty, false),
         };
         StartupInfo.IsOpen = open;
@@ -137,10 +137,10 @@ public sealed partial class GeneralPage : Page
         {
             XamlRoot = XamlRoot,
             RequestedTheme = ActualTheme,
-            Title = "Reset all FluxKit settings?",
-            Content = "All tools go back to their default settings, and FluxKit will no longer start when you sign in. Your files aren't affected.",
-            PrimaryButtonText = "Reset",
-            CloseButtonText = "Cancel",
+            Title = Strings.Get("General_ResetDialogTitle"),
+            Content = Strings.Get("General_ResetDialogText"),
+            PrimaryButtonText = Strings.Get("General_ResetDialogPrimary"),
+            CloseButtonText = Strings.Get("Common_Cancel"),
             DefaultButton = ContentDialogButton.Close,
         };
         if (await dialog.ShowAsync() != ContentDialogResult.Primary)

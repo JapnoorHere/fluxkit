@@ -1,18 +1,26 @@
+using FluxKit.App.Controls;
 using FluxKit.Core.Tools;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace FluxKit.App.Shell;
 
-/// <summary>Overview: one card per registered tool plus anything that needs the user's attention.</summary>
+/// <summary>The launchpad: a tile per registered tool, plus anything that needs the user's attention.</summary>
 public sealed partial class HomePage : Page
 {
     private readonly AppHost _host = AppHost.Current;
+    private readonly Dictionary<string, ToolTile> _tiles = [];
 
     public HomePage()
     {
         InitializeComponent();
+        GreetingText.Text = Strings.Get(DateTime.Now.Hour switch
+        {
+            < 12 => "Home_GreetingMorning",
+            < 18 => "Home_GreetingAfternoon",
+            _ => "Home_GreetingEvening",
+        });
+        BuildTiles();
         Loaded += (_, _) =>
         {
             _host.StatusChanged += OnStatusChanged;
@@ -23,26 +31,80 @@ public sealed partial class HomePage : Page
 
     private void OnStatusChanged(object? sender, EventArgs e) => Refresh();
 
+    private void BuildTiles()
+    {
+        var tiles = new List<UIElement>();
+        foreach (IFluxTool tool in _host.Registry.All)
+        {
+            ToolDescriptor d = tool.Descriptor;
+            var tile = new ToolTile { Title = d.DisplayName, Description = d.Description };
+            tile.SetIcon(d.Glyph, d.IconAsset);
+            tile.SetAccessibleNames(Strings.Format("Home_OpenToolFormat", d.DisplayName), Strings.Format("Home_ToggleToolFormat", d.DisplayName));
+            tile.Opened += (_, _) => _host.ShowMainWindow(d.Id);
+            tile.EnabledChanged += async (_, on) =>
+            {
+                try
+                {
+                    await _host.SetToolEnabledAsync(d.Id, on);
+                }
+                catch (Exception ex)
+                {
+                    _host.Log.Error(ex, "Turning {Tool} on or off failed", d.Id);
+                }
+            };
+            _tiles[d.Id] = tile;
+            tiles.Add(tile);
+        }
+
+        var more = new ToolTile { Title = Strings.Get("Home_MoreTitle"), Description = Strings.Get("Home_MoreText") };
+        more.MakePlaceholder();
+        tiles.Add(more);
+        ToolTiles.ItemsSource = tiles;
+    }
+
     private void Refresh()
     {
-        ToolCards.ItemsSource = _host.Registry.All.Select(BuildCard).ToList();
+        int on = 0;
+        bool limited = false;
+        foreach (IFluxTool tool in _host.Registry.All)
+        {
+            ToolTile tile = _tiles[tool.Descriptor.Id];
+            tile.IsOn = _host.Registry.IsEnabled(tool.Descriptor.Id);
+            tile.StatusText = StatusText(tool.State);
+            tile.SetStatusTone(StatusTones.For(tool.State.Status));
+            on += tool.State.IsActive ? 1 : 0;
+            limited |= tool.State.Status is ToolStatus.Degraded or ToolStatus.Faulted;
+        }
+
+        ChipText.Text = Strings.Format("Home_ToolsOnFormat", on, _tiles.Count);
+        ChipDot.Fill = StatusTones.Brush(limited ? StatusTone.Caution : on > 0 ? StatusTone.Good : StatusTone.Neutral);
         UpdateAttention();
     }
+
+    private static string StatusText(ToolState state) => state.Status switch
+    {
+        ToolStatus.Running => Strings.Get("Status_Running"),
+        ToolStatus.Degraded => Strings.Format("Status_LimitedFormat", state.Detail ?? string.Empty),
+        ToolStatus.Faulted => Strings.Get("Status_Faulted"),
+        ToolStatus.Starting => Strings.Get("Status_Starting"),
+        _ => Strings.Get("Status_Off"),
+    };
 
     private void UpdateAttention()
     {
         if (_host.Settings.RecoveredFromCorruption)
         {
-            Show(InfoBarSeverity.Warning, "Your settings were reset", "The settings file was damaged, so FluxKit started with the default settings. A copy of the damaged file is kept in the FluxKit folder.");
+            Show(InfoBarSeverity.Warning, Strings.Get("Home_SettingsResetTitle"), Strings.Get("Home_SettingsResetText"));
             return;
         }
 
         IFluxTool? troubled = _host.Registry.All.FirstOrDefault(u => u.State.Status is ToolStatus.Degraded or ToolStatus.Faulted);
         if (troubled is not null)
         {
+            bool faulted = troubled.State.Status == ToolStatus.Faulted;
             Show(
-                troubled.State.Status == ToolStatus.Faulted ? InfoBarSeverity.Error : InfoBarSeverity.Warning,
-                troubled.State.Status == ToolStatus.Faulted ? $"{troubled.Descriptor.DisplayName} has stopped" : $"{troubled.Descriptor.DisplayName} is running in limited mode",
+                faulted ? InfoBarSeverity.Error : InfoBarSeverity.Warning,
+                Strings.Format(faulted ? "Home_ToolStoppedFormat" : "Home_ToolLimitedFormat", troubled.Descriptor.DisplayName),
                 troubled.State.Detail ?? string.Empty);
             return;
         }
@@ -56,56 +118,5 @@ public sealed partial class HomePage : Page
         AttentionBar.Title = title;
         AttentionBar.Message = message;
         AttentionBar.IsOpen = true;
-    }
-
-    private UIElement BuildCard(IFluxTool tool)
-    {
-        ToolDescriptor d = tool.Descriptor;
-        bool enabled = _host.Registry.IsEnabled(d.Id);
-        var toggle = new ToggleSwitch { IsOn = enabled, OnContent = "On", OffContent = "Off", MinWidth = 0 };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(toggle, $"Turn on {d.DisplayName}");
-        toggle.Toggled += async (_, _) => await _host.SetToolEnabledAsync(d.Id, toggle.IsOn);
-
-        var header = new Grid { ColumnSpacing = 12 };
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        header.ColumnDefinitions.Add(new ColumnDefinition());
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        header.Children.Add(d.IconAsset is { } asset
-            ? new Image { Width = 32, Height = 32, Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri($"ms-appx:///Assets/{asset}")) }
-            : new FontIcon { Glyph = d.Glyph, FontSize = 24, Foreground = (Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"] });
-        var title = new TextBlock { Text = d.DisplayName, Style = (Style)Application.Current.Resources["SubtitleTextBlockStyle"], FontSize = 18, VerticalAlignment = VerticalAlignment.Center };
-        Grid.SetColumn(title, 1);
-        Grid.SetColumn(toggle, 2);
-        header.Children.Add(title);
-        header.Children.Add(toggle);
-
-        string status = tool.State.Status switch
-        {
-            ToolStatus.Running => "On and ready",
-            ToolStatus.Degraded => "Limited mode. " + (tool.State.Detail ?? string.Empty),
-            ToolStatus.Faulted => "Stopped because of an error",
-            ToolStatus.Starting => "Starting…",
-            _ => "Off",
-        };
-
-        var open = new Button { Content = "Settings", HorizontalAlignment = HorizontalAlignment.Right };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(open, $"{d.DisplayName} settings");
-        open.Click += (_, _) => _host.ShowMainWindow(d.Id);
-
-        var body = new StackPanel { Spacing = 8 };
-        body.Children.Add(header);
-        body.Children.Add(new TextBlock { Text = d.Description, TextWrapping = TextWrapping.Wrap, Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"] });
-        body.Children.Add(new TextBlock { Text = "Status: " + status, Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"], TextWrapping = TextWrapping.Wrap });
-        body.Children.Add(open);
-
-        return new Border
-        {
-            Padding = new Thickness(20),
-            Background = (Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
-            BorderBrush = (Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
-            BorderThickness = new Thickness(1),
-            CornerRadius = (CornerRadius)Application.Current.Resources["OverlayCornerRadius"],
-            Child = body,
-        };
     }
 }

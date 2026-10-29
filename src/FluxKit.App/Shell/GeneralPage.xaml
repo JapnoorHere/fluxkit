@@ -5,61 +5,70 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:c="using:FluxKit.App.Controls">
     <ScrollViewer>
-        <StackPanel MaxWidth="{StaticResource PageMaxWidth}" Margin="{StaticResource PageMargin}" Spacing="{StaticResource SettingRowSpacing}">
-            <TextBlock Style="{StaticResource PageTitleStyle}" Text="General" />
+        <StackPanel MaxWidth="{StaticResource PageMaxWidth}" Margin="{StaticResource PageMargin}" Padding="0,16,0,0" Spacing="{StaticResource GroupSpacing}">
+            <c:PageHeader x:Uid="General_Header" Glyph="&#xE713;" />
 
-            <TextBlock Margin="1,0,0,8" Style="{StaticResource BodyStrongTextBlockStyle}" Text="Startup" />
-            <c:SettingRow
-                Description="FluxKit starts in the tray when you sign in to Windows. You can also change this in Windows Settings › Apps › Startup."
-                Glyph="&#xE7E8;"
-                Header="Start FluxKit when I sign in">
-                <ToggleSwitch x:Name="StartupToggle" Toggled="OnStartupToggled" />
-            </c:SettingRow>
-            <InfoBar x:Name="StartupInfo" IsClosable="False" IsOpen="False">
-                <InfoBar.ActionButton>
-                    <Button x:Name="StartupFixButton" Click="OnStartupFix" Content="Fix" />
-                </InfoBar.ActionButton>
-            </InfoBar>
-            <c:SettingRow
-                Description="Only when you open FluxKit yourself. When it starts with Windows, it stays in the tray."
-                Glyph="&#xE737;"
-                Header="Open this window when FluxKit starts">
-                <ToggleSwitch x:Name="OpenOnLaunchToggle" Toggled="OnOpenOnLaunchToggled" />
-            </c:SettingRow>
+            <c:SettingsGroup x:Uid="General_StartupGroup">
+                <StackPanel>
+                    <c:SettingRow x:Uid="General_Startup" Glyph="&#xE7E8;">
+                        <ToggleSwitch x:Name="StartupToggle" Toggled="OnStartupToggled" />
+                    </c:SettingRow>
+                    <InfoBar x:Name="StartupInfo" Margin="20,0,20,12" IsClosable="False" IsOpen="False">
+                        <InfoBar.ActionButton>
+                            <Button x:Name="StartupFixButton" x:Uid="General_StartupFix" Click="OnStartupFix" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+                    <c:SettingRow x:Uid="General_OpenOnLaunch" Glyph="&#xE737;">
+                        <ToggleSwitch x:Name="OpenOnLaunchToggle" Toggled="OnOpenOnLaunchToggled" />
+                    </c:SettingRow>
+                </StackPanel>
+            </c:SettingsGroup>
 
-            <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Appearance" />
-            <c:SettingRow Description="Used by this window and by every tool, unless a tool has its own theme setting." Glyph="&#xE790;" Header="App theme">
-                <ComboBox x:Name="ThemeCombo" SelectionChanged="OnThemeChanged" Style="{StaticResource SettingComboStyle}">
-                    <ComboBoxItem Content="Same as Windows" />
-                    <ComboBoxItem Content="Light" />
-                    <ComboBoxItem Content="Dark" />
-                </ComboBox>
-            </c:SettingRow>
+            <c:SettingsGroup x:Uid="General_AppearanceGroup">
+                <StackPanel>
+                    <c:SettingRow x:Uid="General_Theme" Glyph="&#xE790;">
+                        <ComboBox x:Name="ThemeCombo" SelectionChanged="OnThemeChanged" Style="{StaticResource SettingComboStyle}">
+                            <ComboBoxItem x:Uid="General_ThemeSystem" />
+                            <ComboBoxItem x:Uid="General_ThemeLight" />
+                            <ComboBoxItem x:Uid="General_ThemeDark" />
+                        </ComboBox>
+                    </c:SettingRow>
+                </StackPanel>
+            </c:SettingsGroup>
 
-            <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="System tray" />
-            <c:SettingRow Description="Always on, so you can reach FluxKit while it runs in the background." Glyph="&#xE9F5;" Header="Show the tray icon">
-                <ToggleSwitch IsEnabled="False" IsOn="True" />
-            </c:SettingRow>
+            <c:SettingsGroup x:Uid="General_TrayGroup">
+                <StackPanel>
+                    <c:SettingRow x:Uid="General_TrayIcon" Glyph="&#xE9F5;">
+                        <ToggleSwitch IsEnabled="False" IsOn="True" />
+                    </c:SettingRow>
+                </StackPanel>
+            </c:SettingsGroup>
 
-            <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Diagnostics" />
-            <c:SettingRow Description="Logs never include file names, file contents or window titles. Detailed logging switches back to Normal after 24 hours." Glyph="&#xE9D9;" Header="Logging level">
-                <ComboBox x:Name="LogCombo" SelectionChanged="OnLogLevelChanged" Style="{StaticResource SettingComboStyle}">
-                    <ComboBoxItem Content="Errors only" />
-                    <ComboBoxItem Content="Normal" />
-                    <ComboBoxItem Content="Detailed (for 24 hours)" />
-                </ComboBox>
-            </c:SettingRow>
-            <c:SettingRow x:Name="LogFolderRow" Glyph="&#xE8B7;" Header="Log files">
-                <Button Click="OnOpenLogs" Content="Open log folder" />
-            </c:SettingRow>
-            <c:SettingRow x:Name="SettingsFileRow" Glyph="&#xE8A5;" Header="Settings file">
-                <Button Click="OnOpenSettingsFile" Content="Show in File Explorer" />
-            </c:SettingRow>
+            <c:SettingsGroup x:Uid="General_DiagnosticsGroup">
+                <StackPanel>
+                    <c:SettingRow x:Uid="General_LogLevel" Glyph="&#xE9D9;">
+                        <ComboBox x:Name="LogCombo" SelectionChanged="OnLogLevelChanged" Style="{StaticResource SettingComboStyle}">
+                            <ComboBoxItem x:Uid="General_LogErrors" />
+                            <ComboBoxItem x:Uid="General_LogNormal" />
+                            <ComboBoxItem x:Uid="General_LogDetailed" />
+                        </ComboBox>
+                    </c:SettingRow>
+                    <c:SettingRow x:Name="LogFolderRow" x:Uid="General_LogFiles" Glyph="&#xE8B7;">
+                        <Button x:Uid="General_OpenLogFolder" Click="OnOpenLogs" />
+                    </c:SettingRow>
+                    <c:SettingRow x:Name="SettingsFileRow" x:Uid="General_SettingsFile" Glyph="&#xE8A5;">
+                        <Button x:Uid="General_ShowSettingsFile" Click="OnOpenSettingsFile" />
+                    </c:SettingRow>
+                </StackPanel>
+            </c:SettingsGroup>
 
-            <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Reset" />
-            <c:SettingRow Description="Puts every FluxKit setting back to its default, for all tools. Your files aren't affected." Glyph="&#xE72C;" Header="Reset all settings">
-                <Button Click="OnReset" Content="Reset…" />
-            </c:SettingRow>
+            <c:SettingsGroup x:Uid="General_ResetGroup">
+                <StackPanel>
+                    <c:SettingRow x:Uid="General_ResetAll" Glyph="&#xE72C;">
+                        <Button x:Uid="General_ResetButton" Click="OnReset" />
+                    </c:SettingRow>
+                </StackPanel>
+            </c:SettingsGroup>
         </StackPanel>
     </ScrollViewer>
 </Page>

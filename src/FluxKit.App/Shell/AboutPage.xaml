@@ -5,41 +5,37 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:c="using:FluxKit.App.Controls">
     <ScrollViewer>
-        <StackPanel MaxWidth="{StaticResource PageMaxWidth}" Margin="{StaticResource PageMargin}" Spacing="{StaticResource SettingRowSpacing}">
-            <TextBlock Style="{StaticResource PageTitleStyle}" Text="About" />
+        <StackPanel MaxWidth="{StaticResource PageMaxWidth}" Margin="{StaticResource PageMargin}" Padding="0,16,0,0" Spacing="{StaticResource GroupSpacing}">
+            <c:PageHeader x:Name="Header" x:Uid="About_Header" IconAsset="FluxKit.png" />
 
-            <Grid Margin="0,0,0,16" ColumnSpacing="20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Image Width="64" Height="64" Source="ms-appx:///Assets/FluxKit.png" />
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="FluxKit" />
-                    <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="Small tools that make Windows easier to use." />
-                    <TextBlock x:Name="VersionText" Style="{StaticResource SecondaryTextStyle}" />
-                    <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="© 2026 FluxKit contributors · MIT License" />
+            <c:SettingsGroup x:Uid="About_SystemGroup">
+                <StackPanel>
+                    <c:SettingRow x:Name="OsRow" x:Uid="About_Windows" Glyph="&#xE7F8;" />
+                    <c:SettingRow x:Name="BackendRow" x:Uid="About_Backend" Glyph="&#xE7C4;" />
+                    <c:SettingRow x:Name="SettingsRow" x:Uid="About_SettingsLocation" Glyph="&#xE8A5;" />
+                    <c:SettingRow x:Name="LogsRow" x:Uid="About_LogLocation" Glyph="&#xE9D9;" />
                 </StackPanel>
-            </Grid>
+            </c:SettingsGroup>
 
-            <c:SettingRow x:Name="OsRow" Glyph="&#xE7F8;" Header="Windows" />
-            <c:SettingRow x:Name="BackendRow" Glyph="&#xE7C4;" Header="Virtual desktop support" />
-            <c:SettingRow x:Name="SettingsRow" Glyph="&#xE8A5;" Header="Settings location" />
-            <c:SettingRow x:Name="LogsRow" Glyph="&#xE9D9;" Header="Log location" />
+            <c:SettingsGroup x:Uid="About_SupportGroup">
+                <StackPanel>
+                    <c:SettingRow x:Uid="About_Diagnostics" Glyph="&#xE8C8;">
+                        <Button x:Name="CopyButton" Click="OnCopyDiagnostics" />
+                    </c:SettingRow>
+                    <c:SettingRow x:Uid="About_Docs" Glyph="&#xE736;">
+                        <Button x:Uid="About_OpenDocs" Click="OnOpenDocs" />
+                    </c:SettingRow>
+                    <c:SettingRow x:Uid="About_Notices" Glyph="&#xE8F1;">
+                        <Button x:Uid="About_OpenNotices" Click="OnOpenNotices" />
+                    </c:SettingRow>
+                </StackPanel>
+            </c:SettingsGroup>
 
-            <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Support" />
-            <c:SettingRow Description="Copies the version and the status of each tool, with no file names, so you can paste it into a bug report." Glyph="&#xE8C8;" Header="Diagnostic info">
-                <Button x:Name="CopyButton" Click="OnCopyDiagnostics" Content="Copy" />
-            </c:SettingRow>
-            <c:SettingRow Description="How to set up FluxKit, change its settings, fix problems, and what it can't do yet." Glyph="&#xE736;" Header="Documentation">
-                <Button Click="OnOpenDocs" Content="Open" />
-            </c:SettingRow>
-            <c:SettingRow Description="Open-source projects that FluxKit uses or learned from." Glyph="&#xE8F1;" Header="Third-party notices">
-                <Button Click="OnOpenNotices" Content="Open" />
-            </c:SettingRow>
+            <c:SettingsGroup x:Uid="About_PrivacyGroup" Glyph="&#xE72E;">
+                <TextBlock x:Uid="About_PrivacyText" Margin="20,0,20,16" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+            </c:SettingsGroup>
 
-            <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Privacy" />
-            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="FluxKit works entirely on this PC. It collects no usage data and never connects to the internet. Its tools watch only the mouse and keyboard input they need, such as when a drag starts. It never reads, copies, moves or uploads your files. Settings and logs stay on this PC, and logs leave out file names and window titles." TextWrapping="Wrap" />
+            <TextBlock x:Uid="About_Copyright" HorizontalAlignment="Center" Style="{StaticResource TertiaryCaptionStyle}" />
         </StackPanel>
     </ScrollViewer>
 </Page>

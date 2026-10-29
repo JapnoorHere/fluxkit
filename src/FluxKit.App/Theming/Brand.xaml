@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FluxKit brand colours: the logo's indigo-to-cyan gradient (scripts/generate-icons.ps1).
+    Used only for highlights: the selected rail item, tool icons, page header bands and progress.
+    Controls (toggles, sliders, combo boxes) keep the Windows accent colour.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <Color x:Key="BrandStartColor">#FF635BFF</Color>
+            <Color x:Key="BrandEndColor">#FF00B2D8</Color>
+            <LinearGradientBrush x:Key="BrandGradientBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Offset="0" Color="{StaticResource BrandStartColor}" />
+                <GradientStop Offset="1" Color="{StaticResource BrandEndColor}" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="BrandSubtleGradientBrush" Opacity="0.12" StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Offset="0" Color="{StaticResource BrandStartColor}" />
+                <GradientStop Offset="1" Color="{StaticResource BrandEndColor}" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="BrandStrokeBrush" Opacity="0.55" Color="{StaticResource BrandStartColor}" />
+            <SolidColorBrush x:Key="OnBrandForegroundBrush" Color="White" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <Color x:Key="BrandStartColor">#FF8A84FF</Color>
+            <Color x:Key="BrandEndColor">#FF3CCDEB</Color>
+            <LinearGradientBrush x:Key="BrandGradientBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Offset="0" Color="{StaticResource BrandStartColor}" />
+                <GradientStop Offset="1" Color="{StaticResource BrandEndColor}" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="BrandSubtleGradientBrush" Opacity="0.16" StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Offset="0" Color="{StaticResource BrandStartColor}" />
+                <GradientStop Offset="1" Color="{StaticResource BrandEndColor}" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="BrandStrokeBrush" Opacity="0.6" Color="{StaticResource BrandStartColor}" />
+            <SolidColorBrush x:Key="OnBrandForegroundBrush" Color="White" />
+        </ResourceDictionary>
+        <!-- High contrast: no gradients, only the system highlight colours. -->
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="BrandGradientBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="BrandSubtleGradientBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="BrandStrokeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="OnBrandForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

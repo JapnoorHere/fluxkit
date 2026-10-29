@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MainWindow_AppName.Text" xml:space="preserve">
+    <value>FluxKit</value>
+  </data>
+  <data name="MainWindow_PreviewBadge.Text" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="Rail_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Rail_General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Rail_About" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="Status_Running" xml:space="preserve">
+    <value>On and ready</value>
+  </data>
+  <data name="Status_LimitedFormat" xml:space="preserve">
+    <value>Limited mode. {0}</value>
+  </data>
+  <data name="Status_Faulted" xml:space="preserve">
+    <value>Stopped because of an error</value>
+  </data>
+  <data name="Status_Starting" xml:space="preserve">
+    <value>Starting…</value>
+  </data>
+  <data name="Status_Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="FirstRun_Title" xml:space="preserve">
+    <value>Welcome to FluxKit</value>
+  </data>
+  <data name="FirstRun_Intro" xml:space="preserve">
+    <value>FluxKit is a set of small tools that make Windows easier to use. Each tool can be turned on or off on its own.</value>
+  </data>
+  <data name="FirstRun_TryIt" xml:space="preserve">
+    <value>Your first tool, Drag-to-Switch, is already on. Try it:</value>
+  </data>
+  <data name="FirstRun_Step1" xml:space="preserve">
+    <value>1.  Start dragging a file in File Explorer.</value>
+  </data>
+  <data name="FirstRun_Step2" xml:space="preserve">
+    <value>2.  Hold it over a desktop in the bar that appears.</value>
+  </data>
+  <data name="FirstRun_Step3" xml:space="preserve">
+    <value>3.  Drop it into any app on that desktop.</value>
+  </data>
+  <data name="FirstRun_Privacy" xml:space="preserve">
+    <value>FluxKit runs quietly in the system tray. It never copies, moves or uploads your files.</value>
+  </data>
+  <data name="FirstRun_Startup" xml:space="preserve">
+    <value>Start FluxKit when I sign in</value>
+  </data>
+  <data name="FirstRun_Primary" xml:space="preserve">
+    <value>Get started</value>
+  </data>
+  <data name="FirstRun_Secondary" xml:space="preserve">
+    <value>Drag-to-Switch settings</value>
+  </data>
+  <data name="Home_GreetingMorning" xml:space="preserve">
+    <value>Good morning</value>
+  </data>
+  <data name="Home_GreetingAfternoon" xml:space="preserve">
+    <value>Good afternoon</value>
+  </data>
+  <data name="Home_GreetingEvening" xml:space="preserve">
+    <value>Good evening</value>
+  </data>
+  <data name="Home_Subtitle.Text" xml:space="preserve">
+    <value>Your FluxKit tools. Turn on the ones you want, or open one to change how it works.</value>
+  </data>
+  <data name="Home_ToolsOnFormat" xml:space="preserve">
+    <value>{0} of {1} tools on</value>
+  </data>
+  <data name="Home_OpenToolFormat" xml:space="preserve">
+    <value>{0} settings</value>
+  </data>
+  <data name="Home_ToggleToolFormat" xml:space="preserve">
+    <value>Turn on {0}</value>
+  </data>
+  <data name="Home_MoreTitle" xml:space="preserve">
+    <value>More tools are on the way</value>
+  </data>
+  <data name="Home_MoreText" xml:space="preserve">
+    <value>Each new tool shows up here and in the menu on the left.</value>
+  </data>
+  <data name="Home_SettingsResetTitle" xml:space="preserve">
+    <value>Your settings were reset</value>
+  </data>
+  <data name="Home_SettingsResetText" xml:space="preserve">
+    <value>The settings file was damaged, so FluxKit started with the default settings. A copy of the damaged file is kept in the FluxKit folder.</value>
+  </data>
+  <data name="Home_ToolStoppedFormat" xml:space="preserve">
+    <value>{0} has stopped</value>
+  </data>
+  <data name="Home_ToolLimitedFormat" xml:space="preserve">
+    <value>{0} is running in limited mode</value>
+  </data>
+  <data name="Home_TipTrayTitle.Text" xml:space="preserve">
+    <value>Lives in the tray</value>
+  </data>
+  <data name="Home_TipTrayText.Text" xml:space="preserve">
+    <value>Right-click the tray icon to turn tools on or off, or to quit.</value>
+  </data>
+  <data name="Home_TipSavedTitle.Text" xml:space="preserve">
+    <value>Saved right away</value>
+  </data>
+  <data name="Home_TipSavedText.Text" xml:space="preserve">
+    <value>Changes take effect as soon as you make them.</value>
+  </data>
+  <data name="Home_TipPrivateTitle.Text" xml:space="preserve">
+    <value>Stays on this PC</value>
+  </data>
+  <data name="Home_TipPrivateText.Text" xml:space="preserve">
+    <value>No admin rights and no internet connection needed.</value>
+  </data>
+  <data name="General_Header.Title" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="General_Header.Description" xml:space="preserve">
+    <value>Settings for FluxKit itself and every tool in it.</value>
+  </data>
+  <data name="General_StartupGroup.Header" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="General_Startup.Header" xml:space="preserve">
+    <value>Start FluxKit when I sign in</value>
+  </data>
+  <data name="General_Startup.Description" xml:space="preserve">
+    <value>FluxKit starts in the tray when you sign in to Windows. You can also change this in Windows Settings › Apps › Startup.</value>
+  </data>
+  <data name="General_StartupFix.Content" xml:space="preserve">
+    <value>Fix</value>
+  </data>
+  <data name="General_StartupStale" xml:space="preserve">
+    <value>FluxKit is set to start from an older copy of the app. Select Fix to use this copy.</value>
+  </data>
+  <data name="General_StartupDisabledInWindows" xml:space="preserve">
+    <value>FluxKit is turned off in Windows Settings › Apps › Startup. Turn it on there to start FluxKit with Windows.</value>
+  </data>
+  <data name="General_OpenOnLaunch.Header" xml:space="preserve">
+    <value>Open this window when FluxKit starts</value>
+  </data>
+  <data name="General_OpenOnLaunch.Description" xml:space="preserve">
+    <value>Only when you open FluxKit yourself. When it starts with Windows, it stays in the tray.</value>
+  </data>
+  <data name="General_AppearanceGroup.Header" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="General_Theme.Header" xml:space="preserve">
+    <value>App theme</value>
+  </data>
+  <data name="General_Theme.Description" xml:space="preserve">
+    <value>Used by this window and by every tool, unless a tool has its own theme setting.</value>
+  </data>
+  <data name="General_ThemeSystem.Content" xml:space="preserve">
+    <value>Same as Windows</value>
+  </data>
+  <data name="General_ThemeLight.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="General_ThemeDark.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="General_TrayGroup.Header" xml:space="preserve">
+    <value>System tray</value>
+  </data>
+  <data name="General_TrayIcon.Header" xml:space="preserve">
+    <value>Show the tray icon</value>
+  </data>
+  <data name="General_TrayIcon.Description" xml:space="preserve">
+    <value>Always on, so you can reach FluxKit while it runs in the background.</value>
+  </data>
+  <data name="General_DiagnosticsGroup.Header" xml:space="preserve">
+    <value>Diagnostics</value>
+  </data>
+  <data name="General_LogLevel.Header" xml:space="preserve">
+    <value>Logging level</value>
+  </data>
+  <data name="General_LogLevel.Description" xml:space="preserve">
+    <value>Logs never include file names, file contents or window titles. Detailed logging switches back to Normal after 24 hours.</value>
+  </data>
+  <data name="General_LogErrors.Content" xml:space="preserve">
+    <value>Errors only</value>
+  </data>
+  <data name="General_LogNormal.Content" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="General_LogDetailed.Content" xml:space="preserve">
+    <value>Detailed (for 24 hours)</value>
+  </data>
+  <data name="General_LogFiles.Header" xml:space="preserve">
+    <value>Log files</value>
+  </data>
+  <data name="General_OpenLogFolder.Content" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="General_SettingsFile.Header" xml:space="preserve">
+    <value>Settings file</value>
+  </data>
+  <data name="General_ShowSettingsFile.Content" xml:space="preserve">
+    <value>Show in File Explorer</value>
+  </data>
+  <data name="General_ResetGroup.Header" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="General_ResetAll.Header" xml:space="preserve">
+    <value>Reset all settings</value>
+  </data>
+  <data name="General_ResetAll.Description" xml:space="preserve">
+    <value>Puts every FluxKit setting back to its default, for all tools. Your files aren&apos;t affected.</value>
+  </data>
+  <data name="General_ResetButton.Content" xml:space="preserve">
+    <value>Reset…</value>
+  </data>
+  <data name="General_ResetDialogTitle" xml:space="preserve">
+    <value>Reset all FluxKit settings?</value>
+  </data>
+  <data name="General_ResetDialogText" xml:space="preserve">
+    <value>All tools go back to their default settings, and FluxKit will no longer start when you sign in. Your files aren&apos;t affected.</value>
+  </data>
+  <data name="General_ResetDialogPrimary" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="About_Header.Title" xml:space="preserve">
+    <value>FluxKit</value>
+  </data>
+  <data name="About_Header.Description" xml:space="preserve">
+    <value>Small tools that make Windows easier to use.</value>
+  </data>
+  <data name="About_VersionFormat" xml:space="preserve">
+    <value>Version {0} · {1}</value>
+  </data>
+  <data name="About_Copyright.Text" xml:space="preserve">
+    <value>© 2026 FluxKit contributors · MIT License</value>
+  </data>
+  <data name="About_SystemGroup.Header" xml:space="preserve">
+    <value>This PC</value>
+  </data>
+  <data name="About_Windows.Header" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="About_Backend.Header" xml:space="preserve">
+    <value>Virtual desktop support</value>
+  </data>
+  <data name="About_BackendFormat" xml:space="preserve">
+    <value>{0} · {1} desktops</value>
+  </data>
+  <data name="About_SettingsLocation.Header" xml:space="preserve">
+    <value>Settings location</value>
+  </data>
+  <data name="About_LogLocation.Header" xml:space="preserve">
+    <value>Log location</value>
+  </data>
+  <data name="About_SupportGroup.Header" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="About_Diagnostics.Header" xml:space="preserve">
+    <value>Diagnostic info</value>
+  </data>
+  <data name="About_Diagnostics.Description" xml:space="preserve">
+    <value>Copies the version and the status of each tool, with no file names, so you can paste it into a bug report.</value>
+  </data>
+  <data name="About_Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="About_Docs.Header" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="About_Docs.Description" xml:space="preserve">
+    <value>How to set up FluxKit, change its settings, fix problems, and what it can&apos;t do yet.</value>
+  </data>
+  <data name="About_OpenDocs.Content" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="About_Notices.Header" xml:space="preserve">
+    <value>Third-party notices</value>
+  </data>
+  <data name="About_Notices.Description" xml:space="preserve">
+    <value>Open-source projects that FluxKit uses or learned from.</value>
+  </data>
+  <data name="About_OpenNotices.Content" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="About_PrivacyGroup.Header" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="About_PrivacyText.Text" xml:space="preserve">
+    <value>FluxKit works entirely on this PC. It collects no usage data and never connects to the internet. Its tools watch only the mouse and keyboard input they need, such as when a drag starts. It never reads, copies, moves or uploads your files. Settings and logs stay on this PC, and logs leave out file names and window titles.</value>
+  </data>
+  <data name="DragToSwitch_Header.Title" xml:space="preserve">
+    <value>Drag-to-Switch</value>
+  </data>
+  <data name="DragToSwitch_Header.Description" xml:space="preserve">
+    <value>Drag a file or a window to another desktop without letting go.</value>
+  </data>
+  <data name="DragToSwitch_Enabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Turn on Drag-to-Switch</value>
+  </data>
+  <data name="DragToSwitch_StatusReadyFormat" xml:space="preserve">
+    <value>Ready · {0} desktops found</value>
+  </data>
+  <data name="DragToSwitch_StatusLimited" xml:space="preserve">
+    <value>Limited mode</value>
+  </data>
+  <data name="DragToSwitch_StatusStopped" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="DragToSwitch_StoppedDetail" xml:space="preserve">
+    <value>Open the log folder for details.</value>
+  </data>
+  <data name="DragToSwitch_StatusStarting" xml:space="preserve">
+    <value>Starting</value>
+  </data>
+  <data name="DragToSwitch_StatusOff" xml:space="preserve">
+    <value>Off. Turn on Drag-to-Switch to use the desktop picker.</value>
+  </data>
+  <data name="DragToSwitch_OneDesktopTitle" xml:space="preserve">
+    <value>You have only one desktop</value>
+  </data>
+  <data name="DragToSwitch_OneDesktopText" xml:space="preserve">
+    <value>Add another with Ctrl+Win+D. The picker appears once you have two or more.</value>
+  </data>
+  <data name="DragToSwitch_BehaviourGroup.Header" xml:space="preserve">
+    <value>Behaviour</value>
+  </data>
+  <data name="DragToSwitch_Trigger.Header" xml:space="preserve">
+    <value>Show the picker</value>
+  </data>
+  <data name="DragToSwitch_Trigger.Description" xml:space="preserve">
+    <value>Choose when the desktop picker appears.</value>
+  </data>
+  <data name="DragToSwitch_TriggerStart.Content" xml:space="preserve">
+    <value>As soon as I start dragging</value>
+  </data>
+  <data name="DragToSwitch_TriggerEdge.Content" xml:space="preserve">
+    <value>When I drag to the screen edge</value>
+  </data>
+  <data name="DragToSwitch_HoldTime.Header" xml:space="preserve">
+    <value>Hold time</value>
+  </data>
+  <data name="DragToSwitch_HoldTime.Description" xml:space="preserve">
+    <value>How long to hold over a desktop before FluxKit switches to it.</value>
+  </data>
+  <data name="DragToSwitch_DelayFormat" xml:space="preserve">
+    <value>{0} ms</value>
+  </data>
+  <data name="DragToSwitch_Sources.Header" xml:space="preserve">
+    <value>Where file drags can start</value>
+  </data>
+  <data name="DragToSwitch_SourcesExplorer.Content" xml:space="preserve">
+    <value>File Explorer and the desktop</value>
+  </data>
+  <data name="DragToSwitch_SourcesAnyApp.Content" xml:space="preserve">
+    <value>Any app</value>
+  </data>
+  <data name="DragToSwitch_SourcesAnyAppText" xml:space="preserve">
+    <value>Files dragged from any app show the picker. Selected text, links and web images don&apos;t.</value>
+  </data>
+  <data name="DragToSwitch_SourcesExplorerText" xml:space="preserve">
+    <value>The picker appears only for files dragged from File Explorer or the desktop.</value>
+  </data>
+  <data name="DragToSwitch_MoveWindows.Header" xml:space="preserve">
+    <value>Move windows between desktops</value>
+  </data>
+  <data name="DragToSwitch_MoveWindowsOn" xml:space="preserve">
+    <value>Drag a window by its title bar and hold it over a desktop. The window moves there with you.</value>
+  </data>
+  <data name="DragToSwitch_MoveWindowsLimited" xml:space="preserve">
+    <value>Not available in limited mode. Moving windows needs full virtual desktop support.</value>
+  </data>
+  <data name="DragToSwitch_NumberKeys.Header" xml:space="preserve">
+    <value>Use number keys</value>
+  </data>
+  <data name="DragToSwitch_NumberKeys.Description" xml:space="preserve">
+    <value>While dragging, press 1–9 to go straight to that desktop.</value>
+  </data>
+  <data name="DragToSwitch_SingleDesktop.Header" xml:space="preserve">
+    <value>Show the picker when there&apos;s only one desktop</value>
+  </data>
+  <data name="DragToSwitch_SingleDesktop.Description" xml:space="preserve">
+    <value>Shows a reminder that you can add a desktop with Ctrl+Win+D.</value>
+  </data>
+  <data name="DragToSwitch_AppearanceGroup.Header" xml:space="preserve">
+    <value>Look and feel</value>
+  </data>
+  <data name="DragToSwitch_Position.Header" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="DragToSwitch_PositionBottom.Content" xml:space="preserve">
+    <value>Bottom of the screen</value>
+  </data>
+  <data name="DragToSwitch_PositionTop.Content" xml:space="preserve">
+    <value>Top of the screen</value>
+  </data>
+  <data name="DragToSwitch_PositionPointer.Content" xml:space="preserve">
+    <value>Next to the pointer</value>
+  </data>
+  <data name="DragToSwitch_Size.Header" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="DragToSwitch_SizeCompact.Content" xml:space="preserve">
+    <value>Compact</value>
+  </data>
+  <data name="DragToSwitch_SizeStandard.Content" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="DragToSwitch_Previews.Header" xml:space="preserve">
+    <value>Desktop previews</value>
+  </data>
+  <data name="DragToSwitch_Previews.Description" xml:space="preserve">
+    <value>Show each desktop&apos;s wallpaper on its card, or only its name.</value>
+  </data>
+  <data name="DragToSwitch_PreviewsWallpaper.Content" xml:space="preserve">
+    <value>Wallpaper</value>
+  </data>
+  <data name="DragToSwitch_PreviewsName.Content" xml:space="preserve">
+    <value>Name only</value>
+  </data>
+  <data name="DragToSwitch_Theme.Header" xml:space="preserve">
+    <value>Picker theme</value>
+  </data>
+  <data name="DragToSwitch_ThemeApp.Content" xml:space="preserve">
+    <value>Same as FluxKit</value>
+  </data>
+  <data name="DragToSwitch_ThemeSystem.Content" xml:space="preserve">
+    <value>Same as Windows</value>
+  </data>
+  <data name="DragToSwitch_ThemeLight.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="DragToSwitch_ThemeDark.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="DragToSwitch_Animations.Header" xml:space="preserve">
+    <value>Animations</value>
+  </data>
+  <data name="DragToSwitch_AnimationsOn" xml:space="preserve">
+    <value>Animate the picker when it opens, switches and closes.</value>
+  </data>
+  <data name="DragToSwitch_AnimationsOffInWindows" xml:space="preserve">
+    <value>Animation effects are turned off in Windows, so the picker won&apos;t animate.</value>
+  </data>
+  <data name="DragToSwitch_AfterGroup.Header" xml:space="preserve">
+    <value>After switching</value>
+  </data>
+  <data name="DragToSwitch_Collapse.Header" xml:space="preserve">
+    <value>Shrink the picker after switching</value>
+  </data>
+  <data name="DragToSwitch_Collapse.Description" xml:space="preserve">
+    <value>Leaves a small bar on screen so you can switch again. Turn this off to hide the picker completely.</value>
+  </data>
+  <data name="DragToSwitch_Return.Header" xml:space="preserve">
+    <value>Go back when I cancel a drag</value>
+  </data>
+  <data name="DragToSwitch_Return.Description" xml:space="preserve">
+    <value>If you press Esc after switching, FluxKit takes you back to the desktop where you started.</value>
+  </data>
+  <data name="DragToSwitch_Troubleshooting.Header" xml:space="preserve">
+    <value>Troubleshooting</value>
+  </data>
+  <data name="DragToSwitch_BackendLabel.Text" xml:space="preserve">
+    <value>Virtual desktop support</value>
+  </data>
+  <data name="DragToSwitch_Redetect.Content" xml:space="preserve">
+    <value>Check again</value>
+  </data>
+  <data name="DragToSwitch_DesktopsLabel.Text" xml:space="preserve">
+    <value>Desktops found</value>
+  </data>
+  <data name="DragToSwitch_DesktopsNone" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="DragToSwitch_DesktopsFormat" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="DragToSwitch_DesktopCurrentFormat" xml:space="preserve">
+    <value>{0} (current)</value>
+  </data>
+  <data name="DragToSwitch_LastDragLabel.Text" xml:space="preserve">
+    <value>Last drag</value>
+  </data>
+  <data name="DragToSwitch_LastDragNone" xml:space="preserve">
+    <value>No drags yet.</value>
+  </data>
+  <data name="DragToSwitch_LastDragSwitchedFormat" xml:space="preserve">
+    <value>{0} · from {1} · switched from desktop {2} to desktop {3} in {4} ms · {5}</value>
+  </data>
+  <data name="DragToSwitch_LastDragStayedFormat" xml:space="preserve">
+    <value>{0} · from {1} · didn&apos;t switch · {2}</value>
+  </data>
+  <data name="DragToSwitch_EndDropped" xml:space="preserve">
+    <value>dropped</value>
+  </data>
+  <data name="DragToSwitch_EndCancelled" xml:space="preserve">
+    <value>cancelled</value>
+  </data>
+  <data name="DragToSwitch_EndStopped" xml:space="preserve">
+    <value>stopped by FluxKit</value>
+  </data>
+  <data name="DragToSwitch_OpenLogs.Content" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="DragToSwitch_CopyDiagnostics" xml:space="preserve">
+    <value>Copy diagnostic info</value>
+  </data>
+  <data name="Preview_Title.Text" xml:space="preserve">
+    <value>Live preview</value>
+  </data>
+  <data name="Preview_Hint.Text" xml:space="preserve">
+    <value>Hold over a desktop to go there</value>
+  </data>
+  <data name="Preview_CaptionFormat" xml:space="preserve">
+    <value>This is how the picker looks with your settings. The bar fills over your hold time of {0} ms.</value>
+  </data>
+  <data name="Preview_DesktopFormat" xml:space="preserve">
+    <value>Desktop {0}</value>
+  </data>
+  <data name="Preview_HowTitle.Text" xml:space="preserve">
+    <value>How it works</value>
+  </data>
+  <data name="Preview_HowText.Text" xml:space="preserve">
+    <value>Start dragging a file or a window, then hold it over a desktop in the picker. FluxKit takes you to that desktop so you can finish the drag there.</value>
+  </data>
+  <data name="Preview_SafeText.Text" xml:space="preserve">
+    <value>Your drag is never interrupted. FluxKit doesn&apos;t copy, move or open your files.</value>
+  </data>
+  <data name="Preview_TryButton.Content" xml:space="preserve">
+    <value>Show the real picker</value>
+  </data>
+  <data name="Picker_AppName.Text" xml:space="preserve">
+    <value>FluxKit</value>
+  </data>
+  <data name="Picker_Instruction.Text" xml:space="preserve">
+    <value>Hold over a desktop to go there</value>
+  </data>
+  <data name="Picker_Hint.Text" xml:space="preserve">
+    <value>1–9 · Esc to cancel</value>
+  </data>
+  <data name="Picker_PreviewInstruction" xml:space="preserve">
+    <value>Preview: this is how the picker looks while you drag</value>
+  </data>
+  <data name="Picker_HoldFile" xml:space="preserve">
+    <value>Hold over a desktop to go there</value>
+  </data>
+  <data name="Picker_HoldWindow" xml:space="preserve">
+    <value>Hold over a desktop to move this window there</value>
+  </data>
+  <data name="Picker_SwitchingFormat" xml:space="preserve">
+    <value>Switching to {0}…</value>
+  </data>
+  <data name="Picker_NowOnWindowFormat" xml:space="preserve">
+    <value>Now on {0}. Let go to place the window.</value>
+  </data>
+  <data name="Picker_NowOnFileFormat" xml:space="preserve">
+    <value>Now on {0}. Drop the file into any app.</value>
+  </data>
+  <data name="Picker_SwitchedFormat" xml:space="preserve">
+    <value>Switched to {0}</value>
+  </data>
+  <data name="Picker_SwitchFailed" xml:space="preserve">
+    <value>Couldn&apos;t switch. Try Ctrl+Win+Left or Right arrow.</value>
+  </data>
+  <data name="Picker_DropOutside" xml:space="preserve">
+    <value>To drop, let go outside the picker</value>
+  </data>
+  <data name="Picker_OnWindowFormat" xml:space="preserve">
+    <value>On {0}. Let go to place the window</value>
+  </data>
+  <data name="Picker_OnFileFormat" xml:space="preserve">
+    <value>On {0}. Drop into any app</value>
+  </data>
+  <data name="Picker_DropCaption" xml:space="preserve">
+    <value>Drop outside the picker</value>
+  </data>
+  <data name="Card_Current" xml:space="preserve">
+    <value>● You&apos;re here</value>
+  </data>
+  <data name="Card_HoldOrPressFormat" xml:space="preserve">
+    <value>Hold, or press {0}</value>
+  </data>
+  <data name="Card_Hold" xml:space="preserve">
+    <value>Hold to go here</value>
+  </data>
+  <data name="Card_CurrentNameFormat" xml:space="preserve">
+    <value>Desktop {0}, {1}, current desktop</value>
+  </data>
+  <data name="Card_NameFormat" xml:space="preserve">
+    <value>Desktop {0}, {1}. Hold to go here</value>
+  </data>
+  <data name="Card_Switching" xml:space="preserve">
+    <value>Switching…</value>
+  </data>
+  <data name="Card_Switched" xml:space="preserve">
+    <value>✓ Switched</value>
+  </data>
+  <data name="Card_Failed" xml:space="preserve">
+    <value>Couldn&apos;t switch</value>
+  </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Open FluxKit</value>
+  </data>
+  <data name="Tray_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Tray_OpenLogs" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="Tray_Quit" xml:space="preserve">
+    <value>Quit FluxKit</value>
+  </data>
+  <data name="Tray_StatusOn" xml:space="preserve">
+    <value>on</value>
+  </data>
+  <data name="Tray_StatusLimited" xml:space="preserve">
+    <value>limited mode</value>
+  </data>
+  <data name="Tray_StatusStopped" xml:space="preserve">
+    <value>stopped</value>
+  </data>
+  <data name="Tray_StatusStarting" xml:space="preserve">
+    <value>starting</value>
+  </data>
+  <data name="Tray_StatusOff" xml:space="preserve">
+    <value>off</value>
+  </data>
+</root>

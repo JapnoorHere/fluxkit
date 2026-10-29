@@ -1,4 +1,6 @@
+using FluxKit.App.Controls;
 using FluxKit.App.Modules.DragToSwitch;
+using FluxKit.App.Theming;
 using FluxKit.Core.Settings;
 using FluxKit.Core.Tools;
 using FluxKit.Platform.Windows;
@@ -13,7 +15,7 @@ using Windows.Graphics;
 
 namespace FluxKit.App.Shell;
 
-/// <summary>The settings window: Mica, custom title bar, registry-driven navigation.</summary>
+/// <summary>The settings window: Mica, custom title bar, a navigation rail built from the tool registry.</summary>
 public sealed partial class MainWindow : Window
 {
     /// <summary>Settings page for each tool id. Adding a tool adds one entry here.</summary>
@@ -23,7 +25,6 @@ public sealed partial class MainWindow : Window
     };
 
     private readonly AppHost _host = AppHost.Current;
-    private readonly Dictionary<string, NavigationViewItem> _toolItems = [];
     private bool _firstActivation = true;
 
     public MainWindow()
@@ -37,7 +38,7 @@ public sealed partial class MainWindow : Window
         PreviewBadge.Visibility = _host.Version.Contains('-', StringComparison.Ordinal) ? Visibility.Visible : Visibility.Collapsed;
 
         RestorePlacement();
-        BuildNavigation();
+        BuildRail();
         ApplyTheme();
 
         _host.ThemeChanged += OnThemeChanged;
@@ -45,17 +46,10 @@ public sealed partial class MainWindow : Window
         Activated += OnActivated;
         Closed += OnClosed;
         RootGrid.ActualThemeChanged += (_, _) => UpdateCaptionButtons();
-        Nav.SelectedItem = Nav.MenuItems[0];
+        Rail.Select("home");
     }
 
-    public void NavigateTo(string tag)
-    {
-        object? item = Nav.MenuItems.Concat(Nav.FooterMenuItems).OfType<NavigationViewItem>().FirstOrDefault(i => (string)i.Tag == tag);
-        if (item is not null)
-        {
-            Nav.SelectedItem = item;
-        }
-    }
+    public void NavigateTo(string tag) => Rail.Select(tag);
 
     public void BringToFront()
     {
@@ -68,37 +62,28 @@ public sealed partial class MainWindow : Window
         WindowHelpers.BringToForeground(hwnd);
     }
 
-    private void BuildNavigation()
-    {
-        Nav.MenuItems.Add(new NavigationViewItem { Content = "Home", Tag = "home", Icon = new FontIcon { Glyph = "" } });
-        Nav.MenuItems.Add(new NavigationViewItemHeader { Content = "Tools" });
-        foreach (IFluxTool tool in _host.Registry.All)
-        {
-            var item = new NavigationViewItem
-            {
-                Content = tool.Descriptor.DisplayName,
-                Tag = tool.Descriptor.Id,
-                Icon = ToolIcon(tool.Descriptor),
-            };
-            _toolItems[tool.Descriptor.Id] = item;
-            Nav.MenuItems.Add(item);
-        }
-
-        OnStatusChanged(this, EventArgs.Empty);
-    }
-
     /// <summary>The tool's full-colour icon when it has one, otherwise its Fluent glyph.</summary>
     public static IconElement ToolIcon(ToolDescriptor descriptor) => descriptor.IconAsset is { } asset
         ? new BitmapIcon { UriSource = new Uri($"ms-appx:///Assets/{asset}"), ShowAsMonochrome = false }
         : new FontIcon { Glyph = descriptor.Glyph };
 
-    private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    private void BuildRail()
     {
-        if (args.SelectedItem is not NavigationViewItem { Tag: string tag })
+        Rail.AddItem("home", Strings.Get("Rail_Home"), Strings.Get("Rail_Home"), new FontIcon { Glyph = "" });
+        foreach (IFluxTool tool in _host.Registry.All)
         {
-            return;
+            ToolDescriptor d = tool.Descriptor;
+            Rail.AddItem(d.Id, d.DisplayName, d.DisplayName, ToolIcon(d));
         }
 
+        Rail.AddItem("general", Strings.Get("Rail_General"), Strings.Get("Rail_General"), new FontIcon { Glyph = "" }, atBottom: true);
+        Rail.AddItem("about", Strings.Get("Rail_About"), Strings.Get("Rail_About"), new FontIcon { Glyph = "" }, atBottom: true);
+        Rail.ItemInvoked += (_, tag) => ShowPage(tag);
+        OnStatusChanged(this, EventArgs.Empty);
+    }
+
+    private void ShowPage(string tag)
+    {
         Type page = tag switch
         {
             "home" => typeof(HomePage),
@@ -114,18 +99,9 @@ public sealed partial class MainWindow : Window
 
     private void OnStatusChanged(object? sender, EventArgs e)
     {
-        foreach ((string id, NavigationViewItem item) in _toolItems)
+        foreach (IFluxTool tool in _host.Registry.All)
         {
-            ToolState state = _host.Registry.Get(id)!.State;
-            string? style = state.Status switch
-            {
-                ToolStatus.Running => "SuccessDotInfoBadgeStyle",
-                ToolStatus.Degraded => "CautionDotInfoBadgeStyle",
-                ToolStatus.Faulted => "CriticalDotInfoBadgeStyle",
-                _ => null,
-            };
-            item.InfoBadge = style is null ? null : new InfoBadge { Style = (Style)Application.Current.Resources[style] };
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetItemStatus(item, state.Status.ToString());
+            Rail.SetStatus(tool.Descriptor.Id, StatusTones.For(tool.State.Status), tool.State.Status.ToString());
         }
     }
 
@@ -186,35 +162,36 @@ public sealed partial class MainWindow : Window
         }
 
         _firstActivation = false;
-        if (!_host.Settings.Read<GlobalSettings>(GlobalSettings.Section).FirstRunCompleted)
+        try
         {
-            await Task.Delay(300); // let the window finish its entrance before the dialog
-            await ShowFirstRunAsync();
+            if (!_host.Settings.Read<GlobalSettings>(GlobalSettings.Section).FirstRunCompleted)
+            {
+                await Task.Delay(300); // let the window finish its entrance before the dialog
+                await ShowFirstRunAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _host.Log.Error(ex, "First-run dialog failed");
         }
     }
 
     private async Task ShowFirstRunAsync()
     {
-        var startup = new CheckBox { Content = "Start FluxKit when I sign in", Margin = new Thickness(0, 12, 0, 0) };
+        var startup = new CheckBox { Content = Strings.Get("FirstRun_Startup"), Margin = new Thickness(0, 12, 0, 0) };
         var body = new StackPanel { Spacing = 8, MaxWidth = 420 };
-        body.Children.Add(new TextBlock { Text = "FluxKit is a set of small tools that make Windows easier to use. Each tool can be turned on or off on its own.", TextWrapping = TextWrapping.Wrap });
-        body.Children.Add(new TextBlock { Text = "Your first tool, Drag-to-Switch, is already on. Try it:", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) });
-        string[] steps =
-        [
-            "1.  Start dragging a file in File Explorer.",
-            "2.  Hold it over a desktop in the bar that appears.",
-            "3.  Drop it into any app on that desktop.",
-        ];
-        foreach (string step in steps)
+        body.Children.Add(new TextBlock { Text = Strings.Get("FirstRun_Intro"), TextWrapping = TextWrapping.Wrap });
+        body.Children.Add(new TextBlock { Text = Strings.Get("FirstRun_TryIt"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) });
+        foreach (string key in new[] { "FirstRun_Step1", "FirstRun_Step2", "FirstRun_Step3" })
         {
-            body.Children.Add(new TextBlock { Text = step, TextWrapping = TextWrapping.Wrap, Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"] });
+            body.Children.Add(new TextBlock { Text = Strings.Get(key), TextWrapping = TextWrapping.Wrap, Foreground = ThemeResources.TextSecondary });
         }
 
         body.Children.Add(new TextBlock
         {
-            Text = "FluxKit runs quietly in the system tray. It never copies, moves or uploads your files.",
+            Text = Strings.Get("FirstRun_Privacy"),
             TextWrapping = TextWrapping.Wrap,
-            Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+            Style = ThemeResources.CaptionText,
             Margin = new Thickness(0, 8, 0, 0),
         });
         body.Children.Add(startup);
@@ -223,10 +200,10 @@ public sealed partial class MainWindow : Window
         {
             XamlRoot = Content.XamlRoot,
             RequestedTheme = RootGrid.ActualTheme,
-            Title = "Welcome to FluxKit",
+            Title = Strings.Get("FirstRun_Title"),
             Content = body,
-            PrimaryButtonText = "Get started",
-            SecondaryButtonText = "Drag-to-Switch settings",
+            PrimaryButtonText = Strings.Get("FirstRun_Primary"),
+            SecondaryButtonText = Strings.Get("FirstRun_Secondary"),
             DefaultButton = ContentDialogButton.Primary,
         };
         ContentDialogResult result = await dialog.ShowAsync();
