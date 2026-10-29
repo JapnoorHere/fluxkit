@@ -18,12 +18,18 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Background="Transparent">
-                <TextBlock
-                    x:Name="IdleClock"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="13"
-                    FontWeight="SemiBold" />
+                <Grid x:Name="IdleView">
+                    <TextBlock
+                        x:Name="IdleClock"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        FontWeight="SemiBold" />
+                    <local:PrivacyDots
+                        x:Name="IdleDots"
+                        Margin="0,0,14,0"
+                        HorizontalAlignment="Right" />
+                </Grid>
 
                 <Grid
                     x:Name="CompactView"
@@ -37,6 +43,7 @@
                     </Grid.ColumnDefinitions>
                     <Grid VerticalAlignment="Center">
                         <FontIcon x:Name="CompactGlyph" FontSize="16" />
+                        <local:ChargeRing x:Name="CompactRing" Visibility="Collapsed" />
                         <Border
                             x:Name="CompactArtFrame"
                             Width="22"
@@ -71,6 +78,7 @@
                             FontSize="13"
                             FontWeight="SemiBold" />
                         <local:PlayingBars x:Name="CompactBars" Visibility="Collapsed" />
+                        <local:PrivacyDots x:Name="CompactDots" />
                     </StackPanel>
                 </Grid>
 

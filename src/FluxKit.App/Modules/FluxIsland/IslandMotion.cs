@@ -43,6 +43,33 @@ internal static class IslandMotion
         visual.StartAnimation("Translation", slide);
     }
 
+    /// <summary>A small pop for an icon that just arrived: it grows from 60 % past full size and springs back.</summary>
+    public static void Pop(UIElement element, bool springs)
+    {
+        if (!springs)
+        {
+            return;
+        }
+
+        Visual visual = ElementCompositionPreview.GetElementVisual(element);
+        Compositor compositor = visual.Compositor;
+        visual.CenterPoint = new Vector3(element.ActualSize / 2, 0);
+        if (visual.CenterPoint == Vector3.Zero)
+        {
+            // Not measured yet; the icons on the island are 16 to 22 px.
+            visual.CenterPoint = new Vector3(8, 8, 0);
+        }
+
+        Vector3KeyFrameAnimation pop = compositor.CreateVector3KeyFrameAnimation();
+        pop.InsertKeyFrame(0, new Vector3(0.6f, 0.6f, 1));
+        pop.InsertKeyFrame(0.55f, new Vector3(1.18f, 1.18f, 1), compositor.CreateCubicBezierEasingFunction(new Vector2(0.2f, 0.9f), new Vector2(0.3f, 1)));
+        pop.InsertKeyFrame(1, Vector3.One, compositor.CreateCubicBezierEasingFunction(new Vector2(0.4f, 0), new Vector2(0.2f, 1)));
+        pop.Duration = TimeSpan.FromMilliseconds(420);
+        pop.DelayTime = Stagger;
+        pop.DelayBehavior = AnimationDelayBehavior.SetInitialValueBeforeDelay;
+        visual.StartAnimation("Scale", pop);
+    }
+
     /// <summary>Fades <paramref name="element"/> out, then collapses it unless <paramref name="stillHidden"/> says it came back.</summary>
     public static void Exit(UIElement element, Func<bool> stillHidden)
     {

@@ -25,6 +25,7 @@ public sealed partial class IslandPill : UserControl
     private const double CompactHeight = 36;
     private const double MinCompactWidth = 220;
     private const double MaxCompactWidth = 300;
+    private const double DotsRoom = 20;
     private const float HoverScale = 1.04f;
     private const float PressScale = 0.94f;
     private static readonly Size IdleSize = new(120, 32);
@@ -155,7 +156,19 @@ public sealed partial class IslandPill : UserControl
     {
         DateTimeOffset now = DateTimeOffset.Now;
         (UIElement view, string key, Size size) = _mode == PillMode.Panel ? BuildPanel(now) : BuildCompact(now);
-        ShowView(view, key);
+        if (ShowView(view, key) && view == CompactView && _scene.Primary is { IsAlert: true } alert)
+        {
+            // An alert arriving gets a little flourish: the charger ring sweeps, any other icon pops.
+            if (alert.Kind == ActivityKind.PluggedIn)
+            {
+                CompactRing.Sweep(alert.Value, Springs);
+            }
+            else
+            {
+                IslandMotion.Pop(CompactGlyph, Springs);
+            }
+        }
+
         MorphTo(size);
         ScheduleTimers(now);
     }
@@ -170,22 +183,28 @@ public sealed partial class IslandPill : UserControl
                 IdleClock.Text = IslandPresenter.FormatClock(now);
                 IdleClock.Visibility = _scene.Settings.ShowClockWhenIdle ? Visibility.Visible : Visibility.Collapsed;
                 AutomationProperties.SetName(Surface, IdleClock.Text);
-                return (IdleClock, "idle", _scene.Settings.ShowClockWhenIdle ? IdleSize : BareSize);
+                IdleDots.Update(_scene.Privacy, Springs);
+                Size idle = _scene.Settings.ShowClockWhenIdle ? IdleSize : BareSize;
+                return (IdleView, "idle", IdleDots.IsShowing ? new Size(idle.Width + DotsRoom, idle.Height) : idle);
             }
 
             // Peeking at an idle island shows the time and the date.
-            return FillCompact(new CompactContent(string.Empty, IslandPresenter.FormatClock(now), null, IslandPresenter.FormatDate(now), IslandPalette.TextPrimary), "peek-idle", twoLines: false, media: null);
+            return FillCompact(new CompactContent(string.Empty, IslandPresenter.FormatClock(now), null, IslandPresenter.FormatDate(now), IslandPalette.TextPrimary), "peek-idle", twoLines: false, activity: null);
         }
 
         CompactContent content = IslandPresenter.Describe(primary, now);
         bool twoLines = peek && content.Subtitle is not null;
-        return FillCompact(content, $"{primary.Kind}-{twoLines}", twoLines, primary.Kind == ActivityKind.Media ? primary.Media : null);
+        return FillCompact(content, $"{primary.Kind}-{twoLines}", twoLines, primary);
     }
 
-    private (UIElement View, string Key, Size Size) FillCompact(CompactContent content, string key, bool twoLines, MediaInfo? media)
+    private (UIElement View, string Key, Size Size) FillCompact(CompactContent content, string key, bool twoLines, IslandActivity? activity)
     {
-        // Music shows its art instead of the note glyph, and the bouncing bars on the right.
+        // Music shows its art instead of the note glyph, and the bouncing bars on the right; the charger shows its ring.
+        MediaInfo? media = activity?.Kind == ActivityKind.Media ? activity.Media : null;
+        bool charging = activity?.Kind == ActivityKind.PluggedIn;
         bool art = media is not null && _art.Image is not null;
+        CompactRing.Visibility = charging ? Visibility.Visible : Visibility.Collapsed;
+        CompactDots.Update(_scene.Privacy, Springs);
         CompactArtFrame.Visibility = art ? Visibility.Visible : Visibility.Collapsed;
         CompactBars.Visibility = media is null ? Visibility.Collapsed : Visibility.Visible;
         if (media is not null)
@@ -196,7 +215,7 @@ public sealed partial class IslandPill : UserControl
         }
 
         CompactGlyph.Glyph = content.Glyph;
-        CompactGlyph.Visibility = content.Glyph.Length > 0 && !art ? Visibility.Visible : Visibility.Collapsed;
+        CompactGlyph.Visibility = content.Glyph.Length > 0 && !art && !charging ? Visibility.Visible : Visibility.Collapsed;
         CompactGlyph.Foreground = new SolidColorBrush(content.Accent);
         CompactTitle.Text = content.Title;
         CompactSubtitle.Text = content.Subtitle ?? string.Empty;
@@ -243,11 +262,12 @@ public sealed partial class IslandPill : UserControl
         return (PanelView, "panel-clock", PanelSize);
     }
 
-    private void ShowView(UIElement view, string key)
+    /// <summary>Plays the entrance when the content changes; returns true when it did.</summary>
+    private bool ShowView(UIElement view, string key)
     {
         if (key == _shownKey)
         {
-            return;
+            return false;
         }
 
         UIElement? previous = _shownView;
@@ -278,6 +298,8 @@ public sealed partial class IslandPill : UserControl
         {
             IslandMotion.Enter(view, previous is null ? TimeSpan.Zero : IslandMotion.Stagger, Springs);
         }
+
+        return true;
     }
 
     private void MorphTo(Size size)

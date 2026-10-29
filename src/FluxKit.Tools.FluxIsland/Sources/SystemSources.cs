@@ -9,6 +9,10 @@ public static class SystemSources
     public static IslandSources Create(ILogger log) => new()
     {
         Media = () => new MediaSource(log),
+        Power = () => new PowerSource(),
+        Network = () => new NetworkSource(),
+        Privacy = () => new PrivacySource(log),
+        Clipboard = () => new ClipboardSource(log),
         FullScreen = () => new FullScreenSource(log),
     };
 }
