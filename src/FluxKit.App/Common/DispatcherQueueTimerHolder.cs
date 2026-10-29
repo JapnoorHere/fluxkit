@@ -1,4 +1,4 @@
-namespace FluxKit.App.Modules.DragToSwitch;
+namespace FluxKit.App.Common;
 
 /// <summary>One-shot UI-thread timers that can all be cancelled together.</summary>
 internal sealed class DispatcherQueueTimerHolder(Microsoft.UI.Dispatching.DispatcherQueue queue)

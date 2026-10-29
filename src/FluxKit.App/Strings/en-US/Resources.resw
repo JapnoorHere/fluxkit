@@ -645,4 +645,64 @@
   <data name="Tray_StatusOff" xml:space="preserve">
     <value>off</value>
   </data>
+  <data name="Island_PanelHint.Text" xml:space="preserve">
+    <value>Music, timers and files you drop here will show up in this panel.</value>
+  </data>
+  <data name="Island_Media_Untitled" xml:space="preserve">
+    <value>Something is playing</value>
+  </data>
+  <data name="Island_Shelf_CountFormat" xml:space="preserve">
+    <value>{0} on the shelf</value>
+  </data>
+  <data name="Island_TimerDone_Countdown" xml:space="preserve">
+    <value>Time&apos;s up</value>
+  </data>
+  <data name="Island_TimerDone_Focus" xml:space="preserve">
+    <value>Focus done. Take a break.</value>
+  </data>
+  <data name="Island_TimerDone_Break" xml:space="preserve">
+    <value>Break&apos;s over. Back to it.</value>
+  </data>
+  <data name="Island_Charging" xml:space="preserve">
+    <value>Charging</value>
+  </data>
+  <data name="Island_OnBattery" xml:space="preserve">
+    <value>On battery</value>
+  </data>
+  <data name="Island_BatteryLow" xml:space="preserve">
+    <value>Battery low</value>
+  </data>
+  <data name="Island_Offline" xml:space="preserve">
+    <value>You&apos;re offline</value>
+  </data>
+  <data name="Island_Online" xml:space="preserve">
+    <value>Back online</value>
+  </data>
+  <data name="Island_Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="Island_Copied_Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="Island_Copied_Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Island_Copied_Files" xml:space="preserve">
+    <value>Files</value>
+  </data>
+  <data name="Island_Volume" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="Island_Timer_Paused" xml:space="preserve">
+    <value>Paused</value>
+  </data>
+  <data name="Island_Timer_Focus" xml:space="preserve">
+    <value>Focus</value>
+  </data>
+  <data name="Island_Timer_Break" xml:space="preserve">
+    <value>Break</value>
+  </data>
+  <data name="Island_PercentFormat" xml:space="preserve">
+    <value>{0}%</value>
+  </data>
 </root>

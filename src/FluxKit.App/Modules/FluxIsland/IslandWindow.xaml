@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A fixed, transparent, non-activating overlay at the top centre of the primary monitor. Only the pill takes clicks. -->
+<Window
+    x:Class="FluxKit.App.Modules.FluxIsland.IslandWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FluxKit.App.Modules.FluxIsland"
+    Title="Flux Island">
+    <Grid x:Name="Root" Background="Transparent">
+        <local:IslandPill x:Name="Pill" HorizontalAlignment="Center" VerticalAlignment="Top" />
+    </Grid>
+</Window>

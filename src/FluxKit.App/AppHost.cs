@@ -1,5 +1,6 @@
 using System.Reflection;
 using FluxKit.App.Modules.DragToSwitch;
+using FluxKit.App.Modules.FluxIsland;
 using FluxKit.App.Shell;
 using FluxKit.App.Theming;
 using FluxKit.Core;
@@ -12,6 +13,8 @@ using FluxKit.Platform.Startup;
 using FluxKit.Platform.VirtualDesktop;
 using FluxKit.Tools.DragToSwitch;
 using FluxKit.Tools.DragToSwitch.Interaction;
+using FluxKit.Tools.FluxIsland;
+using FluxKit.Tools.FluxIsland.Sources;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
@@ -28,6 +31,7 @@ public sealed class AppHost
     private readonly DispatcherQueue _dispatcher;
     private MainWindow? _mainWindow;
     private SelectorWindow? _selector;
+    private IslandWindow? _island;
     private TrayIcon? _tray;
     private bool _exiting;
 
@@ -60,6 +64,8 @@ public sealed class AppHost
     public ToolRegistry Registry { get; private set; } = null!;
 
     public DragToSwitchTool DragToSwitch { get; private set; } = null!;
+
+    public FluxIslandTool FluxIsland { get; private set; } = null!;
 
     public StartupRegistration Startup { get; } = new("FluxKit", Environment.ProcessPath ?? "FluxKit.exe");
 
@@ -112,6 +118,19 @@ public sealed class AppHost
             }),
             Serilog.Log.Logger);
         Registry.Register(DragToSwitch);
+
+        FluxIsland = new FluxIslandTool(
+            Settings,
+            commands =>
+            {
+                _island = new IslandWindow(commands, Desktops, Serilog.Log.Logger);
+                return _island.View;
+            },
+            SystemSources.Create(Serilog.Log.Logger),
+            TimeProvider.System,
+            Serilog.Log.Logger);
+        FluxIsland.StateChanged += (_, _) => _dispatcher.TryEnqueue(OnStatusChanged);
+        Registry.Register(FluxIsland);
         await Registry.StartEnabledAsync(CancellationToken.None);
 
         CreateTray();
@@ -201,6 +220,7 @@ public sealed class AppHost
             Log.Information("Explorer restarted; re-initializing shell integration");
             await Desktops.ReinitializeAsync();
             _selector?.RePin();
+            _island?.RePin();
             OnStatusChanged();
         };
         _tray.MenuProvider = () => TrayMenu.Build(this);

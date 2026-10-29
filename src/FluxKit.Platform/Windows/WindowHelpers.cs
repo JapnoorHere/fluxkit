@@ -10,6 +10,8 @@ namespace FluxKit.Platform.Windows;
 public static partial class WindowHelpers
 {
     private const int GwlExStyle = -20;
+    private const int GwlStyle = -16;
+    private const long WsCaption = 0x00C00000;
     private const long WsExTopmost = 0x8;
     private const long WsExToolWindow = 0x80;
     private const long WsExAppWindow = 0x40000;
@@ -21,6 +23,7 @@ public static partial class WindowHelpers
     private const int SwHide = 0;
     private const int SwShowNoActivate = 4;
     private const uint MonitorDefaultToNearest = 2;
+    private const uint MonitorDefaultToPrimary = 1;
     private const uint GaRoot = 2;
     private const uint GuiInMoveSize = 0x2;
     private const uint GuiInMenuMode = 0x4;
@@ -157,6 +160,76 @@ public static partial class WindowHelpers
     public static bool IsFullScreenAppRunning() =>
         SHQueryUserNotificationState(out int state) == 0 && state is 3 or 4;
 
+    /// <summary>
+    /// True when <paramref name="hwnd"/> covers the whole primary monitor without a caption: a game, a video or a
+    /// browser in full screen. A maximized window keeps its caption, so it does not count even with an auto-hide taskbar.
+    /// </summary>
+    public static bool IsFullScreenOnPrimary(nint hwnd)
+    {
+        if (hwnd == 0 || ReadClassName(hwnd) is "Progman" or "WorkerW" or "Shell_TrayWnd" or "Shell_SecondaryTrayWnd")
+        {
+            return false;
+        }
+
+        nint monitor = MonitorFromWindow(hwnd, MonitorDefaultToNearest);
+        if (monitor != MonitorFromPoint(default, MonitorDefaultToPrimary) || !GetWindowRect(hwnd, out RECT window))
+        {
+            return false;
+        }
+
+        var info = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+        bool coversMonitor = GetMonitorInfo(monitor, ref info)
+            && window.Left <= info.rcMonitor.Left && window.Top <= info.rcMonitor.Top
+            && window.Right >= info.rcMonitor.Right && window.Bottom >= info.rcMonitor.Bottom;
+        return coversMonitor && (GetWindowLongPtr(hwnd, GwlStyle) & WsCaption) != WsCaption;
+    }
+
+    /// <summary>Full bounds (including the taskbar area) and DPI scale of the primary monitor.</summary>
+    public static (PixelRect Bounds, double Scale) GetPrimaryMonitor()
+    {
+        nint monitor = MonitorFromPoint(default, MonitorDefaultToPrimary);
+        var info = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+        _ = GetMonitorInfo(monitor, ref info);
+        double scale = GetDpiForMonitor(monitor, 0, out uint dpiX, out _) == 0 ? dpiX / 96.0 : 1.0;
+        return (new PixelRect(info.rcMonitor.Left, info.rcMonitor.Top, info.rcMonitor.Right, info.rcMonitor.Bottom), scale);
+    }
+
+    /// <summary>
+    /// Limits where the window is drawn and takes clicks to a rounded rectangle in window pixels; clicks outside it
+    /// reach the windows below. Pass null to remove the limit.
+    /// </summary>
+    public static void SetHitRegion(nint hwnd, PixelRect? rect, int cornerRadius)
+    {
+        nint region = rect is { } r ? CreateRoundRectRgn(r.Left, r.Top, r.Right + 1, r.Bottom + 1, cornerRadius * 2, cornerRadius * 2) : 0;
+
+        // On success the system owns the region, so it is only deleted when the call fails.
+        if (SetWindowRgn(hwnd, region, true) == 0 && region != 0)
+        {
+            _ = DeleteObject(region);
+        }
+    }
+
+    /// <summary>Removes the Windows 11 rounded corners and the 1 px border, for windows that draw their own shape.</summary>
+    public static void RemoveFrame(nint hwnd)
+    {
+        int corner = 1; // DWMWCP_DONOTROUND
+        _ = DwmSetWindowAttribute(hwnd, 33, ref corner, sizeof(int));
+        int border = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
+        _ = DwmSetWindowAttribute(hwnd, 34, ref border, sizeof(int));
+    }
+
+    /// <summary>The id of the process that owns <paramref name="hwnd"/>, or 0.</summary>
+    public static uint GetProcessId(nint hwnd)
+    {
+        if (hwnd == 0)
+        {
+            return 0;
+        }
+
+        _ = GetWindowThreadProcessId(hwnd, out uint pid);
+        return pid;
+    }
+
     public static int DragThresholdPixels() => Math.Max(GetSystemMetrics(68), GetSystemMetrics(69)); // SM_CXDRAG / SM_CYDRAG
 
     [StructLayout(LayoutKind.Sequential)]
@@ -245,6 +318,23 @@ public static partial class WindowHelpers
 
     [LibraryImport("shell32.dll")]
     private static partial int SHQueryUserNotificationState(out int state);
+
+    [LibraryImport("user32.dll")]
+    private static partial nint MonitorFromWindow(nint hwnd, uint flags);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetWindowRect(nint hwnd, out RECT rect);
+
+    [LibraryImport("user32.dll")]
+    private static partial int SetWindowRgn(nint hwnd, nint region, [MarshalAs(UnmanagedType.Bool)] bool redraw);
+
+    [LibraryImport("gdi32.dll")]
+    private static partial nint CreateRoundRectRgn(int left, int top, int right, int bottom, int widthEllipse, int heightEllipse);
+
+    [LibraryImport("gdi32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool DeleteObject(nint handle);
 
     [LibraryImport("dwmapi.dll")]
     private static partial int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int size);

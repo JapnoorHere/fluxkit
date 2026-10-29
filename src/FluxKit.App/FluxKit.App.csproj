@@ -34,5 +34,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FluxKit.Tools.DragToSwitch\FluxKit.Tools.DragToSwitch.csproj" />
+    <ProjectReference Include="..\FluxKit.Tools.FluxIsland\FluxKit.Tools.FluxIsland.csproj" />
   </ItemGroup>
 </Project>
