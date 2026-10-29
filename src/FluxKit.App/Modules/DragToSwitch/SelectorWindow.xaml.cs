@@ -95,7 +95,7 @@ public sealed partial class SelectorWindow : Window
         _log.Information("Selector preview shown at {Overlay} ({Count} cards, visible={Visible})", geometry.Overlay, cards.Count, AppWindow.IsVisible);
         int sample = cards.FindIndex(c => !c.IsCurrent);
         SetCardStateCore(sample, CardVisualState.Dwelling, TimeSpan.FromMilliseconds(settings.HoverDelayMs), null);
-        Instruction.Text = "Preview: this is how the picker looks while you drag";
+        Instruction.Text = Strings.Get("Picker_PreviewInstruction");
         int version = _showVersion;
         _timers.Once(TimeSpan.FromSeconds(4), () =>
         {
@@ -106,7 +106,7 @@ public sealed partial class SelectorWindow : Window
         });
     }
 
-    private string HoldText => _kind == DragKind.Window ? "Hold over a desktop to move this window there" : "Hold over a desktop to go there";
+    private string HoldText => Strings.Get(_kind == DragKind.Window ? "Picker_HoldWindow" : "Picker_HoldFile");
 
     private void ShowCore(IReadOnlyList<CardModel> cards, SelectorGeometry geometry, DragToSwitchSettings settings, DragKind kind)
     {
@@ -179,16 +179,16 @@ public sealed partial class SelectorWindow : Window
         switch (state)
         {
             case CardVisualState.Switching:
-                Instruction.Text = $"Switching to {card.Model.Name}…";
+                Instruction.Text = Strings.Format("Picker_SwitchingFormat", card.Model.Name);
                 break;
             case CardVisualState.Switched:
                 Instruction.Text = _kind == DragKind.Window
-                    ? $"Now on {card.Model.Name}. Let go to place the window."
-                    : $"Now on {card.Model.Name}. Drop the file into any app.";
-                Announce($"Switched to {card.Model.Name}");
+                    ? Strings.Format("Picker_NowOnWindowFormat", card.Model.Name)
+                    : Strings.Format("Picker_NowOnFileFormat", card.Model.Name);
+                Announce(Strings.Format("Picker_SwitchedFormat", card.Model.Name));
                 break;
             case CardVisualState.Error:
-                Instruction.Text = message ?? "Couldn't switch. Try Ctrl+Win+Left or Right arrow.";
+                Instruction.Text = message ?? Strings.Get("Picker_SwitchFailed");
                 Announce(Instruction.Text);
                 _timers.Once(TimeSpan.FromSeconds(2), () =>
                 {
@@ -210,7 +210,7 @@ public sealed partial class SelectorWindow : Window
         if (Expanded.Visibility == Visibility.Visible && !_cards.Any(c => c.State is CardVisualState.Switching or CardVisualState.Error))
         {
             // Releasing a window over the selector just places it there, so only files need the warning.
-            Instruction.Text = over && _kind == DragKind.File ? "To drop, let go outside the picker" : HoldText;
+            Instruction.Text = over && _kind == DragKind.File ? Strings.Get("Picker_DropOutside") : HoldText;
         }
     }
 
@@ -222,8 +222,8 @@ public sealed partial class SelectorWindow : Window
         }
 
         PillText.Text = _kind == DragKind.Window
-            ? $"On {destination.Name}. Let go to place the window"
-            : $"On {destination.Name}. Drop into any app";
+            ? Strings.Format("Picker_OnWindowFormat", destination.Name)
+            : Strings.Format("Picker_OnFileFormat", destination.Name);
         AutomationProperties.SetName(Pill, PillText.Text);
         Expanded.Visibility = Visibility.Collapsed;
         Pill.Visibility = Visibility.Visible;
@@ -385,7 +385,7 @@ public sealed partial class SelectorWindow : Window
     {
         // FluxKit never accepts the drop: a "move" reported here could make the source delete its file.
         e.AcceptedOperation = DataPackageOperation.None;
-        e.DragUIOverride.Caption = "Drop outside the picker";
+        e.DragUIOverride.Caption = Strings.Get("Picker_DropCaption");
         e.DragUIOverride.IsGlyphVisible = true;
     }
 }

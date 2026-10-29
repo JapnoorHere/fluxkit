@@ -28,13 +28,13 @@
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="FluxKit" />
+                    x:Uid="Picker_AppName" />
                 <TextBlock
                     x:Name="Instruction"
                     Grid.Column="2"
                     Margin="8,0,0,0"
                     VerticalAlignment="Center"
-                    Text="Hold over a desktop to go there"
+                    x:Uid="Picker_Instruction"
                     TextTrimming="CharacterEllipsis" />
                 <TextBlock
                     x:Name="Hint"
@@ -42,7 +42,7 @@
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                     Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="1–9 · Esc to cancel" />
+                    x:Uid="Picker_Hint" />
             </Grid>
             <StackPanel x:Name="CardsPanel" Grid.Row="1" VerticalAlignment="Bottom" Orientation="Horizontal" Spacing="12" />
         </Grid>

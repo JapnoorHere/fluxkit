@@ -34,7 +34,7 @@ internal sealed class DesktopCardView
         Model = new CardModel(Guid.Empty, 0, string.Empty, null, false);
 
         _image = new Image { Stretch = Stretch.UniformToFill };
-        _bigNumber = new TextBlock { FontSize = 28, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Foreground = Brush("TextFillColorTertiaryBrush") };
+        _bigNumber = new TextBlock { FontSize = 28, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Foreground = ThemeResources.TextTertiary };
         var previewContent = new Grid();
         previewContent.Children.Add(_bigNumber);
         previewContent.Children.Add(_image);
@@ -42,15 +42,15 @@ internal sealed class DesktopCardView
         {
             Margin = new Thickness(6, 6, 6, 0),
             CornerRadius = new CornerRadius(4),
-            Background = Brush("SubtleFillColorSecondaryBrush"),
+            Background = ThemeResources.SubtleFill,
             Child = previewContent,
             Visibility = withPreview ? Visibility.Visible : Visibility.Collapsed,
         };
         // Always laid out (opacity toggles) so every card has identical geometry.
-        _currentBar = new Rectangle { Height = 2, Margin = new Thickness(6, 4, 6, 0), Fill = Brush("AccentFillColorDefaultBrush"), RadiusX = 1, RadiusY = 1, Opacity = 0 };
+        _currentBar = new Rectangle { Height = 2, Margin = new Thickness(6, 4, 6, 0), Fill = ThemeResources.Accent, RadiusX = 1, RadiusY = 1, Opacity = 0 };
 
         _badge = new TextBlock { FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-        var badgeBorder = new Border { MinWidth = 18, Height = 18, Padding = new Thickness(4, 0, 4, 0), CornerRadius = new CornerRadius(4), Background = Brush("SubtleFillColorSecondaryBrush"), Child = _badge, VerticalAlignment = VerticalAlignment.Center };
+        var badgeBorder = new Border { MinWidth = 18, Height = 18, Padding = new Thickness(4, 0, 4, 0), CornerRadius = new CornerRadius(4), Background = ThemeResources.SubtleFill, Child = _badge, VerticalAlignment = VerticalAlignment.Center };
         _name = new TextBlock { FontSize = 14, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
         var label = new Grid { ColumnSpacing = 8 };
         label.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -58,7 +58,7 @@ internal sealed class DesktopCardView
         label.Children.Add(badgeBorder);
         Grid.SetColumn(_name, 1);
         label.Children.Add(_name);
-        _status = new TextBlock { FontSize = 12, Margin = new Thickness(26, 0, 0, 0), Foreground = Brush("TextFillColorSecondaryBrush"), TextTrimming = TextTrimming.CharacterEllipsis };
+        _status = new TextBlock { FontSize = 12, Margin = new Thickness(26, 0, 0, 0), Foreground = ThemeResources.TextSecondary, TextTrimming = TextTrimming.CharacterEllipsis };
         var labelStack = new StackPanel { Margin = new Thickness(10, 8, 10, 10), Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
         labelStack.Children.Add(label);
         labelStack.Children.Add(_status);
@@ -67,7 +67,7 @@ internal sealed class DesktopCardView
         {
             Height = 3,
             VerticalAlignment = VerticalAlignment.Bottom,
-            Fill = Brush("AccentFillColorDefaultBrush"),
+            Fill = ThemeResources.BrandGradient, // the hold bar carries the FluxKit brand
             RenderTransform = _progressScale,
             RenderTransformOrigin = new Windows.Foundation.Point(0, 0.5),
         };
@@ -90,8 +90,8 @@ internal sealed class DesktopCardView
             Height = height,
             CornerRadius = new CornerRadius(8),
             BorderThickness = new Thickness(1),
-            Background = Brush("CardBackgroundFillColorDefaultBrush"),
-            BorderBrush = Brush("CardStrokeColorDefaultBrush"),
+            Background = ThemeResources.CardBackground,
+            BorderBrush = ThemeResources.CardStroke,
             Child = layout,
             RenderTransform = _cardScale,
             RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5),
@@ -116,12 +116,12 @@ internal sealed class DesktopCardView
         _currentBar.Opacity = model.IsCurrent ? 1 : 0;
         if (State == CardVisualState.Rest || State == CardVisualState.Dwelling)
         {
-            _status.Text = model.IsCurrent ? "● You're here" : model.Number <= 9 ? $"Hold, or press {model.Number}" : "Hold to go here";
+            _status.Text = model.IsCurrent ? Strings.Get("Card_Current") : model.Number <= 9 ? Strings.Format("Card_HoldOrPressFormat", model.Number) : Strings.Get("Card_Hold");
         }
 
         AutomationProperties.SetName(_border, model.IsCurrent
-            ? $"Desktop {model.Number}, {model.Name}, current desktop"
-            : $"Desktop {model.Number}, {model.Name}. Hold to go here");
+            ? Strings.Format("Card_CurrentNameFormat", model.Number, model.Name)
+            : Strings.Format("Card_NameFormat", model.Number, model.Name));
     }
 
     public void SetState(CardVisualState state, TimeSpan delay, bool animate)
@@ -133,7 +133,7 @@ internal sealed class DesktopCardView
         {
             case CardVisualState.Dwelling:
                 _border.BorderThickness = new Thickness(2);
-                _border.BorderBrush = Brush(highContrast ? "SystemColorHighlightColorBrush" : "AccentFillColorDefaultBrush");
+                _border.BorderBrush = highContrast ? ThemeResources.HighContrastHighlight : ThemeResources.Accent;
                 ScaleCard(1.04, animate);
                 _progressScale.ScaleX = 0;
                 var grow = new DoubleAnimation { From = 0, To = 1, Duration = delay };
@@ -145,22 +145,22 @@ internal sealed class DesktopCardView
                 break;
             case CardVisualState.Switching:
                 _progressScale.ScaleX = 1;
-                _status.Text = "Switching…";
+                _status.Text = Strings.Get("Card_Switching");
                 break;
             case CardVisualState.Switched:
                 _progressScale.ScaleX = 1;
-                _status.Text = "✓ Switched";
+                _status.Text = Strings.Get("Card_Switched");
                 break;
             case CardVisualState.Error:
                 _border.BorderThickness = new Thickness(2);
-                _border.BorderBrush = Brush("SystemFillColorCriticalBrush");
+                _border.BorderBrush = ThemeResources.Critical;
                 _progressScale.ScaleX = 0;
-                _status.Text = "Couldn't switch";
+                _status.Text = Strings.Get("Card_Failed");
                 ScaleCard(1, animate);
                 break;
             default:
                 _border.BorderThickness = new Thickness(1);
-                _border.BorderBrush = Brush("CardStrokeColorDefaultBrush");
+                _border.BorderBrush = ThemeResources.CardStroke;
                 _progressScale.ScaleX = 0;
                 ScaleCard(1, animate);
                 Bind(Model);
@@ -194,5 +194,4 @@ internal sealed class DesktopCardView
         storyboard.Begin();
     }
 
-    private static Brush Brush(string key) => (Brush)Application.Current.Resources[key];
 }

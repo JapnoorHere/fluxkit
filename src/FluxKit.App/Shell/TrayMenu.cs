@@ -9,7 +9,7 @@ internal static class TrayMenu
 {
     public static List<TrayMenuItem> Build(AppHost host)
     {
-        var items = new List<TrayMenuItem> { new("Open FluxKit", () => host.ShowMainWindow()), TrayMenuItem.Separator };
+        var items = new List<TrayMenuItem> { new(Strings.Get("Tray_Open"), () => host.ShowMainWindow()), TrayMenuItem.Separator };
         foreach (IFluxTool tool in host.Registry.All)
         {
             string id = tool.Descriptor.Id;
@@ -18,10 +18,10 @@ internal static class TrayMenu
         }
 
         items.Add(TrayMenuItem.Separator);
-        items.Add(new TrayMenuItem("Settings", () => host.ShowMainWindow("general")));
-        items.Add(new TrayMenuItem("Open log folder", () => AppHost.OpenFolder(host.LogDirectory)));
+        items.Add(new TrayMenuItem(Strings.Get("Tray_Settings"), () => host.ShowMainWindow("general")));
+        items.Add(new TrayMenuItem(Strings.Get("Tray_OpenLogs"), () => AppHost.OpenFolder(host.LogDirectory)));
         items.Add(TrayMenuItem.Separator);
-        items.Add(new TrayMenuItem("Quit FluxKit", () => _ = host.ExitAsync()));
+        items.Add(new TrayMenuItem(Strings.Get("Tray_Quit"), () => _ = host.ExitAsync()));
         return items;
     }
 
@@ -38,10 +38,10 @@ internal static class TrayMenu
     /// <summary>"FluxKit" followed by one line per tool, e.g. "Drag-to-Switch: on".</summary>
     public static string Tooltip(ToolRegistry registry) => "FluxKit" + string.Concat(registry.All.Select(u => $"\n{u.Descriptor.DisplayName}: " + u.State.Status switch
     {
-        ToolStatus.Running => "on",
-        ToolStatus.Degraded => "limited mode",
-        ToolStatus.Faulted => "stopped",
-        ToolStatus.Starting => "starting",
-        _ => "off",
+        ToolStatus.Running => Strings.Get("Tray_StatusOn"),
+        ToolStatus.Degraded => Strings.Get("Tray_StatusLimited"),
+        ToolStatus.Faulted => Strings.Get("Tray_StatusStopped"),
+        ToolStatus.Starting => Strings.Get("Tray_StatusStarting"),
+        _ => Strings.Get("Tray_StatusOff"),
     }));
 }
