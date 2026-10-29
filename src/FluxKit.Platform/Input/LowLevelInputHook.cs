@@ -2,9 +2,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Channels;
 using FluxKit.Platform.Native;
+using FluxKit.Platform.Threading;
 using Serilog;
 using static FluxKit.Platform.Native.Kernel32;
-using static FluxKit.Platform.Native.User32;
 
 namespace FluxKit.Platform.Input;
 
@@ -62,8 +62,7 @@ public sealed partial class LowLevelInputHook : ISystemInputSource
 
     private readonly HookProc _mouseProc;
     private readonly HookProc _keyboardProc;
-    private Thread? _thread;
-    private uint _threadId;
+    private readonly MessageLoopThread _loop = new("FluxKit.InputHook");
     private nint _mouseHook;
     private nint _keyboardHook;
     private long _lastMoveMs;
@@ -81,33 +80,11 @@ public sealed partial class LowLevelInputHook : ISystemInputSource
 
     public Func<InputEvent, bool>? KeyFilter { get; set; }
 
-    public bool IsRunning => _thread is not null;
+    public bool IsRunning => _loop.IsRunning;
 
-    public void Install()
-    {
-        if (_thread is not null)
-        {
-            return;
-        }
+    public void Install() => _loop.Start(InstallHooks, RemoveHooks);
 
-        using var ready = new ManualResetEventSlim(false);
-        _thread = new Thread(() => Pump(ready)) { IsBackground = true, Name = "FluxKit.InputHook" };
-        _thread.Start();
-        ready.Wait(TimeSpan.FromSeconds(2));
-    }
-
-    public void Uninstall()
-    {
-        Thread? thread = _thread;
-        if (thread is null)
-        {
-            return;
-        }
-
-        _ = PostThreadMessage(_threadId, WmQuit, 0, 0);
-        thread.Join(TimeSpan.FromSeconds(2));
-        _thread = null;
-    }
+    public void Uninstall() => _loop.Stop(TimeSpan.FromSeconds(2));
 
     public void Dispose()
     {
@@ -115,9 +92,8 @@ public sealed partial class LowLevelInputHook : ISystemInputSource
         _channel.Writer.TryComplete();
     }
 
-    private void Pump(ManualResetEventSlim ready)
+    private void InstallHooks()
     {
-        _threadId = GetCurrentThreadId();
         nint module = GetModuleHandle(null);
         _mouseHook = SetWindowsHookEx(WhMouseLl, _mouseProc, module, 0);
         _keyboardHook = SetWindowsHookEx(WhKeyboardLl, _keyboardProc, module, 0);
@@ -129,14 +105,10 @@ public sealed partial class LowLevelInputHook : ISystemInputSource
         {
             _log.Information("Low-level input hooks installed");
         }
+    }
 
-        ready.Set();
-        while (GetMessage(out MSG msg, 0, 0, 0) > 0)
-        {
-            _ = TranslateMessage(msg);
-            _ = DispatchMessage(msg);
-        }
-
+    private void RemoveHooks()
+    {
         if (_mouseHook != 0)
         {
             _ = UnhookWindowsHookEx(_mouseHook);
@@ -244,5 +216,4 @@ public sealed partial class LowLevelInputHook : ISystemInputSource
 
     [LibraryImport("user32.dll")]
     private static partial nint CallNextHookEx(nint hook, int code, nint wParam, nint lParam);
-
 }

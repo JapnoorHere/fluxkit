@@ -83,6 +83,7 @@ XAML: when an element has more than three attributes, put one per line with `x:N
 - **P/Invoke:**
   - `LibraryImport` by default. `DllImport` only when marshalling needs it (delegates, COM interfaces), with the reason in the `#pragma` comment.
   - Declarations used by more than one file live in `FluxKit.Platform/Native/`.
+- **Threads with a message loop** (hooks, hidden windows) use `Threading/MessageLoopThread`. Don't write another `GetMessage` loop.
 
 ## 6. Reuse and modules
 

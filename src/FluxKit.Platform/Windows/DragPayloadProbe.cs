@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using FluxKit.Platform.Native;
+using FluxKit.Platform.Threading;
 using static FluxKit.Platform.Native.Kernel32;
 using static FluxKit.Platform.Native.User32;
 using ComTypes = System.Runtime.InteropServices.ComTypes;
@@ -45,8 +46,7 @@ public sealed partial class DragPayloadProbe : IDisposable
     private static readonly nint HwndTopmost = -1;
 
     private readonly DropTarget _target;
-    private Thread? _thread;
-    private uint _threadId;
+    private readonly MessageLoopThread _loop = new("FluxKit.DragProbe", ApartmentState.STA);
     private nint _hwnd;
     private int _result;
 
@@ -58,7 +58,7 @@ public sealed partial class DragPayloadProbe : IDisposable
     /// <summary>Shows the probe centred on a point in physical pixels and forgets any earlier result.</summary>
     public void Begin(int x, int y)
     {
-        EnsureStarted();
+        _loop.Start(CreateWindow, DestroyProbeWindow);
         Volatile.Write(ref _result, (int)DragPayload.Unknown);
         if (_hwnd != 0)
         {
@@ -83,33 +83,10 @@ public sealed partial class DragPayloadProbe : IDisposable
         }
     }
 
-    public void Dispose()
-    {
-        if (_thread is { } thread)
-        {
-            _ = PostThreadMessage(_threadId, WmQuit, 0, 0);
-            thread.Join(TimeSpan.FromSeconds(2));
-            _thread = null;
-        }
-    }
+    public void Dispose() => _loop.Stop(TimeSpan.FromSeconds(2));
 
-    private void EnsureStarted()
+    private void CreateWindow()
     {
-        if (_thread is not null)
-        {
-            return;
-        }
-
-        using var ready = new ManualResetEventSlim(false);
-        _thread = new Thread(() => Run(ready)) { IsBackground = true, Name = "FluxKit.DragProbe" };
-        _thread.SetApartmentState(ApartmentState.STA);
-        _thread.Start();
-        ready.Wait(TimeSpan.FromSeconds(2));
-    }
-
-    private void Run(ManualResetEventSlim ready)
-    {
-        _threadId = GetCurrentThreadId();
         _ = SetThreadDpiAwarenessContext(-4); // per-monitor v2: positions are physical pixels, like the input hook
         _ = OleInitialize(0);
         nint module = GetModuleHandle(null);
@@ -128,14 +105,10 @@ public sealed partial class DragPayloadProbe : IDisposable
             _ = SetLayeredWindowAttributes(_hwnd, 0, 1, LwaAlpha);
             _ = RegisterDragDrop(_hwnd, _target);
         }
+    }
 
-        ready.Set();
-        while (GetMessage(out MSG msg, 0, 0, 0) > 0)
-        {
-            _ = TranslateMessage(msg);
-            _ = DispatchMessage(msg);
-        }
-
+    private void DestroyProbeWindow()
+    {
         if (_hwnd != 0)
         {
             _ = RevokeDragDrop(_hwnd);
