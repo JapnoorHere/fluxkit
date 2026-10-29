@@ -9,10 +9,12 @@
     <Project Path="src/FluxKit.Core/FluxKit.Core.csproj" />
     <Project Path="src/FluxKit.Platform/FluxKit.Platform.csproj" />
     <Project Path="src/FluxKit.Tools.DragToSwitch/FluxKit.Tools.DragToSwitch.csproj" />
+    <Project Path="src/FluxKit.Tools.FluxIsland/FluxKit.Tools.FluxIsland.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/FluxKit.Core.Tests/FluxKit.Core.Tests.csproj" />
     <Project Path="tests/FluxKit.DragToSwitch.Tests/FluxKit.DragToSwitch.Tests.csproj" />
+    <Project Path="tests/FluxKit.FluxIsland.Tests/FluxKit.FluxIsland.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/FluxKit.DragHarness/FluxKit.DragHarness.csproj" />

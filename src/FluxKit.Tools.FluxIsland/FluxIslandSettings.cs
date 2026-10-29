@@ -1,0 +1,69 @@
+using FluxKit.Core.Settings;
+
+namespace FluxKit.Tools.FluxIsland;
+
+public enum IslandEffects
+{
+    /// <summary>Springs, glow and the playing indicator.</summary>
+    Full,
+
+    /// <summary>Short fades only. Also used whenever Windows animations are turned off.</summary>
+    Light,
+}
+
+/// <summary>Persisted settings for Flux Island ("utilities/flux-island").</summary>
+public sealed class FluxIslandSettings : ISettingsSection
+{
+    public const string Section = SettingsKeys.ToolPrefix + FluxIslandTool.Id;
+    public const int MinFocusMinutes = 5;
+    public const int MaxFocusMinutes = 90;
+    public const int MinBreakMinutes = 1;
+    public const int MaxBreakMinutes = 30;
+
+    public bool ShowMedia { get; set; } = true;
+
+    public bool ShowPower { get; set; } = true;
+
+    public bool ShowNetwork { get; set; } = true;
+
+    public bool ShowPrivacy { get; set; } = true;
+
+    public bool ShowClipboard { get; set; } = true;
+
+    public bool ShelfEnabled { get; set; } = true;
+
+    public bool ScrollForVolume { get; set; } = true;
+
+    public bool HideInFullScreen { get; set; } = true;
+
+    public bool ShowClockWhenIdle { get; set; } = true;
+
+    public IslandEffects Effects { get; set; } = IslandEffects.Full;
+
+    public int FocusMinutes { get; set; } = 25;
+
+    public int BreakMinutes { get; set; } = 5;
+
+    public IEnumerable<string> Normalize()
+    {
+        int focus = Math.Clamp(FocusMinutes, MinFocusMinutes, MaxFocusMinutes);
+        if (focus != FocusMinutes)
+        {
+            FocusMinutes = focus;
+            yield return $"focusMinutes clamped to {focus}";
+        }
+
+        int breakLength = Math.Clamp(BreakMinutes, MinBreakMinutes, MaxBreakMinutes);
+        if (breakLength != BreakMinutes)
+        {
+            BreakMinutes = breakLength;
+            yield return $"breakMinutes clamped to {breakLength}";
+        }
+
+        if (!Enum.IsDefined(Effects))
+        {
+            Effects = IslandEffects.Full;
+            yield return "effects reset to Full";
+        }
+    }
+}
