@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
 using FluxKit.Tools.FluxIsland.Abstractions;
 using FluxKit.Tools.FluxIsland.Activities;
 using Microsoft.UI.Dispatching;
@@ -7,7 +8,9 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Storage;
 
 namespace FluxKit.App.Modules.FluxIsland;
 
@@ -34,8 +37,11 @@ public sealed partial class IslandPill : UserControl
     private static readonly Size PeekSize = new(320, 52);
     private static readonly Size PanelSize = new(400, 156);
     private static readonly Size MediaPanelSize = new(400, 172);
+    private static readonly Size ShelfPanelSize = new(400, 132);
     private static readonly TimeSpan PeekDelay = TimeSpan.FromMilliseconds(350);
     private static readonly TimeSpan CloseDelay = TimeSpan.FromMilliseconds(600);
+    private static readonly TimeSpan DragLeaveDelay = TimeSpan.FromMilliseconds(80);
+    private static readonly TimeSpan DropLingerDelay = TimeSpan.FromMilliseconds(1800);
 
     private readonly PillShape _shape;
     private readonly AlbumArt _art = new();
@@ -43,7 +49,11 @@ public sealed partial class IslandPill : UserControl
     private readonly DispatcherQueueTimer _closeTimer;
     private readonly DispatcherQueueTimer _clockTimer;
     private readonly DispatcherQueueTimer _tickTimer;
+    private readonly DispatcherQueueTimer _dragLeaveTimer;
+    private readonly DispatcherQueueTimer _lingerTimer;
     private IslandScene _scene = IslandScene.Empty;
+    private bool _dragging;
+    private bool _previewDrop;
     private PillMode _mode;
     private PanelPage? _page;
     private UIElement? _shownView;
@@ -80,6 +90,14 @@ public sealed partial class IslandPill : UserControl
         _tickTimer = DispatcherQueue.CreateTimer();
         _tickTimer.Interval = TimeSpan.FromSeconds(1);
         _tickTimer.Tick += (_, _) => Update();
+        _dragLeaveTimer = OneShot(DragLeaveDelay, EndDrag);
+        _lingerTimer = OneShot(DropLingerDelay, () =>
+        {
+            if (!_hovering)
+            {
+                SetMode(PillMode.Compact);
+            }
+        });
 
         MediaTab.Click += (_, _) => ShowPage(PanelPage.Media);
         TimerTab.Click += (_, _) => ShowPage(PanelPage.Timer);
@@ -94,6 +112,10 @@ public sealed partial class IslandPill : UserControl
         Surface.PointerReleased += OnPointerReleased;
         Surface.PointerCaptureLost += (_, _) => Unpress();
         Surface.PointerCanceled += (_, _) => Unpress();
+        Surface.DragEnter += OnDragEnter;
+        Surface.DragOver += OnDragOver;
+        Surface.DragLeave += OnDragLeave;
+        Surface.Drop += OnDrop;
     }
 
     private enum PillMode
@@ -118,6 +140,7 @@ public sealed partial class IslandPill : UserControl
         {
             MediaView.Commands = value;
             TimerView.Commands = value;
+            ShelfView.Commands = value;
         }
     }
 
@@ -131,17 +154,32 @@ public sealed partial class IslandPill : UserControl
 
     public void Render(IslandScene scene)
     {
+        if (_previewDrop)
+        {
+            _previewDrop = false;
+            _dragging = false;
+        }
+
+        Show(scene);
+    }
+
+    /// <summary>Shows <paramref name="scene"/>, opened as the panel when <paramref name="open"/> is true. For previews.</summary>
+    public void Preview(IslandScene scene, bool open, bool dropping = false)
+    {
+        _mode = open || dropping ? PillMode.Panel : PillMode.Compact;
+        _dragging = dropping;
+        _previewDrop = dropping;
+        Show(scene);
+    }
+
+    private void Show(IslandScene scene)
+    {
         _scene = scene;
+        Surface.AllowDrop = scene.Settings.ShelfEnabled;
         _art.Set(scene.Media?.Thumbnail ?? ReadOnlyMemory<byte>.Empty);
         Update();
     }
 
-    /// <summary>Shows <paramref name="scene"/>, opened as the panel when <paramref name="open"/> is true. For previews.</summary>
-    public void Preview(IslandScene scene, bool open)
-    {
-        _mode = open ? PillMode.Panel : PillMode.Compact;
-        Render(scene);
-    }
 
     /// <summary>Starts or stops the clock and timers, e.g. while the window is hidden for a full-screen app.</summary>
     public void SetActive(bool active)
@@ -158,8 +196,11 @@ public sealed partial class IslandPill : UserControl
             _tickTimer.Stop();
             _peekTimer.Stop();
             _closeTimer.Stop();
+            _dragLeaveTimer.Stop();
+            _lingerTimer.Stop();
             _mode = PillMode.Compact;
             _hovering = false;
+            _dragging = false;
             _shape.ScaleTo(1, springs: false);
             return;
         }
@@ -282,6 +323,16 @@ public sealed partial class IslandPill : UserControl
             return (MediaView, "panel-media", MediaPanelSize);
         }
 
+        if (page == PanelPage.Shelf)
+        {
+            ShelfView.SetInset(inset);
+            ShelfView.Animate = Springs;
+            ShelfView.Update(_scene.Shelf);
+            ShelfView.SetDropping(_dragging);
+            AutomationProperties.SetName(Surface, Strings.Format("Island_Shelf_CountFormat", _scene.Shelf.Count));
+            return (ShelfView, "panel-shelf", ShelfPanelSize);
+        }
+
         TimerView.SetInset(inset);
         TimerView.Update(_scene, now, Springs);
         bool timing = _scene.Timer?.IsActive == true;
@@ -289,7 +340,10 @@ public sealed partial class IslandPill : UserControl
         return (TimerView, $"panel-timer-{timing}", PanelSize);
     }
 
-    /// <summary>The timer page is always there (it doubles as the clock); music only while something plays.</summary>
+    /// <summary>
+    /// The timer page is always there (it doubles as the clock); music only while something plays; the shelf while it
+    /// holds files or a file is being dragged over the island.
+    /// </summary>
     private List<PanelPage> AvailablePages()
     {
         List<PanelPage> pages = [];
@@ -299,12 +353,22 @@ public sealed partial class IslandPill : UserControl
         }
 
         pages.Add(PanelPage.Timer);
+        if (_scene.Settings.ShelfEnabled && (_scene.Shelf.Count > 0 || _dragging))
+        {
+            pages.Add(PanelPage.Shelf);
+        }
+
         return pages;
     }
 
-    /// <summary>Opens on what the pill was showing: a running timer, else the music, else the clock.</summary>
-    private PanelPage DefaultPage(List<PanelPage> pages) =>
-        _scene.Primary?.Kind is ActivityKind.Timer or ActivityKind.TimerDone || !pages.Contains(PanelPage.Media) ? PanelPage.Timer : PanelPage.Media;
+    /// <summary>Opens on what the pill was showing: a running timer, the shelf, else the music, else the clock.</summary>
+    private PanelPage DefaultPage(List<PanelPage> pages) => _scene.Primary?.Kind switch
+    {
+        _ when _dragging && pages.Contains(PanelPage.Shelf) => PanelPage.Shelf,
+        ActivityKind.Timer or ActivityKind.TimerDone => PanelPage.Timer,
+        ActivityKind.Shelf when pages.Contains(PanelPage.Shelf) => PanelPage.Shelf,
+        _ => pages.Contains(PanelPage.Media) ? PanelPage.Media : PanelPage.Timer,
+    };
 
     private void ShowPage(PanelPage page)
     {
@@ -344,7 +408,7 @@ public sealed partial class IslandPill : UserControl
             IslandMotion.Exit(previous, () => _shownView != previous);
         }
 
-        UIElement[]? rows = view == MediaView ? MediaView.Rows : view == TimerView ? TimerView.Rows : null;
+        UIElement[]? rows = view == MediaView ? MediaView.Rows : view == TimerView ? TimerView.Rows : view == ShelfView ? ShelfView.Rows : null;
         if (rows is not null)
         {
             // Panel rows arrive one after the other.
@@ -469,6 +533,99 @@ public sealed partial class IslandPill : UserControl
         _pressed = false;
         _peekTimer.Stop();
         SetMode(PillMode.Panel);
+    }
+
+    /// <summary>A file dragged onto the island opens the shelf with its drop zone glowing.</summary>
+    private void OnDragEnter(object sender, DragEventArgs e)
+    {
+        _dragLeaveTimer.Stop();
+        if (_dragging || ShelfView.IsDraggingOut || !_scene.Settings.ShelfEnabled || !e.DataView.Contains(StandardDataFormats.StorageItems))
+        {
+            return;
+        }
+
+        _dragging = true;
+        _peekTimer.Stop();
+        _closeTimer.Stop();
+        _lingerTimer.Stop();
+        _page = PanelPage.Shelf;
+        if (_mode == PillMode.Panel)
+        {
+            Update();
+        }
+        else
+        {
+            SetMode(PillMode.Panel);
+        }
+    }
+
+    private void OnDragOver(object sender, DragEventArgs e)
+    {
+        if (!_dragging)
+        {
+            return;
+        }
+
+        // The shelf keeps a reference to the file and never moves it, so it asks for a link (or a copy, which the
+        // source treats the same way: the original stays where it is).
+        e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Link) ? DataPackageOperation.Link : e.AllowedOperations & DataPackageOperation.Copy;
+        e.DragUIOverride.Caption = Strings.Get("Island_ShelfDropCaption");
+        e.Handled = true;
+    }
+
+    /// <summary>Moving between the island's own parts raises leave then enter, so the drag ends only after a short pause.</summary>
+    private void OnDragLeave(object sender, DragEventArgs e)
+    {
+        if (_dragging)
+        {
+            _dragLeaveTimer.Start();
+        }
+    }
+
+    private void EndDrag()
+    {
+        if (!_dragging)
+        {
+            return;
+        }
+
+        _dragging = false;
+        Update();
+        if (!_hovering)
+        {
+            _closeTimer.Start();
+        }
+    }
+
+    private async void OnDrop(object sender, DragEventArgs e)
+    {
+        if (!_dragging)
+        {
+            return;
+        }
+
+        _dragLeaveTimer.Stop();
+        _dragging = false;
+        DragOperationDeferral deferral = e.GetDeferral();
+        try
+        {
+            IReadOnlyList<IStorageItem> items = await e.DataView.GetStorageItemsAsync();
+            Commands?.AddToShelf(items.Select(i => i.Path).Where(p => !string.IsNullOrEmpty(p)));
+        }
+        catch (Exception ex) when (ex is COMException or InvalidOperationException or UnauthorizedAccessException)
+        {
+            // The source took the data back (or never had real files); nothing lands on the shelf.
+            e.AcceptedOperation = DataPackageOperation.None;
+        }
+        finally
+        {
+            deferral.Complete();
+        }
+
+        // The tool's update brings the new tiles; meanwhile the zone settles. The shelf stays open a moment to show them.
+        Update();
+        _shape.Bounce(Springs);
+        _lingerTimer.Start();
     }
 
     private void Unpress()

@@ -89,7 +89,7 @@ public sealed partial class IslandWindow : Window
         IslandScene scene = IslandSamples.Create(sample, DateTimeOffset.Now);
         RenderCore(scene);
         Pill.Commands = null;
-        Pill.Preview(scene, open);
+        Pill.Preview(scene, open, dropping: sample == IslandSamples.Drop);
         _log.Information("Island preview {Sample} (open={Open})", sample, open);
     }
 

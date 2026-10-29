@@ -1,0 +1,161 @@
+using FluxKit.Tools.FluxIsland.Abstractions;
+using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Windows.UI;
+
+namespace FluxKit.App.Modules.FluxIsland;
+
+/// <summary>
+/// The shelf page. Tiles are kept between updates, so each file's icon is looked up once and only new files pop in.
+/// </summary>
+public sealed partial class ShelfPanel : UserControl
+{
+    private readonly Dictionary<string, ShelfTile> _tiles = new(StringComparer.OrdinalIgnoreCase);
+    private bool _dropping;
+
+    public ShelfPanel()
+    {
+        InitializeComponent();
+        Count.Foreground = new SolidColorBrush(IslandPalette.TextSecondary);
+        HeaderGlyph.Foreground = new SolidColorBrush(IslandPalette.Cyan);
+        DropOutline.Stroke = new SolidColorBrush(IslandPalette.Cyan);
+        DropOutline.Fill = new SolidColorBrush(Color.FromArgb(0x1A, IslandPalette.Cyan.R, IslandPalette.Cyan.G, IslandPalette.Cyan.B));
+        DropGlyph.Foreground = new SolidColorBrush(IslandPalette.Cyan);
+        DropText.Foreground = new SolidColorBrush(IslandPalette.TextPrimary);
+        ClearButton.Click += (_, _) => Commands?.ClearShelf();
+        PressFeedback.Attach(ClearButton);
+
+        // A mouse wheel only scrolls up and down; turn it sideways so a long shelf can be scrolled.
+        Scroller.PointerWheelChanged += OnWheel;
+    }
+
+    public IIslandCommands? Commands { get; set; }
+
+    /// <summary>False when effects are reduced: tiles and the drop zone appear without motion.</summary>
+    public bool Animate { get; set; } = true;
+
+    /// <summary>True while one of the shelf's own files is being dragged out.</summary>
+    public bool IsDraggingOut { get; private set; }
+
+    /// <summary>The rows, in the order they should appear when the page opens.</summary>
+    internal UIElement[] Rows => [Header, ItemsHost];
+
+    /// <summary>Moves the content right to make room for the page rail.</summary>
+    internal void SetInset(double left) => ContentGrid.Margin = new Thickness(left, 0, 0, 0);
+
+    public void Update(IReadOnlyList<string> paths)
+    {
+        Count.Text = paths.Count > 0 ? paths.Count.ToString(System.Globalization.CultureInfo.CurrentCulture) : string.Empty;
+        ClearButton.Visibility = paths.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        foreach (string gone in _tiles.Keys.Where(k => !paths.Contains(k, StringComparer.OrdinalIgnoreCase)).ToList())
+        {
+            Items.Children.Remove(_tiles[gone]);
+            _tiles.Remove(gone);
+        }
+
+        for (int i = 0; i < paths.Count; i++)
+        {
+            bool added = false;
+            if (!_tiles.TryGetValue(paths[i], out ShelfTile? tile))
+            {
+                tile = CreateTile(paths[i]);
+                _tiles[paths[i]] = tile;
+                added = true;
+            }
+
+            // Newest first: put each tile at its place, moving only the ones that changed position.
+            int at = Items.Children.IndexOf(tile);
+            if (at != i)
+            {
+                if (at >= 0)
+                {
+                    Items.Children.RemoveAt(at);
+                }
+
+                Items.Children.Insert(i, tile);
+            }
+
+            tile.Animate = Animate;
+            if (added)
+            {
+                IslandMotion.Enter(tile, IslandMotion.Stagger * i, Animate);
+                IslandMotion.Pop(tile, Animate);
+            }
+        }
+
+        UpdateDropZone();
+    }
+
+    /// <summary>Shows or hides the glowing drop zone for a drag coming in from outside.</summary>
+    public void SetDropping(bool dropping)
+    {
+        if (dropping == _dropping)
+        {
+            return;
+        }
+
+        _dropping = dropping;
+        UpdateDropZone();
+    }
+
+    private void UpdateDropZone()
+    {
+        bool empty = _tiles.Count == 0;
+        DropText.Text = Strings.Get(empty ? "Island_ShelfDropHere" : "Island_ShelfDropToAdd");
+        Visual zone = ElementCompositionPreview.GetElementVisual(DropZone);
+        if (!_dropping)
+        {
+            zone.StopAnimation("Opacity");
+            DropZone.Visibility = Visibility.Collapsed;
+            Scroller.Opacity = 1;
+            return;
+        }
+
+        Scroller.Opacity = empty ? 1 : 0.25;
+        if (DropZone.Visibility == Visibility.Visible)
+        {
+            return;
+        }
+
+        DropZone.Visibility = Visibility.Visible;
+        if (!Animate)
+        {
+            return;
+        }
+
+        // The zone breathes gently while a file hovers over it; it runs only during a drag.
+        ScalarKeyFrameAnimation breathe = zone.Compositor.CreateScalarKeyFrameAnimation();
+        breathe.InsertKeyFrame(0, 0.65f);
+        breathe.InsertKeyFrame(0.5f, 1);
+        breathe.InsertKeyFrame(1, 0.65f);
+        breathe.Duration = TimeSpan.FromMilliseconds(1400);
+        breathe.IterationBehavior = AnimationIterationBehavior.Forever;
+        zone.StartAnimation("Opacity", breathe);
+    }
+
+    private ShelfTile CreateTile(string path)
+    {
+        var tile = new ShelfTile(path);
+        tile.RemoveRequested += (_, _) => Commands?.RemoveFromShelf(tile.FilePath);
+        tile.DragBegan += (_, _) => IsDraggingOut = true;
+        tile.DragFinished += (_, _) => IsDraggingOut = false;
+        return tile;
+    }
+
+    private void OnWheel(object sender, PointerRoutedEventArgs e)
+    {
+        int delta = e.GetCurrentPoint(Scroller).Properties.MouseWheelDelta;
+        if (Scroller.ScrollableWidth <= 0 || delta == 0)
+        {
+            return;
+        }
+
+        Scroller.ChangeView(Scroller.HorizontalOffset - delta, null, null, disableAnimation: !Animate);
+        e.Handled = true;
+    }
+}

@@ -93,6 +93,7 @@
 
                 <local:MediaPanel x:Name="MediaView" Visibility="Collapsed" />
                 <local:TimerPanel x:Name="TimerView" Visibility="Collapsed" />
+                <local:ShelfPanel x:Name="ShelfView" Visibility="Collapsed" />
 
                 <!-- Switches between the panel's pages when there is more than one, like FluxKit's own side rail. -->
                 <StackPanel

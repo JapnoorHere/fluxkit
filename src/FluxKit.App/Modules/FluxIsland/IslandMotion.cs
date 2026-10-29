@@ -54,7 +54,12 @@ internal static class IslandMotion
         Visual visual = ElementCompositionPreview.GetElementVisual(element);
         Compositor compositor = visual.Compositor;
         visual.CenterPoint = new Vector3(element.ActualSize / 2, 0);
-        if (visual.CenterPoint == Vector3.Zero)
+        if (visual.CenterPoint == Vector3.Zero && element is FrameworkElement { Width: > 0, Height: > 0 } sized)
+        {
+            // Not measured yet, but it has a fixed size.
+            visual.CenterPoint = new Vector3((float)sized.Width / 2, (float)sized.Height / 2, 0);
+        }
+        else if (visual.CenterPoint == Vector3.Zero)
         {
             // Not measured yet; the icons on the island are 16 to 22 px.
             visual.CenterPoint = new Vector3(8, 8, 0);

@@ -756,4 +756,22 @@
   <data name="Island_ShelfTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shelf</value>
   </data>
+  <data name="Island_ShelfTitle.Text" xml:space="preserve">
+    <value>Shelf</value>
+  </data>
+  <data name="Island_ClearShelf.Content" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Island_ShelfDropHere" xml:space="preserve">
+    <value>Drop files here to keep them for later</value>
+  </data>
+  <data name="Island_ShelfDropToAdd" xml:space="preserve">
+    <value>Drop to add to the shelf</value>
+  </data>
+  <data name="Island_ShelfDropCaption" xml:space="preserve">
+    <value>Keep on the shelf</value>
+  </data>
+  <data name="Island_RemoveFromShelf.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove from the shelf</value>
+  </data>
 </root>

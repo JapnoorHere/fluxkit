@@ -9,7 +9,10 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// </summary>
 internal static class IslandSamples
 {
-    public static readonly string[] Names = ["clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf"];
+    /// <summary>An empty shelf with a file being dragged over the island.</summary>
+    public const string Drop = "drop";
+
+    public static readonly string[] Names = ["clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop];
 
     public static IslandScene Create(string name, DateTimeOffset now)
     {
@@ -25,7 +28,7 @@ internal static class IslandSamples
             "copied" => new IslandActivity(ActivityKind.Copied) { Clipboard = ClipboardKind.Text },
             "offline" => new IslandActivity(ActivityKind.Offline),
             "volume" => new IslandActivity(ActivityKind.Volume) { Value = 64 },
-            "shelf" => new IslandActivity(ActivityKind.Shelf) { Value = 3 },
+            "shelf" => new IslandActivity(ActivityKind.Shelf) { Value = 4 },
             _ => null,
         };
         return new IslandScene
@@ -33,7 +36,7 @@ internal static class IslandSamples
             Primary = primary,
             Media = name == "music" ? media : null,
             Timer = name == "timer" ? timer : FocusTimerSnapshot.Idle,
-            Shelf = name == "shelf" ? [@"C:\Users\Public\Documents\Report.pdf", @"C:\Users\Public\Pictures\Beach.jpg", @"C:\Users\Public\Music\Demo.mp3"] : [],
+            Shelf = name == "shelf" ? [@"C:\Windows\Web\Wallpaper\Windows\img0.jpg", @"C:\Windows\Media\Alarm01.wav", @"C:\Windows\Web\Screen", @"C:\Windows\notepad.exe"] : [],
             Power = power,
             Privacy = new PrivacySnapshot(name == "music", false),
         };
