@@ -1,7 +1,7 @@
 using System.Reflection;
-using System.Text;
 using FluxKit.App.Modules.DragToSwitch;
 using FluxKit.App.Shell;
+using FluxKit.App.Theming;
 using FluxKit.Core.Logging;
 using FluxKit.Core.Settings;
 using FluxKit.Core.Utilities;
@@ -13,17 +13,10 @@ using FluxKit.Utilities.DragToSwitch;
 using FluxKit.Utilities.DragToSwitch.Interaction;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Microsoft.Win32;
 using Microsoft.Windows.AppLifecycle;
 using Serilog;
 
 namespace FluxKit.App;
-
-/// <summary>Persisted enabled flag shared by every utility section.</summary>
-public sealed class UtilityToggle
-{
-    public bool Enabled { get; set; } = true;
-}
 
 /// <summary>
 /// Composition root and application lifecycle: settings, logging, theme, virtual desktops, utilities,
@@ -76,32 +69,14 @@ public sealed class AppHost
 
     public event EventHandler? StatusChanged;
 
-    public ElementTheme AppTheme => Settings.Read<GlobalSettings>(GlobalSettings.Section).Theme switch
-    {
-        Core.Settings.AppTheme.Light => ElementTheme.Light,
-        Core.Settings.AppTheme.Dark => ElementTheme.Dark,
-        _ => ElementTheme.Default,
-    };
-
-    public static string OsDescription
-    {
-        get
-        {
-            using RegistryKey? key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-            string display = key?.GetValue("DisplayVersion") as string ?? string.Empty;
-            object? ubr = key?.GetValue("UBR");
-            Version v = Environment.OSVersion.Version;
-            string name = v.Build >= 22000 ? "Windows 11" : "Windows 10";
-            return $"{name} {display}, build {v.Build}.{ubr}".Trim();
-        }
-    }
+    public ElementTheme AppTheme => ThemeService.ForApp(Settings.Read<GlobalSettings>(GlobalSettings.Section).Theme);
 
     public async Task StartAsync(string[] args)
     {
         Directory.CreateDirectory(DataDirectory);
         Serilog.Log.Logger = LoggingSetup.Create(LogDirectory);
         Log = Serilog.Log.Logger.ForContext<AppHost>();
-        Log.Information("FluxKit {Version} starting on {Os} ({Arch})", Version, OsDescription, System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+        Log.Information("FluxKit {Version} starting on {Os} ({Arch})", Version, Diagnostics.OsDescription, System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
 
         Settings = new SettingsService(SettingsPath, Serilog.Log.Logger);
         GlobalSettings global = Settings.Read<GlobalSettings>(GlobalSettings.Section);
@@ -212,41 +187,11 @@ public sealed class AppHost
         Application.Current.Exit();
     }
 
-    public ElementTheme ResolveOverlayTheme()
-    {
-        DragToSwitchSettings settings = Settings.Read<DragToSwitchSettings>(DragToSwitchSettings.Section);
-        return settings.OverlayTheme switch
-        {
-            OverlayTheme.Light => ElementTheme.Light,
-            OverlayTheme.Dark => ElementTheme.Dark,
-            OverlayTheme.System => ElementTheme.Default,
-            _ => AppTheme,
-        };
-    }
-
-    /// <summary>Redacted, copyable diagnostics: no file names, paths of user files or window titles.</summary>
-    public string BuildDiagnostics()
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine($"FluxKit {Version} ({System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture})");
-        sb.AppendLine($"OS: {OsDescription}");
-        sb.AppendLine($".NET: {Environment.Version}");
-        sb.AppendLine($"Virtual desktops: {Desktops.Desktops.Count}, backend: {Desktops.BackendDescription}, pin: {Desktops.CanPinWindows}");
-        foreach (IFluxUtility utility in Registry.All)
-        {
-            sb.AppendLine($"Utility {utility.Descriptor.Id}: {utility.State.Status} {utility.State.Detail}");
-        }
-
-        SessionSummary? last = DragToSwitch.LastSession;
-        sb.AppendLine(last is null ? "Last drag session: none" : $"Last drag session: {last.StartedAt:u} source={last.SourceProcess} {last.FromDesktop}->{last.ToDesktop} {last.SwitchMs} ms end={last.End}");
-        sb.AppendLine($"Settings: recovered={Settings.RecoveredFromCorruption} readOnly={Settings.IsReadOnly}");
-        sb.AppendLine($"Startup entry: {Startup.GetState()}");
-        return sb.ToString();
-    }
-
+    public ElementTheme ResolveOverlayTheme() =>
+        ThemeService.ForOverlay(Settings.Read<DragToSwitchSettings>(DragToSwitchSettings.Section).OverlayTheme, AppTheme);
     private void CreateTray()
     {
-        _tray = new TrayIcon(TrayIconPath(), TrayTooltip());
+        _tray = new TrayIcon(TrayMenu.IconPath(Registry), TrayMenu.Tooltip(Registry));
         _tray.Activated += (_, _) => ShowMainWindow();
         _tray.TaskbarRecreated += async (_, _) =>
         {
@@ -255,48 +200,13 @@ public sealed class AppHost
             _selector?.RePin();
             OnStatusChanged();
         };
-        _tray.MenuProvider = () =>
-        {
-            var items = new List<TrayMenuItem> { new("Open FluxKit", () => ShowMainWindow()), TrayMenuItem.Separator };
-            foreach (IFluxUtility utility in Registry.All)
-            {
-                string id = utility.Descriptor.Id;
-                bool enabled = Registry.IsEnabled(id);
-                items.Add(new TrayMenuItem(utility.Descriptor.DisplayName, () => _ = SetUtilityEnabledAsync(id, !enabled), Checked: enabled));
-            }
-
-            items.Add(TrayMenuItem.Separator);
-            items.Add(new TrayMenuItem("Settings", () => ShowMainWindow("general")));
-            items.Add(new TrayMenuItem("Open log folder", () => OpenFolder(LogDirectory)));
-            items.Add(TrayMenuItem.Separator);
-            items.Add(new TrayMenuItem("Quit FluxKit", () => _ = ExitAsync()));
-            return items;
-        };
+        _tray.MenuProvider = () => TrayMenu.Build(this);
     }
-
-    private string TrayIconPath()
-    {
-        bool enabled = Registry.All.Any(u => u.State.IsActive);
-        using RegistryKey? key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-        bool lightTaskbar = key?.GetValue("SystemUsesLightTheme") is int v && v == 1;
-        string file = !enabled ? "Tray-trayoff.ico" : lightTaskbar ? "Tray-traylight.ico" : "Tray-traydark.ico";
-        return Path.Combine(AppContext.BaseDirectory, "Assets", file);
-    }
-
-    /// <summary>"FluxKit" followed by one line per tool, e.g. "Drag-to-Switch: on".</summary>
-    private string TrayTooltip() => "FluxKit" + string.Concat(Registry.All.Select(u => $"\n{u.Descriptor.DisplayName}: " + u.State.Status switch
-    {
-        UtilityStatus.Running => "on",
-        UtilityStatus.Degraded => "limited mode",
-        UtilityStatus.Faulted => "stopped",
-        UtilityStatus.Starting => "starting",
-        _ => "off",
-    }));
 
     private void OnStatusChanged()
     {
-        _tray?.SetIcon(TrayIconPath());
-        _tray?.SetTooltip(TrayTooltip());
+        _tray?.SetIcon(TrayMenu.IconPath(Registry));
+        _tray?.SetTooltip(TrayMenu.Tooltip(Registry));
         StatusChanged?.Invoke(this, EventArgs.Empty);
     }
 

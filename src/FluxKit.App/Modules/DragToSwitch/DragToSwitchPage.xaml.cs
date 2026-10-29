@@ -1,3 +1,4 @@
+using FluxKit.App.Shell;
 using FluxKit.Core.Utilities;
 using FluxKit.Utilities.DragToSwitch;
 using FluxKit.Utilities.DragToSwitch.Interaction;
@@ -207,7 +208,7 @@ public sealed partial class DragToSwitchPage : Page
     private async void OnCopyDiagnostics(object sender, RoutedEventArgs e)
     {
         var package = new DataPackage();
-        package.SetText(_host.BuildDiagnostics());
+        package.SetText(Diagnostics.Build(_host));
         Clipboard.SetContent(package);
         CopyDiagnosticsButton.Content = "Copied";
         await Task.Delay(2000);

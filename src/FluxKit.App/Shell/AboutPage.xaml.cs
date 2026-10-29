@@ -13,7 +13,7 @@ public sealed partial class AboutPage : Page
     {
         InitializeComponent();
         VersionText.Text = $"Version {_host.Version} · {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}";
-        OsRow.Description = AppHost.OsDescription;
+        OsRow.Description = Diagnostics.OsDescription;
         BackendRow.Description = $"{_host.Desktops.BackendDescription} · {_host.Desktops.Desktops.Count} desktops";
         SettingsRow.Description = _host.SettingsPath;
         LogsRow.Description = _host.LogDirectory;
@@ -22,7 +22,7 @@ public sealed partial class AboutPage : Page
     private async void OnCopyDiagnostics(object sender, RoutedEventArgs e)
     {
         var package = new DataPackage();
-        package.SetText(_host.BuildDiagnostics());
+        package.SetText(Diagnostics.Build(_host));
         Clipboard.SetContent(package);
         CopyButton.Content = "Copied";
         await Task.Delay(2000);
