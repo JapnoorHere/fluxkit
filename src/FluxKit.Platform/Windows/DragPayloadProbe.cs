@@ -1,4 +1,7 @@
 using System.Runtime.InteropServices;
+using FluxKit.Platform.Native;
+using static FluxKit.Platform.Native.Kernel32;
+using static FluxKit.Platform.Native.User32;
 using ComTypes = System.Runtime.InteropServices.ComTypes;
 
 namespace FluxKit.Platform.Windows;
@@ -38,7 +41,6 @@ public sealed partial class DragPayloadProbe : IDisposable
     private const uint SwpShowWindow = 0x40;
     private const uint SwpHideWindow = 0x80;
     private const uint SwpAsyncWindowPos = 0x4000;
-    private const int WmQuit = 0x0012;
     private const short CfHdrop = 15;
     private static readonly nint HwndTopmost = -1;
 
@@ -113,7 +115,7 @@ public sealed partial class DragPayloadProbe : IDisposable
         nint module = GetModuleHandle(null);
         var wc = new WNDCLASSEX
         {
-            cbSize = Marshal.SizeOf<WNDCLASSEX>(),
+            cbSize = (uint)Marshal.SizeOf<WNDCLASSEX>(),
             lpfnWndProc = GetProcAddress(GetModuleHandle("user32.dll"), "DefWindowProcW"),
             hInstance = module,
             lpszClassName = ClassName,
@@ -200,42 +202,10 @@ public sealed partial class DragPayloadProbe : IDisposable
         }
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct WNDCLASSEX
-    {
-        public int cbSize;
-        public uint style;
-        public nint lpfnWndProc;
-        public int cbClsExtra;
-        public int cbWndExtra;
-        public nint hInstance;
-        public nint hIcon;
-        public nint hCursor;
-        public nint hbrBackground;
-        public string? lpszMenuName;
-        public string lpszClassName;
-        public nint hIconSm;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MSG
-    {
-        public nint hwnd;
-        public uint message;
-        public nint wParam;
-        public nint lParam;
-        public uint time;
-        public int ptX;
-        public int ptY;
-        public uint lPrivate;
-    }
-
 #pragma warning disable SYSLIB1054 // COM interface and string-struct marshalling require classic DllImport.
     [DllImport("ole32.dll")]
     private static extern int RegisterDragDrop(nint hwnd, [MarshalAs(UnmanagedType.Interface)] IDropTarget target);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "RegisterClassExW")]
-    private static extern ushort RegisterClassEx(ref WNDCLASSEX wc);
 #pragma warning restore SYSLIB1054
 
     [LibraryImport("ole32.dll")]
@@ -247,46 +217,15 @@ public sealed partial class DragPayloadProbe : IDisposable
     [LibraryImport("ole32.dll")]
     private static partial void OleUninitialize();
 
-    [LibraryImport("user32.dll", EntryPoint = "CreateWindowExW", StringMarshalling = StringMarshalling.Utf16)]
-    private static partial nint CreateWindowEx(uint exStyle, string className, string windowName, uint style, int x, int y, int width, int height, nint parent, nint menu, nint instance, nint param);
-
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool DestroyWindow(nint hwnd);
-
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool SetLayeredWindowAttributes(nint hwnd, uint key, byte alpha, uint flags);
-
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool SetWindowPos(nint hwnd, nint insertAfter, int x, int y, int cx, int cy, uint flags);
 
     [LibraryImport("user32.dll")]
     private static partial nint SetThreadDpiAwarenessContext(nint context);
 
     [LibraryImport("user32.dll", EntryPoint = "RegisterClipboardFormatW", StringMarshalling = StringMarshalling.Utf16)]
     private static partial uint RegisterClipboardFormat(string name);
-
-    [LibraryImport("user32.dll", EntryPoint = "GetMessageW")]
-    private static partial int GetMessage(out MSG msg, nint hwnd, uint min, uint max);
-
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool TranslateMessage(in MSG msg);
-
-    [LibraryImport("user32.dll", EntryPoint = "DispatchMessageW")]
-    private static partial nint DispatchMessage(in MSG msg);
-
-    [LibraryImport("user32.dll", EntryPoint = "PostThreadMessageW")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool PostThreadMessage(uint threadId, int msg, nint wParam, nint lParam);
-
-    [LibraryImport("kernel32.dll")]
-    private static partial uint GetCurrentThreadId();
-
-    [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16, EntryPoint = "GetModuleHandleW")]
-    private static partial nint GetModuleHandle(string? name);
 
     [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf8)]
     private static partial nint GetProcAddress(nint module, string name);

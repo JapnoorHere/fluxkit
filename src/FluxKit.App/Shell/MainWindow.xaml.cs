@@ -1,7 +1,7 @@
-using System.Runtime.InteropServices;
 using FluxKit.App.Modules.DragToSwitch;
 using FluxKit.Core.Settings;
 using FluxKit.Core.Utilities;
+using FluxKit.Platform.Windows;
 using FluxKit.Utilities.DragToSwitch;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -65,7 +65,7 @@ public sealed partial class MainWindow : Window
             presenter.Restore();
         }
 
-        _ = SetForegroundWindow(hwnd);
+        WindowHelpers.BringToForeground(hwnd);
     }
 
     private void BuildNavigation()
@@ -152,7 +152,7 @@ public sealed partial class MainWindow : Window
     private void RestorePlacement()
     {
         WindowPlacement placement = _host.Settings.Read<GlobalSettings>(GlobalSettings.Section).MainWindow;
-        double scale = GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
+        double scale = WindowHelpers.GetDpi(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
         if (AppWindow.Presenter is OverlappedPresenter presenter)
         {
             presenter.PreferredMinimumWidth = (int)(760 * scale);
@@ -253,7 +253,7 @@ public sealed partial class MainWindow : Window
     {
         _host.ThemeChanged -= OnThemeChanged;
         _host.StatusChanged -= OnStatusChanged;
-        double scale = GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
+        double scale = WindowHelpers.GetDpi(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
         bool maximized = AppWindow.Presenter is OverlappedPresenter { State: OverlappedPresenterState.Maximized };
         PointInt32 position = AppWindow.Position;
         SizeInt32 size = AppWindow.Size;
@@ -271,11 +271,4 @@ public sealed partial class MainWindow : Window
             return s;
         });
     }
-
-    [DllImport("user32.dll")]
-    private static extern uint GetDpiForWindow(nint hwnd);
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetForegroundWindow(nint hwnd);
 }

@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using static FluxKit.Platform.Native.User32;
 
 namespace FluxKit.Platform.Input;
 
@@ -87,9 +88,6 @@ public static partial class InputSynthesizer
 
     [LibraryImport("user32.dll", SetLastError = true)]
     private static partial uint SendInput(uint count, [In] INPUT[] inputs, int size);
-
-    [LibraryImport("user32.dll")]
-    private static partial int GetSystemMetrics(int index);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct INPUT

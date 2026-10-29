@@ -1,7 +1,10 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Channels;
+using FluxKit.Platform.Native;
 using Serilog;
+using static FluxKit.Platform.Native.Kernel32;
+using static FluxKit.Platform.Native.User32;
 
 namespace FluxKit.Platform.Input;
 
@@ -44,7 +47,6 @@ public sealed partial class LowLevelInputHook : ISystemInputSource
 {
     private const int WhKeyboardLl = 13;
     private const int WhMouseLl = 14;
-    private const int WmQuit = 0x0012;
     private const int WmMouseMove = 0x0200;
     private const int WmLButtonDown = 0x0201;
     private const int WmLButtonUp = 0x0202;
@@ -212,13 +214,6 @@ public sealed partial class LowLevelInputHook : ISystemInputSource
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct POINT
-    {
-        public int X;
-        public int Y;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     private struct MSLLHOOKSTRUCT
     {
         public POINT pt;
@@ -238,18 +233,6 @@ public sealed partial class LowLevelInputHook : ISystemInputSource
         public nint dwExtraInfo;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MSG
-    {
-        public nint hwnd;
-        public uint message;
-        public nint wParam;
-        public nint lParam;
-        public uint time;
-        public POINT pt;
-        public uint lPrivate;
-    }
-
 #pragma warning disable SYSLIB1054 // Delegate marshalling requires classic DllImport.
     [DllImport("user32.dll", SetLastError = true)]
     private static extern nint SetWindowsHookEx(int idHook, HookProc proc, nint module, uint threadId);
@@ -262,23 +245,4 @@ public sealed partial class LowLevelInputHook : ISystemInputSource
     [LibraryImport("user32.dll")]
     private static partial nint CallNextHookEx(nint hook, int code, nint wParam, nint lParam);
 
-    [LibraryImport("user32.dll", EntryPoint = "GetMessageW")]
-    private static partial int GetMessage(out MSG msg, nint hwnd, uint min, uint max);
-
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool TranslateMessage(in MSG msg);
-
-    [LibraryImport("user32.dll", EntryPoint = "DispatchMessageW")]
-    private static partial nint DispatchMessage(in MSG msg);
-
-    [LibraryImport("user32.dll", EntryPoint = "PostThreadMessageW")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool PostThreadMessage(uint threadId, int msg, nint wParam, nint lParam);
-
-    [LibraryImport("kernel32.dll")]
-    private static partial uint GetCurrentThreadId();
-
-    [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16, EntryPoint = "GetModuleHandleW")]
-    private static partial nint GetModuleHandle(string? name);
 }

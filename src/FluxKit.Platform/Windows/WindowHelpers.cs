@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using FluxKit.Platform.Native;
+using static FluxKit.Platform.Native.User32;
 
 namespace FluxKit.Platform.Windows;
 
@@ -61,6 +63,12 @@ public static partial class WindowHelpers
         _ = SetWindowPos(hwnd, HwndTopmost, 0, 0, 0, 0, SwpNoActivate | SwpNoMove | SwpNoSize | SwpShowWindow);
 
     public static void Hide(nint hwnd) => _ = ShowWindow(hwnd, SwHide);
+
+    /// <summary>Gives keyboard focus to one of FluxKit's own windows, e.g. when it is opened from the tray.</summary>
+    public static void BringToForeground(nint hwnd) => _ = SetForegroundWindow(hwnd);
+
+    /// <summary>The window's DPI (96 = 100 % scaling).</summary>
+    public static uint GetDpi(nint hwnd) => GetDpiForWindow(hwnd);
 
     public static (int X, int Y) GetCursorPosition()
     {
@@ -167,13 +175,6 @@ public static partial class WindowHelpers
     public static int DragThresholdPixels() => Math.Max(GetSystemMetrics(68), GetSystemMetrics(69)); // SM_CXDRAG / SM_CYDRAG
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct POINT
-    {
-        public int X;
-        public int Y;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     private struct RECT
     {
         public int Left;
@@ -229,15 +230,7 @@ public static partial class WindowHelpers
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool SetWindowPos(nint hwnd, nint insertAfter, int x, int y, int cx, int cy, uint flags);
-
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool ShowWindow(nint hwnd, int cmd);
-
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetCursorPos(out POINT point);
 
     [LibraryImport("user32.dll")]
     private static partial nint MonitorFromPoint(POINT point, uint flags);
@@ -267,9 +260,6 @@ public static partial class WindowHelpers
 
     [LibraryImport("shell32.dll")]
     private static partial int SHQueryUserNotificationState(out int state);
-
-    [LibraryImport("user32.dll")]
-    private static partial int GetSystemMetrics(int index);
 
     [LibraryImport("dwmapi.dll")]
     private static partial int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int size);

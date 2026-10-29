@@ -1,4 +1,7 @@
 using System.Runtime.InteropServices;
+using FluxKit.Platform.Native;
+using static FluxKit.Platform.Native.Kernel32;
+using static FluxKit.Platform.Native.User32;
 
 namespace FluxKit.Platform.Shell;
 
@@ -188,30 +191,6 @@ public sealed unsafe partial class TrayIcon : IDisposable
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct POINT
-    {
-        public int X;
-        public int Y;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct WNDCLASSEX
-    {
-        public uint cbSize;
-        public uint style;
-        public nint lpfnWndProc;
-        public int cbClsExtra;
-        public int cbWndExtra;
-        public nint hInstance;
-        public nint hIcon;
-        public nint hCursor;
-        public nint hbrBackground;
-        public string? lpszMenuName;
-        public string lpszClassName;
-        public nint hIconSm;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     private struct NOTIFYICONDATA
     {
         public uint cbSize;
@@ -231,18 +210,6 @@ public sealed unsafe partial class TrayIcon : IDisposable
         public nint hBalloonIcon;
     }
 
-#pragma warning disable SYSLIB1054 // Struct with string fields needs classic marshalling.
-    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "RegisterClassExW")]
-    private static extern ushort RegisterClassEx(ref WNDCLASSEX wc);
-#pragma warning restore SYSLIB1054
-
-    [LibraryImport("user32.dll", EntryPoint = "CreateWindowExW", StringMarshalling = StringMarshalling.Utf16)]
-    private static partial nint CreateWindowEx(uint exStyle, string className, string title, uint style, int x, int y, int w, int h, nint parent, nint menu, nint instance, nint param);
-
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool DestroyWindow(nint hwnd);
-
     [LibraryImport("user32.dll", EntryPoint = "DefWindowProcW")]
     private static partial nint DefWindowProc(nint hwnd, uint msg, nint wParam, nint lParam);
 
@@ -261,9 +228,6 @@ public sealed unsafe partial class TrayIcon : IDisposable
     private static partial bool DestroyIcon(nint icon);
 
     [LibraryImport("user32.dll")]
-    private static partial int GetSystemMetrics(int index);
-
-    [LibraryImport("user32.dll")]
     private static partial nint CreatePopupMenu();
 
     [LibraryImport("user32.dll", EntryPoint = "AppendMenuW", StringMarshalling = StringMarshalling.Utf16)]
@@ -277,18 +241,8 @@ public sealed unsafe partial class TrayIcon : IDisposable
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool DestroyMenu(nint menu);
 
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool SetForegroundWindow(nint hwnd);
-
     [LibraryImport("user32.dll", EntryPoint = "PostMessageW")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool PostMessage(nint hwnd, uint msg, nint wParam, nint lParam);
 
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetCursorPos(out POINT point);
-
-    [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleW", StringMarshalling = StringMarshalling.Utf16)]
-    private static partial nint GetModuleHandle(string? name);
 }
