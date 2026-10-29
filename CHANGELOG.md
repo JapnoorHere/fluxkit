@@ -11,7 +11,9 @@ All notable changes to FluxKit are documented here. The format follows [Keep a C
 - The code says "tool" everywhere, the same as the app. Saved settings keep their old keys, so nothing is lost (ADR-013).
 
 ### Added
+- **Flux Island**, a new tool: a live pill at the top of the screen. It shows what is playing (with controls, a seek bar and an album glow), timers and a focus cycle, charger and battery moments, going offline and back online, mic and camera dots, "Copied" moments, a file shelf you drop files on and drag them out of, and scroll-to-change volume. It hides when an app is full screen. It has its own settings page with a live preview.
 - `--page <name>` opens FluxKit on a chosen page.
+- `--preview-island <sample>[-open]` shows a sample island state, for screenshots and testing.
 
 ## [1.0.0-preview.1] — 2026-10-26
 

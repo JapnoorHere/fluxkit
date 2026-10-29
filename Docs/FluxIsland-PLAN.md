@@ -122,6 +122,16 @@ tests/FluxKit.FluxIsland.Tests/
 7. **Volume.** Scroll to change volume, inline level bar.
 8. **Polish and docs.** Settings page with live preview, reduced motion check, performance check (CPU and memory with the island idle and animating), README, Configuration, KnownLimitations, CHANGELOG.
 
+## 6a. What changed while building it
+
+- **Sources live in the tool.** The adapters (media, power, network, privacy, clipboard, full screen, volume) are in `FluxKit.Tools.FluxIsland/Sources`. Only the raw Win32 watchers are in Platform: `Platform/Watchers` (full screen, privacy, clipboard) and `Platform/Audio/EndpointVolume.cs`. Media, power and network use WinRT events directly, so they need no Platform code.
+- **The shadow is shapes, not a DropShadow.** A composition DropShadow on a transparent window painted the whole stage black. Four stacked low-alpha rounded shapes follow the pill through expressions instead.
+- **True transparency** needs a custom system backdrop with a fully transparent brush, plus `DwmExtendFrameIntoClientArea(-1)`. Without the frame extension the region outside the pill draws black.
+- **Sizes.** The music panel is 400×172 (the seek row needed room), the timer panel 400×156, the shelf 400×132.
+- **Pages.** When more than one panel applies (music, timer, shelf), a small rail on the left switches between them, in the same style as FluxKit's own side rail.
+- **Album art** is decoded at 112 px once per track and shared by the pill and the panel.
+- **The settings page preview** is a real `IslandPill` showing sample scenes, scaled down, with commands left unset so its buttons do nothing.
+
 ## 7. Testing
 
 - Unit tests (automated): settings normalisation, arbiter priority and expiry, focus timer, battery alert policy, shelf model, media position maths.

@@ -1,9 +1,9 @@
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Win32;
 
-namespace FluxKit.App.Modules.DragToSwitch;
+namespace FluxKit.App.Common;
 
-/// <summary>Decoded wallpaper previews, reused across picker sessions until the file changes.</summary>
+/// <summary>Decoded wallpaper previews, reused across picker sessions and tool previews until the file changes.</summary>
 internal sealed class WallpaperCache
 {
     private readonly Dictionary<string, BitmapImage> _images = [];

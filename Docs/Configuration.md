@@ -64,6 +64,26 @@ All settings can be changed in the FluxKit window. This page documents the file 
 | `collapseAfterSwitch` | bool | `true` | Shrink to a pill after switching, instead of hiding. |
 | `returnToOriginOnCancel` | bool | `false` | Esc after a switch takes you back to the starting desktop. |
 
+## Flux Island settings
+
+Section `utilities/flux-island`.
+
+| Key | Values | Default | Meaning |
+|---|---|---|---|
+| `enabled` | bool | `true` | Tool on or off. Off closes the island and stops every watcher. |
+| `showMedia` | bool | `true` | What is playing, from the Windows media controls (GSMTC). |
+| `showPower` | bool | `true` | Plug-in and unplug moments, and a warning when the battery falls to 20 %. |
+| `showNetwork` | bool | `true` | "Offline" after 3 s without internet, "Online" when it comes back. |
+| `showPrivacy` | bool | `true` | Orange (mic) and green (camera) dots while an app uses them. |
+| `showClipboard` | bool | `true` | A "Copied" moment. Only the kind (text, image, files) is checked; the content is never read. |
+| `shelfEnabled` | bool | `true` | Drop files on the island to keep them (paths only, at most 12, in memory). |
+| `scrollForVolume` | bool | `true` | The mouse wheel over the island changes the master volume in steps of 2 %. |
+| `hideInFullScreen` | bool | `true` | Hide while a full-screen app covers the main screen. |
+| `showClockWhenIdle` | bool | `true` | The time on the idle pill. Off leaves a small empty pill. |
+| `effects` | `Full`, `Light` | `Full` | Springs, glow and playing bars, or short fades only. Light is also used whenever Windows animations are off. |
+| `focusMinutes` | 5–90 | 25 | Focus round length. Clamped. |
+| `breakMinutes` | 1–30 | 5 | Break length. Clamped. |
+
 ## Robustness rules
 
 - A missing file means defaults (first run).

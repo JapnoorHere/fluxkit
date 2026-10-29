@@ -774,4 +774,145 @@
   <data name="Island_RemoveFromShelf.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remove from the shelf</value>
   </data>
+  <data name="FluxIsland_Header.Title" xml:space="preserve">
+    <value>Flux Island</value>
+  </data>
+  <data name="FluxIsland_Header.Description" xml:space="preserve">
+    <value>A live pill at the top of the screen for music, timers, files and quick status.</value>
+  </data>
+  <data name="FluxIsland_Enabled.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Turn on Flux Island</value>
+  </data>
+  <data name="FluxIsland_StatusReady" xml:space="preserve">
+    <value>On · at the top of your main screen</value>
+  </data>
+  <data name="FluxIsland_StatusLimited" xml:space="preserve">
+    <value>Limited mode</value>
+  </data>
+  <data name="FluxIsland_StatusStopped" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="FluxIsland_StoppedDetail" xml:space="preserve">
+    <value>Open the log folder for details.</value>
+  </data>
+  <data name="FluxIsland_StatusStarting" xml:space="preserve">
+    <value>Starting</value>
+  </data>
+  <data name="FluxIsland_StatusOff" xml:space="preserve">
+    <value>Off. Turn on Flux Island to show the pill.</value>
+  </data>
+  <data name="FluxIsland_ShowGroup.Header" xml:space="preserve">
+    <value>What it shows</value>
+  </data>
+  <data name="FluxIsland_ShowMedia.Header" xml:space="preserve">
+    <value>Music and video</value>
+  </data>
+  <data name="FluxIsland_ShowMedia.Description" xml:space="preserve">
+    <value>What is playing in any app that shows in the Windows media controls, with play, skip and seek.</value>
+  </data>
+  <data name="FluxIsland_ShowPower.Header" xml:space="preserve">
+    <value>Charger and battery</value>
+  </data>
+  <data name="FluxIsland_ShowPower.Description" xml:space="preserve">
+    <value>A moment when you plug in or unplug, and a warning when the battery runs low.</value>
+  </data>
+  <data name="FluxIsland_ShowNetwork.Header" xml:space="preserve">
+    <value>Connection</value>
+  </data>
+  <data name="FluxIsland_ShowNetwork.Description" xml:space="preserve">
+    <value>Tells you when the internet drops and when it comes back.</value>
+  </data>
+  <data name="FluxIsland_ShowPrivacy.Header" xml:space="preserve">
+    <value>Microphone and camera</value>
+  </data>
+  <data name="FluxIsland_ShowPrivacy.Description" xml:space="preserve">
+    <value>A small dot while an app uses the microphone (orange) or the camera (green).</value>
+  </data>
+  <data name="FluxIsland_ShowClipboard.Header" xml:space="preserve">
+    <value>Copy moments</value>
+  </data>
+  <data name="FluxIsland_ShowClipboard.Description" xml:space="preserve">
+    <value>A short &quot;Copied&quot; when you copy text, an image or files. What you copy is never read.</value>
+  </data>
+  <data name="FluxIsland_ShowClock.Header" xml:space="preserve">
+    <value>Clock when idle</value>
+  </data>
+  <data name="FluxIsland_ShowClock.Description" xml:space="preserve">
+    <value>Shows the time when nothing else is happening.</value>
+  </data>
+  <data name="FluxIsland_InteractGroup.Header" xml:space="preserve">
+    <value>Interactions</value>
+  </data>
+  <data name="FluxIsland_Shelf.Header" xml:space="preserve">
+    <value>Shelf</value>
+  </data>
+  <data name="FluxIsland_Shelf.Description" xml:space="preserve">
+    <value>Drop files on the island to keep them handy, then drag them out wherever you need them. Files are never moved or copied by the shelf.</value>
+  </data>
+  <data name="FluxIsland_ScrollVolume.Header" xml:space="preserve">
+    <value>Scroll to change volume</value>
+  </data>
+  <data name="FluxIsland_ScrollVolume.Description" xml:space="preserve">
+    <value>Use the mouse wheel over the island to turn the volume up or down.</value>
+  </data>
+  <data name="FluxIsland_FocusGroup.Header" xml:space="preserve">
+    <value>Focus timer</value>
+  </data>
+  <data name="FluxIsland_FocusLength.Header" xml:space="preserve">
+    <value>Focus length</value>
+  </data>
+  <data name="FluxIsland_FocusLength.Description" xml:space="preserve">
+    <value>How long each focus round lasts.</value>
+  </data>
+  <data name="FluxIsland_BreakLength.Header" xml:space="preserve">
+    <value>Break length</value>
+  </data>
+  <data name="FluxIsland_BreakLength.Description" xml:space="preserve">
+    <value>How long the break between rounds lasts.</value>
+  </data>
+  <data name="FluxIsland_MinutesFormat" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="FluxIsland_AppearanceGroup.Header" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="FluxIsland_Effects.Header" xml:space="preserve">
+    <value>Effects</value>
+  </data>
+  <data name="FluxIsland_EffectsOn" xml:space="preserve">
+    <value>Springy motion, the album glow and the playing bars. Light keeps it to short fades.</value>
+  </data>
+  <data name="FluxIsland_EffectsOffInWindows" xml:space="preserve">
+    <value>Animations are off in Windows, so the island uses short fades.</value>
+  </data>
+  <data name="FluxIsland_EffectsFull.Content" xml:space="preserve">
+    <value>Full</value>
+  </data>
+  <data name="FluxIsland_EffectsLight.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="FluxIsland_HideFullScreen.Header" xml:space="preserve">
+    <value>Hide in full screen</value>
+  </data>
+  <data name="FluxIsland_HideFullScreen.Description" xml:space="preserve">
+    <value>Steps out of the way while a game, video or presentation fills the screen.</value>
+  </data>
+  <data name="IslandPreview_Music.Text" xml:space="preserve">
+    <value>Music</value>
+  </data>
+  <data name="IslandPreview_Timer.Text" xml:space="preserve">
+    <value>Timer</value>
+  </data>
+  <data name="IslandPreview_Shelf.Text" xml:space="preserve">
+    <value>Shelf</value>
+  </data>
+  <data name="IslandPreview_Charging.Text" xml:space="preserve">
+    <value>Charging</value>
+  </data>
+  <data name="IslandPreview_Clock.Text" xml:space="preserve">
+    <value>Clock</value>
+  </data>
+  <data name="IslandPreview_Caption.Text" xml:space="preserve">
+    <value>Hover to peek, click to open. Buttons in the preview don&apos;t do anything.</value>
+  </data>
 </root>

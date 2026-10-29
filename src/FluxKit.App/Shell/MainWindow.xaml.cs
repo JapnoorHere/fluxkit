@@ -1,10 +1,12 @@
 using FluxKit.App.Controls;
 using FluxKit.App.Modules.DragToSwitch;
+using FluxKit.App.Modules.FluxIsland;
 using FluxKit.App.Theming;
 using FluxKit.Core.Settings;
 using FluxKit.Core.Tools;
 using FluxKit.Platform.Windows;
 using FluxKit.Tools.DragToSwitch;
+using FluxKit.Tools.FluxIsland;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -22,6 +24,7 @@ public sealed partial class MainWindow : Window
     private static readonly Dictionary<string, Type> ToolPages = new()
     {
         [DragToSwitchTool.Id] = typeof(DragToSwitchPage),
+        [FluxIslandTool.Id] = typeof(FluxIslandPage),
     };
 
     private readonly AppHost _host = AppHost.Current;

@@ -5,6 +5,7 @@
 # The grid stands for the collection of tools; new tools don't need a new app icon.
 # Tool marks: one PNG per tool, shown in the navigation, on Home and on the tool's page.
 #   DragToSwitch: two offset desktop tiles with a curved arrow from one to the other.
+#   FluxIsland: the island itself, a gradient pill with album art on the left and playing bars on the right.
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
@@ -76,6 +77,18 @@ function New-Frame([int]$size, [string]$variant) {
             $g.DrawLines($pen, [System.Drawing.PointF[]]@(
                 [System.Drawing.PointF]::new(13.5 * $s, 21 * $s), [System.Drawing.PointF]::new(17.5 * $s, 19.8 * $s), [System.Drawing.PointF]::new(16.6 * $s, 15.8 * $s)))
         }
+        'fluxisland' {
+            $brush = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+                [System.Drawing.PointF]::new(2 * $s, 0), [System.Drawing.PointF]::new(30 * $s, 0),
+                (Color 255 99 91 255), (Color 255 0 178 216))
+            $g.FillPath($brush, (New-RoundRect (2 * $s) (9.5 * $s) (28 * $s) (13 * $s) (6.5 * $s)))
+            $white = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::White)
+            $g.FillPath($white, (New-RoundRect (6 * $s) (12.5 * $s) (7 * $s) (7 * $s) (2.2 * $s)))
+            foreach ($bar in @(@(18.5, 4.5), @(21.5, 7), @(24.5, 3.5))) {
+                $h = $bar[1]
+                $g.FillPath($white, (New-RoundRect ($bar[0] * $s) ((16 - $h / 2) * $s) (1.8 * $s) ($h * $s) (0.9 * $s)))
+            }
+        }
     }
     $g.Dispose(); return $bmp
 }
@@ -99,4 +112,5 @@ Save-Ico (Join-Path $out 'FluxKit.ico') @(16, 20, 24, 32, 40, 48, 64, 256) 'app'
 foreach ($v in 'traydark', 'traylight', 'trayoff') { Save-Ico (Join-Path $out "Tray-$v.ico") @(16, 20, 24, 32, 40, 48) $v }
 (New-Frame 256 'app').Save((Join-Path $out 'FluxKit.png'), [System.Drawing.Imaging.ImageFormat]::Png)
 (New-Frame 128 'dragtoswitch').Save((Join-Path $out 'DragToSwitch.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+(New-Frame 128 'fluxisland').Save((Join-Path $out 'FluxIsland.png'), [System.Drawing.Imaging.ImageFormat]::Png)
 Write-Host "Icons written to $out"

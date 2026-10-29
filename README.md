@@ -13,11 +13,12 @@
 
 FluxKit is a collection of small tools. Each tool does one job well, and you turn on only the ones you want. Everything runs on your PC, with no admin rights, no account and no internet connection.
 
-FluxKit is new, so it has one tool today, with more on the way.
+FluxKit is new, so it has two tools today, with more on the way.
 
 | Tool | What it does | Status |
 |---|---|---|
 | <img src="src/FluxKit.App/Assets/DragToSwitch.png" width="20" align="center"> **Drag-to-Switch** | Move files and windows to another virtual desktop while you drag them. | Preview |
+| <img src="src/FluxKit.App/Assets/FluxIsland.png" width="20" align="center"> **Flux Island** | A live pill at the top of the screen for music, timers, files and quick status. | Preview |
 
 Have an idea for a tool? [Open an issue](../../issues) and tell us about it.
 
@@ -46,6 +47,23 @@ Windows lets you have several virtual desktops, but dragging a file from one des
 | `Esc` | Cancel. A moved window goes back to its first desktop. |
 
 Your drag is never interrupted, and FluxKit never copies, moves, opens or uploads your files. The app you drop into handles the file, just like a normal drag.
+
+## Flux Island
+
+A small black pill sits at the top centre of your main screen. It shows the time when nothing is happening, and grows to show what is.
+
+| Moment | What you see |
+|---|---|
+| Music or video playing | The album art and title, with bouncing bars. Click to open play, skip and a seek bar over a glow in the album's colours. |
+| Timer | Quick 1, 5 and 10 minute timers and a focus cycle (25 min focus, 5 min break by default), with rolling digits and a bounce when time's up. |
+| Charger | A ring that sweeps to the battery level when you plug in, and a warning when the battery runs low. |
+| Connection | A note when the internet drops, and when it comes back. |
+| Microphone or camera | A small orange or green dot while an app uses them. |
+| Copy | A short "Copied" when you copy text, an image or files. |
+| Shelf | Drop files on the island to keep them, then drag them out later into any app. |
+| Volume | Scroll over the island to change the volume. |
+
+Hover over the island to peek at more, and click it to open the panel. When an app goes full screen, the island steps out of the way. It runs only on events, so it uses no CPU while nothing changes.
 
 ## Install
 
@@ -92,7 +110,7 @@ For the full design, see [Docs/Architecture.md](Docs/Architecture.md).
 ## Privacy
 
 - No telemetry and no network connections.
-- FluxKit never reads, copies, moves or uploads your files.
+- FluxKit never reads, copies, moves or uploads your files. The Flux Island shelf keeps only the paths of files you drop on it, in memory.
 - Settings and logs stay on your PC. Logs never include file names, file contents or window titles.
 
 Details: [Docs/Privacy.md](Docs/Privacy.md).

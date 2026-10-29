@@ -4,6 +4,7 @@
 
 ```
 FluxKit.App  ──▶  FluxKit.Tools.DragToSwitch  ──▶  FluxKit.Platform  ──▶  FluxKit.Core
+     ├──────▶  FluxKit.Tools.FluxIsland  ───────────────▲
      └──────────────────────────────────────────────────────────────────────────▲
 ```
 
@@ -12,7 +13,8 @@ FluxKit.App  ──▶  FluxKit.Tools.DragToSwitch  ──▶  FluxKit.Platform 
 | `FluxKit.Core` | net10.0 (no Windows APIs) | Tool model (`IFluxTool`, `ToolRegistry`), settings service, logging setup and redaction |
 | `FluxKit.Platform` | net10.0-windows | Win32/COM only: virtual desktop service, low-level input hooks, input synthesis, window helpers, startup registration, tray icon, STA worker |
 | `FluxKit.Tools.DragToSwitch` | net10.0-windows, no XAML | The tool: settings section, selector geometry, dwell tracking, the interaction coordinator (state machine) |
-| `FluxKit.App` | WinUI 3 exe | Composition root (`AppHost`), settings window and pages, selector overlay window |
+| `FluxKit.Tools.FluxIsland` | net10.0-windows, no XAML | The tool: settings, the activity arbiter (what the pill shows), focus timer, battery policy, shelf model, and `Sources/` adapters over Platform watchers and WinRT (media, power, network) |
+| `FluxKit.App` | WinUI 3 exe | Composition root (`AppHost`), settings window and pages, selector overlay window, island window |
 | `tools/*`, `spikes/*` | — | DropProbe, DragHarness, VdProbe (feasibility and E2E) |
 
 The tool library talks to its view only through `ISelectorView`, and to the OS only through `IVirtualDesktopService`, `ISystemInputSource` and `IWindowProbe`. That keeps the whole interaction logic unit-testable with fakes and a `FakeTimeProvider`.
@@ -46,7 +48,17 @@ Reuse these instead of writing another copy (see [CodingStandards.md](CodingStan
 | `Brand.xaml`, `Tokens.xaml`, `Styles.xaml` | `App/Theming` | Brand colours, spacing and sizes, and the shared styles |
 | `Strings` | `App` | All user-visible text, read from `Strings/en-US/Resources.resw` |
 | `PageHeader`, `SettingsGroup`, `SettingRow`, `ToolPageLayout`, `ToolTile`, `NavRail` | `App/Controls` | Building pages: header band, grouped settings cards, preview-and-settings layout, Home tiles, the side rail |
-| `WallpaperCache` | `App/Modules/DragToSwitch` | Decoded wallpaper previews |
+| `WallpaperCache` | `App/Common` | Decoded wallpaper previews |
+| `DispatcherQueueTimerHolder` | `App/Common` | One-shot UI timers that can be cancelled together |
+| `FullScreenWatcher`, `PrivacyWatcher`, `ClipboardWatcher` | `Platform/Watchers` | Event-driven system state (WinEvent hooks, registry notifications, clipboard listener) |
+| `EndpointVolume` | `Platform/Audio` | The default playback device's master volume (Core Audio) |
+| `SystemDispatcher`, `TransparentBackdrop` | `Platform/Windows`, `App/Theming` | Truly transparent overlay windows |
+
+## Flux Island
+
+The tool listens to its sources (all events, no polling), feeds an `ActivityArbiter` that decides what the pill shows (alerts pre-empt for a few seconds, then the most important lasting activity returns), and hands an immutable `IslandScene` to the view through `IIslandView`. `IslandViewAdapter` coalesces scenes onto the UI thread.
+
+The window (`IslandWindow`) is a fixed 440×212 transparent overlay at the top centre of the main screen, pinned to every desktop. It never moves: the pill (`IslandPill`) morphs inside it on the compositor (`PillShape`: a rounded-rectangle geometry on a spring, with stacked low-alpha shapes for the shadow), and the window region follows the pill so clicks elsewhere reach the app below. Panels (`MediaPanel`, `TimerPanel`, `ShelfPanel`) are pages switched by a small rail. The view wakes only for scene changes, once a minute for the clock, and once a second while a visible timer or seek bar moves.
 
 In the Drag-to-Switch tool, `DragClassifier` decides what a drag is (window move, file drag or neither) and `DragInteractionCoordinator` runs the session state machine below.
 

@@ -37,6 +37,25 @@ Environment for recorded runs: Windows 11 Home Single Language 26H2, build 26300
 | MT-14 | Explorer restart | `taskkill /f /im explorer.exe`, then `start explorer` | FluxKit re-probes. The next drag works. | N | Not run | — | |
 | MT-15 | Desktop icon as drag source | Drag a desktop icon to an app on another desktop | Same as MT-01 | N | Not run | — | |
 
+### Flux Island
+
+| ID | Scenario | Steps | Expected | Executed | Result | Date | Notes |
+|---|---|---|---|---|---|---|---|
+| FI-01 | Music | Play a song in Spotify, the Media Player or a browser | Pill shows art, title and bars. Click opens controls; play/pause, skip and seek work. | N | Not run | — | Rendered with `--preview-island music` |
+| FI-02 | Hover and click | Hover the pill, then click, then move away | Peek after a moment, panel on click, closes ~0.6 s after leaving | N | Not run | — | |
+| FI-03 | Click-through | Click just beside and below the pill | The app below gets the click | N | Not run | — | |
+| FI-04 | Charger | Plug in, then unplug, a laptop | Ring sweeps to the level, then "On battery" | N | Not run | — | |
+| FI-05 | Offline | Turn Wi-Fi off for 5 s, then on | "Offline", then "Online" | N | Not run | — | |
+| FI-06 | Mic and camera | Join a call or open the Camera app | Orange or green dot while in use, gone after | N | Not run | — | |
+| FI-07 | Copy | Copy text, an image and a file | "Copied" with Text, Image or Files | N | Not run | — | |
+| FI-08 | Timer | Open the panel › Timer › 1 min; pause, resume, let it finish | Rolling digits, progress, bell with burst and bounce at the end | N | Not run | — | Rendered with `--preview-island timer-open` and `done` |
+| FI-09 | Shelf drop | Drag two files from Explorer onto the pill | Shelf opens with a glowing drop zone; tiles appear after the drop | N | Not run | — | Rendered with `--preview-island drop` and `shelf-open` |
+| FI-10 | Shelf drag out | Drag a tile into an Explorer folder and into an email | A copy (or link) lands there; the original stays | N | Not run | — | |
+| FI-11 | Volume | Scroll over the pill | Level bar moves in 2 % steps; Windows volume follows | N | Not run | — | Interop checked read-only |
+| FI-12 | Full screen | Start a full-screen game or F11 a browser video | Island hides; comes back after | N | Not run | — | |
+| FI-13 | Reduced motion | Windows › Accessibility › Animation effects off | Island uses short fades only | N | Not run | — | |
+| FI-14 | Desktops and Explorer restart | Switch desktops; restart Explorer | Island stays on every desktop | N | Not run | — | |
+
 ## Smoke checks executed during development
 
 | Check | Executed | Result | Date | Notes |

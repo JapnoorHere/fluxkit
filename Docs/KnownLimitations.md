@@ -19,8 +19,20 @@
 - FluxKit never knows whether the target app accepted the drop. It only knows that the mouse was released.
 - No live previews of desktop contents (Windows has no public API for that). Cards show each desktop's wallpaper, or the current wallpaper when a desktop has none set.
 
+## Flux Island
+
+- **Main screen only.** The island sits at the top centre of the primary monitor. It doesn't follow you to other monitors.
+- **Music** comes from the Windows media controls (GSMTC). Players that don't publish a media session (some games, older players) don't appear. Album art shows only when the player provides it. The seek bar works only when the player allows seeking.
+- **Mic and camera dots** come from the Windows privacy records (the same ones Settings › Privacy uses). They can lag by a moment, and apps that use the device without going through Windows privacy tracking won't show.
+- **Charger** moments need a battery. On a desktop PC without one, nothing appears.
+- **Full screen** means a window that covers the whole main monitor without a title bar. Borderless "windowed full screen" games count; a maximised window doesn't.
+- **Shelf** items are paths kept in memory: they're gone when FluxKit exits, and a file moved or deleted in the meantime shows faded and can't be dragged out. The shelf offers copy or link when you drag out, never move, so the original file always stays where it is. Dropping on the island needs the pointer over the pill itself, which is small until it opens.
+- **Volume** changes the default playback device's master volume. Scrolling with a precision touchpad changes it in the same 2 % steps once enough scroll has built up.
+- **Click-through** comes from the window region, which follows the pill's resting size. While the pill springs past its size, a few pixels of overshoot can be cut off.
+
 ## Testing status
 
-- Automated: 69 unit tests (Core and Drag-to-Switch logic).
+- Automated: 136 unit tests (Core, Drag-to-Switch and Flux Island logic).
+- Flux Island: every state was rendered and checked from screenshots with `--preview-island`. The settings page, the transparency and the idle cost (0 ms CPU over 20 s) were checked by running the app. The volume interop was checked with a read-only call. The live checks that need you (music, charger, mic, copy, dropping on the shelf, scrolling, a full-screen game, hover and click) are listed in [ManualTestPlan.md](ManualTestPlan.md) and haven't been run yet.
 - Real-drag E2E through the FluxKit selector, and manual tests with real File Explorer, are tracked in [ManualTestPlan.md](ManualTestPlan.md) and [Feasibility.md](Feasibility.md). Only executed results are marked as passed.
 - Untested: multi-monitor with mixed DPI, Remote Desktop sessions, ARM64 hardware, Windows 10.

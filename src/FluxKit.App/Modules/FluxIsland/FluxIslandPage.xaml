@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="FluxKit.App.Modules.FluxIsland.FluxIslandPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:c="using:FluxKit.App.Controls"
+    xmlns:local="using:FluxKit.App.Modules.FluxIsland">
+    <Grid MaxWidth="{StaticResource PageMaxWidth}" Margin="32,24,20,0" RowSpacing="{StaticResource GroupSpacing}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <c:PageHeader x:Name="Header" x:Uid="FluxIsland_Header" Margin="0,0,12,0" IconAsset="FluxIsland.png">
+            <ToggleSwitch x:Name="EnabledToggle" x:Uid="FluxIsland_Enabled" MinWidth="0" Toggled="OnEnabledToggled" />
+        </c:PageHeader>
+
+        <!-- Only for problems; the normal status lives in the header. -->
+        <InfoBar x:Name="StatusBar" Grid.Row="1" Margin="0,0,12,0" IsClosable="False" IsOpen="False" />
+
+        <c:ToolPageLayout Grid.Row="2">
+            <c:ToolPageLayout.Preview>
+                <local:IslandPreview x:Name="Preview" />
+            </c:ToolPageLayout.Preview>
+
+            <StackPanel x:Name="OptionsPanel" Spacing="{StaticResource GroupSpacing}">
+                <c:SettingsGroup x:Uid="FluxIsland_ShowGroup">
+                    <StackPanel>
+                        <c:SettingRow x:Uid="FluxIsland_ShowMedia" Glyph="&#xE8D6;">
+                            <ToggleSwitch x:Name="MediaToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowPower" Glyph="&#xE945;">
+                            <ToggleSwitch x:Name="PowerToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowNetwork" Glyph="&#xE774;">
+                            <ToggleSwitch x:Name="NetworkToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowPrivacy" Glyph="&#xE720;">
+                            <ToggleSwitch x:Name="PrivacyToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowClipboard" Glyph="&#xE8C8;">
+                            <ToggleSwitch x:Name="ClipboardToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowClock" Glyph="&#xE823;">
+                            <ToggleSwitch x:Name="ClockToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                    </StackPanel>
+                </c:SettingsGroup>
+
+                <c:SettingsGroup x:Uid="FluxIsland_InteractGroup">
+                    <StackPanel>
+                        <c:SettingRow x:Uid="FluxIsland_Shelf" Glyph="&#xE7B8;">
+                            <ToggleSwitch x:Name="ShelfToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ScrollVolume" Glyph="&#xE767;">
+                            <ToggleSwitch x:Name="VolumeToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                    </StackPanel>
+                </c:SettingsGroup>
+
+                <c:SettingsGroup x:Uid="FluxIsland_FocusGroup">
+                    <StackPanel>
+                        <c:SettingRow x:Uid="FluxIsland_FocusLength" Glyph="&#xE916;">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Slider
+                                    x:Name="FocusSlider"
+                                    Width="180"
+                                    Maximum="90"
+                                    Minimum="5"
+                                    StepFrequency="5"
+                                    TickFrequency="15"
+                                    ValueChanged="OnLengthChanged" />
+                                <TextBlock x:Name="FocusText" MinWidth="56" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_BreakLength" Glyph="&#xE708;">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Slider
+                                    x:Name="BreakSlider"
+                                    Width="180"
+                                    Maximum="30"
+                                    Minimum="1"
+                                    StepFrequency="1"
+                                    TickFrequency="5"
+                                    ValueChanged="OnLengthChanged" />
+                                <TextBlock x:Name="BreakText" MinWidth="56" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </c:SettingRow>
+                    </StackPanel>
+                </c:SettingsGroup>
+
+                <c:SettingsGroup x:Uid="FluxIsland_AppearanceGroup">
+                    <StackPanel>
+                        <c:SettingRow x:Name="EffectsRow" x:Uid="FluxIsland_Effects" Glyph="&#xE8B1;">
+                            <ComboBox x:Name="EffectsCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
+                                <ComboBoxItem x:Uid="FluxIsland_EffectsFull" />
+                                <ComboBoxItem x:Uid="FluxIsland_EffectsLight" />
+                            </ComboBox>
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_HideFullScreen" Glyph="&#xE740;">
+                            <ToggleSwitch x:Name="FullScreenToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                    </StackPanel>
+                </c:SettingsGroup>
+            </StackPanel>
+        </c:ToolPageLayout>
+    </Grid>
+</Page>
