@@ -45,6 +45,9 @@ public sealed partial class MediaPanel : UserControl
     /// <summary>The rows, in the order they should appear when the panel opens.</summary>
     internal UIElement[] Rows => [TrackRow, SeekRow, ControlsRow];
 
+    /// <summary>Moves the content right to make room for the page rail; the glow still fills the panel.</summary>
+    internal void SetInset(double left) => ContentGrid.Margin = new Thickness(left, 0, 0, 0);
+
     public void Update(MediaInfo media, DateTimeOffset now)
     {
         _media = media;

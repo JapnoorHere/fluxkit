@@ -124,6 +124,23 @@ internal sealed class PillShape
         _stage.CenterPoint = new Vector3(_stageWidth / 2, _top + (size.Y / 2), 0);
     }
 
+    /// <summary>One happy bounce of the whole island: up to 106 % and back, settling on a spring.</summary>
+    public void Bounce(bool springs)
+    {
+        if (!springs)
+        {
+            return;
+        }
+
+        Vector3KeyFrameAnimation bounce = _compositor.CreateVector3KeyFrameAnimation();
+        bounce.InsertKeyFrame(0.3f, new Vector3(1.06f, 1.06f, 1), EaseOut());
+        bounce.InsertKeyFrame(0.65f, new Vector3(0.98f, 0.98f, 1));
+        bounce.InsertKeyFrame(1, Vector3.One, EaseOut());
+        bounce.Duration = TimeSpan.FromMilliseconds(520);
+        bounce.DelayTime = TimeSpan.FromMilliseconds(120);
+        _stage.StartAnimation("Scale", bounce);
+    }
+
     /// <summary>Swells or squishes the whole island around its centre.</summary>
     public void ScaleTo(float scale, bool springs)
     {

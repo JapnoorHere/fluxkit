@@ -9,7 +9,7 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// </summary>
 internal static class IslandSamples
 {
-    public static readonly string[] Names = ["clock", "music", "timer", "charging", "copied", "offline", "volume", "shelf"];
+    public static readonly string[] Names = ["clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf"];
 
     public static IslandScene Create(string name, DateTimeOffset now)
     {
@@ -20,6 +20,7 @@ internal static class IslandSamples
         {
             "music" => new IslandActivity(ActivityKind.Media) { Media = media },
             "timer" => new IslandActivity(ActivityKind.Timer) { Timer = timer },
+            "done" => new IslandActivity(ActivityKind.TimerDone) { Timer = timer with { State = TimerState.Idle } },
             "charging" => new IslandActivity(ActivityKind.PluggedIn) { Value = 76 },
             "copied" => new IslandActivity(ActivityKind.Copied) { Clipboard = ClipboardKind.Text },
             "offline" => new IslandActivity(ActivityKind.Offline),

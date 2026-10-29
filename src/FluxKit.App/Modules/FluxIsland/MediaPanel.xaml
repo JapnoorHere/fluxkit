@@ -23,7 +23,10 @@
             </Rectangle.Fill>
         </Rectangle>
 
-        <Grid Padding="18,16,18,12" RowSpacing="8">
+        <Grid
+            x:Name="ContentGrid"
+            Padding="18,16,18,12"
+            RowSpacing="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />

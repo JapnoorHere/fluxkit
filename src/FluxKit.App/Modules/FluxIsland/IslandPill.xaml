@@ -10,6 +10,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:FluxKit.App.Modules.FluxIsland"
     RequestedTheme="Dark">
+    <UserControl.Resources>
+        <ResourceDictionary Source="ms-appx:///Modules/FluxIsland/IslandStyles.xaml" />
+    </UserControl.Resources>
     <Grid x:Name="Stage">
         <Grid x:Name="ShapeHost" IsHitTestVisible="False" />
         <Grid x:Name="ContentLayer">
@@ -42,6 +45,12 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Grid VerticalAlignment="Center">
+                        <Ellipse
+                            x:Name="CompactBurst"
+                            Width="22"
+                            Height="22"
+                            StrokeThickness="2"
+                            Opacity="0" />
                         <FontIcon x:Name="CompactGlyph" FontSize="16" />
                         <local:ChargeRing x:Name="CompactRing" Visibility="Collapsed" />
                         <Border
@@ -83,43 +92,44 @@
                 </Grid>
 
                 <local:MediaPanel x:Name="MediaView" Visibility="Collapsed" />
+                <local:TimerPanel x:Name="TimerView" Visibility="Collapsed" />
 
-                <Grid
-                    x:Name="PanelView"
-                    Padding="22,16,22,18"
+                <!-- Switches between the panel's pages when there is more than one, like FluxKit's own side rail. -->
+                <StackPanel
+                    x:Name="PanelRail"
+                    Margin="10,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Spacing="4"
                     Visibility="Collapsed">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid x:Name="PanelHeader" ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock x:Name="PanelClock" FontSize="28" FontWeight="SemiBold" />
-                            <TextBlock x:Name="PanelDate" FontSize="13" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="PanelBattery"
-                            Grid.Column="1"
-                            VerticalAlignment="Top"
-                            Orientation="Horizontal"
-                            Spacing="6"
-                            Visibility="Collapsed">
-                            <FontIcon x:Name="PanelBatteryGlyph" FontSize="16" />
-                            <TextBlock x:Name="PanelBatteryText" VerticalAlignment="Center" FontSize="13" />
-                        </StackPanel>
-                    </Grid>
-                    <TextBlock
-                        x:Name="PanelHint"
-                        Grid.Row="1"
-                        VerticalAlignment="Bottom"
-                        FontSize="12"
-                        TextWrapping="Wrap"
-                        x:Uid="Island_PanelHint" />
-                </Grid>
+                    <Button
+                        x:Name="MediaTab"
+                        Width="28"
+                        Height="28"
+                        CornerRadius="14"
+                        Style="{StaticResource IslandIconButtonStyle}"
+                        x:Uid="Island_MediaTab">
+                        <FontIcon FontSize="13" Glyph="&#xE8D6;" />
+                    </Button>
+                    <Button
+                        x:Name="TimerTab"
+                        Width="28"
+                        Height="28"
+                        CornerRadius="14"
+                        Style="{StaticResource IslandIconButtonStyle}"
+                        x:Uid="Island_TimerTab">
+                        <FontIcon FontSize="13" Glyph="&#xE916;" />
+                    </Button>
+                    <Button
+                        x:Name="ShelfTab"
+                        Width="28"
+                        Height="28"
+                        CornerRadius="14"
+                        Style="{StaticResource IslandIconButtonStyle}"
+                        x:Uid="Island_ShelfTab">
+                        <FontIcon FontSize="13" Glyph="&#xE7B8;" />
+                    </Button>
+                </StackPanel>
             </Grid>
         </Grid>
     </Grid>

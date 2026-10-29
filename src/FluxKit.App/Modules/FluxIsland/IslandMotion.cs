@@ -70,6 +70,37 @@ internal static class IslandMotion
         visual.StartAnimation("Scale", pop);
     }
 
+    /// <summary>A ring that grows out of an icon and fades away, for moments that deserve attention.</summary>
+    public static void Burst(UIElement ring, bool springs)
+    {
+        if (!springs)
+        {
+            return;
+        }
+
+        Visual visual = ElementCompositionPreview.GetElementVisual(ring);
+        Compositor compositor = visual.Compositor;
+        visual.CenterPoint = new Vector3(11, 11, 0);
+        CubicBezierEasingFunction ease = compositor.CreateCubicBezierEasingFunction(new Vector2(0.1f, 0.8f), new Vector2(0.3f, 1));
+
+        Vector3KeyFrameAnimation grow = compositor.CreateVector3KeyFrameAnimation();
+        grow.InsertKeyFrame(0, new Vector3(0.6f, 0.6f, 1));
+        grow.InsertKeyFrame(1, new Vector3(2.4f, 2.4f, 1), ease);
+        grow.Duration = TimeSpan.FromMilliseconds(700);
+        grow.IterationCount = 2;
+        grow.IterationBehavior = AnimationIterationBehavior.Count;
+
+        ScalarKeyFrameAnimation fade = compositor.CreateScalarKeyFrameAnimation();
+        fade.InsertKeyFrame(0, 0.9f);
+        fade.InsertKeyFrame(1, 0, ease);
+        fade.Duration = grow.Duration;
+        fade.IterationCount = 2;
+        fade.IterationBehavior = AnimationIterationBehavior.Count;
+
+        visual.StartAnimation("Scale", grow);
+        visual.StartAnimation("Opacity", fade);
+    }
+
     /// <summary>Fades <paramref name="element"/> out, then collapses it unless <paramref name="stillHidden"/> says it came back.</summary>
     public static void Exit(UIElement element, Func<bool> stillHidden)
     {

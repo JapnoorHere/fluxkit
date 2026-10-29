@@ -645,9 +645,6 @@
   <data name="Tray_StatusOff" xml:space="preserve">
     <value>off</value>
   </data>
-  <data name="Island_PanelHint.Text" xml:space="preserve">
-    <value>Music, timers and files you drop here will show up in this panel.</value>
-  </data>
   <data name="Island_Media_Untitled" xml:space="preserve">
     <value>Something is playing</value>
   </data>
@@ -719,5 +716,44 @@
   </data>
   <data name="Island_RemainingFormat" xml:space="preserve">
     <value>-{0}</value>
+  </data>
+  <data name="Island_OneMinute.Content" xml:space="preserve">
+    <value>1 min</value>
+  </data>
+  <data name="Island_FiveMinutes.Content" xml:space="preserve">
+    <value>5 min</value>
+  </data>
+  <data name="Island_TenMinutes.Content" xml:space="preserve">
+    <value>10 min</value>
+  </data>
+  <data name="Island_FocusFormat" xml:space="preserve">
+    <value>Focus {0}</value>
+  </data>
+  <data name="Island_CancelTimer.Text" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Island_PauseTimer" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="Island_ResumeTimer" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  <data name="Island_FocusRoundFormat" xml:space="preserve">
+    <value>Focus · round {0}</value>
+  </data>
+  <data name="Island_Timer_Countdown" xml:space="preserve">
+    <value>Timer</value>
+  </data>
+  <data name="Island_PausedLabelFormat" xml:space="preserve">
+    <value>{0} · paused</value>
+  </data>
+  <data name="Island_MediaTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Music</value>
+  </data>
+  <data name="Island_TimerTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Timer</value>
+  </data>
+  <data name="Island_ShelfTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Shelf</value>
   </data>
 </root>

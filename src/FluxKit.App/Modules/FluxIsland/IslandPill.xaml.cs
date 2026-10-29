@@ -26,6 +26,7 @@ public sealed partial class IslandPill : UserControl
     private const double MinCompactWidth = 220;
     private const double MaxCompactWidth = 300;
     private const double DotsRoom = 20;
+    private const double RailRoom = 34;
     private const float HoverScale = 1.04f;
     private const float PressScale = 0.94f;
     private static readonly Size IdleSize = new(120, 32);
@@ -44,6 +45,7 @@ public sealed partial class IslandPill : UserControl
     private readonly DispatcherQueueTimer _tickTimer;
     private IslandScene _scene = IslandScene.Empty;
     private PillMode _mode;
+    private PanelPage? _page;
     private UIElement? _shownView;
     private string? _shownKey;
     private bool _hovering;
@@ -56,9 +58,7 @@ public sealed partial class IslandPill : UserControl
         Foreground = new SolidColorBrush(IslandPalette.TextPrimary);
         var secondary = new SolidColorBrush(IslandPalette.TextSecondary);
         CompactSubtitle.Foreground = secondary;
-        PanelDate.Foreground = secondary;
-        PanelHint.Foreground = secondary;
-        PanelBatteryText.Foreground = secondary;
+        CompactBurst.Stroke = new SolidColorBrush(IslandPalette.Orange);
         Stage.Width = StageWidth;
         Stage.Height = StageHeight;
         Surface.Margin = new Thickness(0, TopInset, 0, 0);
@@ -81,6 +81,13 @@ public sealed partial class IslandPill : UserControl
         _tickTimer.Interval = TimeSpan.FromSeconds(1);
         _tickTimer.Tick += (_, _) => Update();
 
+        MediaTab.Click += (_, _) => ShowPage(PanelPage.Media);
+        TimerTab.Click += (_, _) => ShowPage(PanelPage.Timer);
+        ShelfTab.Click += (_, _) => ShowPage(PanelPage.Shelf);
+        PressFeedback.Attach(MediaTab);
+        PressFeedback.Attach(TimerTab);
+        PressFeedback.Attach(ShelfTab);
+
         Surface.PointerEntered += OnPointerEntered;
         Surface.PointerExited += OnPointerExited;
         Surface.PointerPressed += OnPointerPressed;
@@ -96,11 +103,22 @@ public sealed partial class IslandPill : UserControl
         Panel,
     }
 
+    private enum PanelPage
+    {
+        Media,
+        Timer,
+        Shelf,
+    }
+
     /// <summary>What buttons on the island call. Unset in previews, where nothing should happen.</summary>
     public IIslandCommands? Commands
     {
         get => MediaView.Commands;
-        set => MediaView.Commands = value;
+        set
+        {
+            MediaView.Commands = value;
+            TimerView.Commands = value;
+        }
     }
 
     /// <summary>False when Windows animations are off or the tool uses Light effects; springs become short fades.</summary>
@@ -163,6 +181,13 @@ public sealed partial class IslandPill : UserControl
             {
                 CompactRing.Sweep(alert.Value, Springs);
             }
+            else if (alert.Kind == ActivityKind.TimerDone)
+            {
+                // Time's up deserves more: a ring bursts out of the bell and the whole pill bounces once.
+                IslandMotion.Pop(CompactGlyph, Springs);
+                IslandMotion.Burst(CompactBurst, Springs);
+                _shape.Bounce(Springs);
+            }
             else
             {
                 IslandMotion.Pop(CompactGlyph, Springs);
@@ -176,6 +201,7 @@ public sealed partial class IslandPill : UserControl
     private (UIElement View, string Key, Size Size) BuildCompact(DateTimeOffset now)
     {
         bool peek = _mode == PillMode.Peek;
+        PanelRail.Visibility = Visibility.Collapsed;
         if (_scene.Primary is not { } primary)
         {
             if (!peek)
@@ -238,28 +264,68 @@ public sealed partial class IslandPill : UserControl
 
     private (UIElement View, string Key, Size Size) BuildPanel(DateTimeOffset now)
     {
-        if (_scene.Media is { } media)
+        List<PanelPage> pages = AvailablePages();
+        if (_page is not { } page || !pages.Contains(page))
         {
+            page = DefaultPage(pages);
+            _page = page;
+        }
+
+        ShowRail(pages, page);
+        double inset = pages.Count > 1 ? RailRoom : 0;
+        if (page == PanelPage.Media && _scene.Media is { } media)
+        {
+            MediaView.SetInset(inset);
             MediaView.Animate = Springs;
             MediaView.Update(media, now);
             AutomationProperties.SetName(Surface, string.Join(", ", new[] { media.Title, media.Artist }.Where(t => !string.IsNullOrEmpty(t))));
             return (MediaView, "panel-media", MediaPanelSize);
         }
 
-        PanelClock.Text = IslandPresenter.FormatClock(now);
-        PanelDate.Text = IslandPresenter.FormatDate(now);
-        PowerSnapshot power = _scene.Power;
-        PanelBattery.Visibility = power.HasBattery ? Visibility.Visible : Visibility.Collapsed;
-        if (power.HasBattery)
+        TimerView.SetInset(inset);
+        TimerView.Update(_scene, now, Springs);
+        bool timing = _scene.Timer?.IsActive == true;
+        AutomationProperties.SetName(Surface, timing ? IslandPresenter.FormatRemaining(_scene.Timer!.RemainingAt(now)) : IslandPresenter.FormatClock(now));
+        return (TimerView, $"panel-timer-{timing}", PanelSize);
+    }
+
+    /// <summary>The timer page is always there (it doubles as the clock); music only while something plays.</summary>
+    private List<PanelPage> AvailablePages()
+    {
+        List<PanelPage> pages = [];
+        if (_scene.Media is not null)
         {
-            CompactContent battery = IslandPresenter.Describe(new IslandActivity(power.IsPluggedIn ? ActivityKind.PluggedIn : ActivityKind.Unplugged) { Value = power.Percent }, now);
-            PanelBatteryGlyph.Glyph = battery.Glyph;
-            PanelBatteryGlyph.Foreground = new SolidColorBrush(battery.Accent);
-            PanelBatteryText.Text = battery.Trail;
+            pages.Add(PanelPage.Media);
         }
 
-        AutomationProperties.SetName(Surface, $"{PanelClock.Text}, {PanelDate.Text}");
-        return (PanelView, "panel-clock", PanelSize);
+        pages.Add(PanelPage.Timer);
+        return pages;
+    }
+
+    /// <summary>Opens on what the pill was showing: a running timer, else the music, else the clock.</summary>
+    private PanelPage DefaultPage(List<PanelPage> pages) =>
+        _scene.Primary?.Kind is ActivityKind.Timer or ActivityKind.TimerDone || !pages.Contains(PanelPage.Media) ? PanelPage.Timer : PanelPage.Media;
+
+    private void ShowPage(PanelPage page)
+    {
+        if (page != _page)
+        {
+            _page = page;
+            Update();
+        }
+    }
+
+    private void ShowRail(List<PanelPage> pages, PanelPage selected)
+    {
+        PanelRail.Visibility = pages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
+        (Button Tab, PanelPage Page)[] tabs = [(MediaTab, PanelPage.Media), (TimerTab, PanelPage.Timer), (ShelfTab, PanelPage.Shelf)];
+        foreach ((Button tab, PanelPage tabPage) in tabs)
+        {
+            bool isSelected = tabPage == selected;
+            tab.Visibility = pages.Contains(tabPage) ? Visibility.Visible : Visibility.Collapsed;
+            tab.Background = isSelected ? new SolidColorBrush(Windows.UI.Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF)) : new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+            tab.Foreground = new SolidColorBrush(isSelected ? IslandPalette.TextPrimary : IslandPalette.TextSecondary);
+        }
     }
 
     /// <summary>Plays the entrance when the content changes; returns true when it did.</summary>
@@ -278,17 +344,11 @@ public sealed partial class IslandPill : UserControl
             IslandMotion.Exit(previous, () => _shownView != previous);
         }
 
-        if (view == PanelView)
+        UIElement[]? rows = view == MediaView ? MediaView.Rows : view == TimerView ? TimerView.Rows : null;
+        if (rows is not null)
         {
-            // Rows arrive one after the other.
-            IslandMotion.Enter(PanelView, TimeSpan.Zero, Springs);
-            IslandMotion.Enter(PanelHeader, IslandMotion.Stagger, Springs);
-            IslandMotion.Enter(PanelHint, IslandMotion.Stagger * 2, Springs);
-        }
-        else if (view == MediaView)
-        {
-            IslandMotion.Enter(MediaView, TimeSpan.Zero, Springs);
-            UIElement[] rows = MediaView.Rows;
+            // Panel rows arrive one after the other.
+            IslandMotion.Enter(view, TimeSpan.Zero, Springs);
             for (int i = 0; i < rows.Length; i++)
             {
                 IslandMotion.Enter(rows[i], IslandMotion.Stagger * (i + 1), Springs);
@@ -328,8 +388,10 @@ public sealed partial class IslandPill : UserControl
         _clockTimer.Start();
 
         // Tick once a second only while something on screen moves: a running timer, or the seek bar of playing music.
-        bool counting = (_scene.Primary?.Kind == ActivityKind.Timer && _scene.Timer?.State == TimerState.Running)
-            || (_mode == PillMode.Panel && _scene.Media?.IsPlaying == true);
+        bool timerRunning = _scene.Timer?.State == TimerState.Running;
+        bool counting = _mode == PillMode.Panel
+            ? (_page == PanelPage.Timer && timerRunning) || (_page == PanelPage.Media && _scene.Media?.IsPlaying == true)
+            : _scene.Primary?.Kind == ActivityKind.Timer && timerRunning;
         if (counting && !_tickTimer.IsRunning)
         {
             _tickTimer.Start();
@@ -353,6 +415,11 @@ public sealed partial class IslandPill : UserControl
         if (mode == PillMode.Panel)
         {
             _shape.ScaleTo(1, Springs);
+        }
+        else
+        {
+            // The next time the panel opens, it opens on whatever is most relevant then.
+            _page = null;
         }
 
         Update();
