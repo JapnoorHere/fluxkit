@@ -216,7 +216,23 @@ public static partial class WindowHelpers
         _ = DwmSetWindowAttribute(hwnd, 33, ref corner, sizeof(int));
         int border = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
         _ = DwmSetWindowAttribute(hwnd, 34, ref border, sizeof(int));
+
+        // Without a frame, DWM treats the client area as opaque; a "sheet of glass" frame lets it blend the alpha.
+        var glass = new MARGINS { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+        _ = DwmExtendFrameIntoClientArea(hwnd, ref glass);
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MARGINS
+    {
+        public int Left;
+        public int Right;
+        public int Top;
+        public int Bottom;
+    }
+
+    [LibraryImport("dwmapi.dll")]
+    private static partial int DwmExtendFrameIntoClientArea(nint hwnd, ref MARGINS margins);
 
     /// <summary>The id of the process that owns <paramref name="hwnd"/>, or 0.</summary>
     public static uint GetProcessId(nint hwnd)

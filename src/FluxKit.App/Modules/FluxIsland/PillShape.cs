@@ -1,8 +1,8 @@
 using System.Numerics;
-using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
+using Windows.UI;
 
 namespace FluxKit.App.Modules.FluxIsland;
 
@@ -18,6 +18,9 @@ internal sealed class PillShape
     private const float SpringDamping = 0.72f;
     private static readonly TimeSpan SpringPeriod = TimeSpan.FromMilliseconds(45);
     private static readonly TimeSpan FadeDuration = TimeSpan.FromMilliseconds(120);
+
+    // Shadow layers from the outside in: how far each spreads past the pill, how far it drops, and its opacity.
+    private static readonly (float Spread, float Drop, byte Alpha)[] Shadow = [(9, 4, 0x08), (6, 3, 0x0C), (3, 2, 0x14), (1, 1, 0x1E)];
 
     private readonly Compositor _compositor;
     private readonly CompositionRoundedRectangleGeometry _geometry;
@@ -37,26 +40,28 @@ internal sealed class PillShape
         _top = top;
         _geometry = _compositor.CreateRoundedRectangleGeometry();
 
+        ShapeVisual shapes = _compositor.CreateShapeVisual();
+        shapes.Size = stageSize;
+
+        // The soft shadow is a few slightly larger, nearly clear copies of the shape below it, not a live blur.
+        // They follow the shape through expressions, so the shadow morphs with the pill at no extra cost.
+        foreach ((float spread, float drop, byte alpha) in Shadow)
+        {
+            CompositionRoundedRectangleGeometry halo = _compositor.CreateRoundedRectangleGeometry();
+            Follow(halo, "Size", "g.Size + Vector2(s * 2, s * 2)", spread);
+            Follow(halo, "Offset", "g.Offset - Vector2(s, s) + Vector2(0, d)", spread, drop);
+            Follow(halo, "CornerRadius", "g.CornerRadius + Vector2(s, s)", spread);
+            CompositionSpriteShape layer = _compositor.CreateSpriteShape(halo);
+            layer.FillBrush = _compositor.CreateColorBrush(Color.FromArgb(alpha, 0, 0, 0));
+            shapes.Shapes.Add(layer);
+        }
+
         CompositionSpriteShape fill = _compositor.CreateSpriteShape(_geometry);
         fill.FillBrush = _compositor.CreateColorBrush(IslandPalette.Surface);
         fill.StrokeBrush = _compositor.CreateColorBrush(IslandPalette.Highlight);
         fill.StrokeThickness = 1;
-
-        ShapeVisual shapes = _compositor.CreateShapeVisual();
-        shapes.Size = stageSize;
         shapes.Shapes.Add(fill);
-
-        // The layer's shadow takes its outline from the shape, so it morphs with it at no extra cost.
-        LayerVisual layer = _compositor.CreateLayerVisual();
-        layer.Size = stageSize;
-        layer.Children.InsertAtTop(shapes);
-        DropShadow shadow = _compositor.CreateDropShadow();
-        shadow.Color = Colors.Black;
-        shadow.BlurRadius = 14;
-        shadow.Opacity = 0.4f;
-        shadow.Offset = new Vector3(0, 3, 0);
-        layer.Shadow = shadow;
-        ElementCompositionPreview.SetElementChildVisual(shapeHost, layer);
+        ElementCompositionPreview.SetElementChildVisual(shapeHost, shapes);
 
         ExpressionAnimation corner = _compositor.CreateExpressionAnimation("Vector2(Min(g.Size.Y / 2, r), Min(g.Size.Y / 2, r))");
         corner.SetReferenceParameter("g", _geometry);
@@ -136,6 +141,15 @@ internal sealed class PillShape
             _stage.StopAnimation("Scale");
             _stage.Scale = Vector3.One;
         }
+    }
+
+    private void Follow(CompositionGeometry target, string property, string expression, float spread, float drop = 0)
+    {
+        ExpressionAnimation animation = _compositor.CreateExpressionAnimation(expression);
+        animation.SetReferenceParameter("g", _geometry);
+        animation.SetScalarParameter("s", spread);
+        animation.SetScalarParameter("d", drop);
+        target.StartAnimation(property, animation);
     }
 
     private CubicBezierEasingFunction EaseOut() => _compositor.CreateCubicBezierEasingFunction(new Vector2(0.1f, 0.9f), new Vector2(0.2f, 1f));

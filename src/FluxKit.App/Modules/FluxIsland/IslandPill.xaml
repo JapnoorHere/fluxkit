@@ -8,6 +8,7 @@
     x:Class="FluxKit.App.Modules.FluxIsland.IslandPill"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FluxKit.App.Modules.FluxIsland"
     RequestedTheme="Dark">
     <Grid x:Name="Stage">
         <Grid x:Name="ShapeHost" IsHitTestVisible="False" />
@@ -34,7 +35,17 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <FontIcon x:Name="CompactGlyph" VerticalAlignment="Center" FontSize="16" />
+                    <Grid VerticalAlignment="Center">
+                        <FontIcon x:Name="CompactGlyph" FontSize="16" />
+                        <Border
+                            x:Name="CompactArtFrame"
+                            Width="22"
+                            Height="22"
+                            CornerRadius="6"
+                            Visibility="Collapsed">
+                            <Image x:Name="CompactArt" Stretch="UniformToFill" />
+                        </Border>
+                    </Grid>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock
                             x:Name="CompactTitle"
@@ -49,13 +60,21 @@
                             TextTrimming="CharacterEllipsis"
                             Visibility="Collapsed" />
                     </StackPanel>
-                    <TextBlock
-                        x:Name="CompactTrail"
+                    <StackPanel
                         Grid.Column="2"
                         VerticalAlignment="Center"
-                        FontSize="13"
-                        FontWeight="SemiBold" />
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <TextBlock
+                            x:Name="CompactTrail"
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold" />
+                        <local:PlayingBars x:Name="CompactBars" Visibility="Collapsed" />
+                    </StackPanel>
                 </Grid>
+
+                <local:MediaPanel x:Name="MediaView" Visibility="Collapsed" />
 
                 <Grid
                     x:Name="PanelView"

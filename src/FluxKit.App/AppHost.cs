@@ -152,6 +152,16 @@ public sealed class AppHost
                 () => _selector?.ShowPreview(Settings.Read<DragToSwitchSettings>(DragToSwitchSettings.Section)));
         }
 
+        int islandPreview = Array.FindIndex(args, a => a.Equals("--preview-island", StringComparison.OrdinalIgnoreCase));
+        if (islandPreview >= 0 && islandPreview + 1 < args.Length)
+        {
+            // "music" shows the compact pill, "music-open" the open panel.
+            string sample = args[islandPreview + 1];
+            bool open = sample.EndsWith("-open", StringComparison.OrdinalIgnoreCase);
+            _dispatcher.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+                () => _island?.ShowPreview(open ? sample[..^"-open".Length] : sample, open));
+        }
+
         Log.Information("FluxKit ready (background={Background})", background);
     }
 

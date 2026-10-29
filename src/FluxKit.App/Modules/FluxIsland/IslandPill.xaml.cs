@@ -31,10 +31,12 @@ public sealed partial class IslandPill : UserControl
     private static readonly Size BareSize = new(88, 28);
     private static readonly Size PeekSize = new(320, 52);
     private static readonly Size PanelSize = new(400, 156);
+    private static readonly Size MediaPanelSize = new(400, 172);
     private static readonly TimeSpan PeekDelay = TimeSpan.FromMilliseconds(350);
     private static readonly TimeSpan CloseDelay = TimeSpan.FromMilliseconds(600);
 
     private readonly PillShape _shape;
+    private readonly AlbumArt _art = new();
     private readonly DispatcherQueueTimer _peekTimer;
     private readonly DispatcherQueueTimer _closeTimer;
     private readonly DispatcherQueueTimer _clockTimer;
@@ -60,6 +62,16 @@ public sealed partial class IslandPill : UserControl
         Stage.Height = StageHeight;
         Surface.Margin = new Thickness(0, TopInset, 0, 0);
         _shape = new PillShape(ShapeHost, ContentLayer, Stage, new Vector2((float)StageWidth, (float)StageHeight), (float)TopInset);
+        MediaView.UseArt(_art);
+        _art.Changed += (_, _) =>
+        {
+            CompactArt.Source = _art.Image;
+            if (_scene.Media is not null)
+            {
+                _shownKey = null;
+                Update();
+            }
+        };
 
         _peekTimer = OneShot(PeekDelay, () => SetMode(PillMode.Peek));
         _closeTimer = OneShot(CloseDelay, () => SetMode(PillMode.Compact));
@@ -84,7 +96,11 @@ public sealed partial class IslandPill : UserControl
     }
 
     /// <summary>What buttons on the island call. Unset in previews, where nothing should happen.</summary>
-    public IIslandCommands? Commands { get; set; }
+    public IIslandCommands? Commands
+    {
+        get => MediaView.Commands;
+        set => MediaView.Commands = value;
+    }
 
     /// <summary>False when Windows animations are off or the tool uses Light effects; springs become short fades.</summary>
     public bool Springs { get; set; } = true;
@@ -97,7 +113,15 @@ public sealed partial class IslandPill : UserControl
     public void Render(IslandScene scene)
     {
         _scene = scene;
+        _art.Set(scene.Media?.Thumbnail ?? ReadOnlyMemory<byte>.Empty);
         Update();
+    }
+
+    /// <summary>Shows <paramref name="scene"/>, opened as the panel when <paramref name="open"/> is true. For previews.</summary>
+    public void Preview(IslandScene scene, bool open)
+    {
+        _mode = open ? PillMode.Panel : PillMode.Compact;
+        Render(scene);
     }
 
     /// <summary>Starts or stops the clock and timers, e.g. while the window is hidden for a full-screen app.</summary>
@@ -150,18 +174,29 @@ public sealed partial class IslandPill : UserControl
             }
 
             // Peeking at an idle island shows the time and the date.
-            return FillCompact(new CompactContent(string.Empty, IslandPresenter.FormatClock(now), null, IslandPresenter.FormatDate(now), IslandPalette.TextPrimary), "peek-idle", twoLines: false);
+            return FillCompact(new CompactContent(string.Empty, IslandPresenter.FormatClock(now), null, IslandPresenter.FormatDate(now), IslandPalette.TextPrimary), "peek-idle", twoLines: false, media: null);
         }
 
         CompactContent content = IslandPresenter.Describe(primary, now);
         bool twoLines = peek && content.Subtitle is not null;
-        return FillCompact(content, $"{primary.Kind}-{twoLines}", twoLines);
+        return FillCompact(content, $"{primary.Kind}-{twoLines}", twoLines, primary.Kind == ActivityKind.Media ? primary.Media : null);
     }
 
-    private (UIElement View, string Key, Size Size) FillCompact(CompactContent content, string key, bool twoLines)
+    private (UIElement View, string Key, Size Size) FillCompact(CompactContent content, string key, bool twoLines, MediaInfo? media)
     {
+        // Music shows its art instead of the note glyph, and the bouncing bars on the right.
+        bool art = media is not null && _art.Image is not null;
+        CompactArtFrame.Visibility = art ? Visibility.Visible : Visibility.Collapsed;
+        CompactBars.Visibility = media is null ? Visibility.Collapsed : Visibility.Visible;
+        if (media is not null)
+        {
+            CompactBars.SetColor(_art.Accent);
+            CompactBars.SetPlaying(media.IsPlaying, Springs);
+            content = content with { Accent = _art.Accent };
+        }
+
         CompactGlyph.Glyph = content.Glyph;
-        CompactGlyph.Visibility = content.Glyph.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        CompactGlyph.Visibility = content.Glyph.Length > 0 && !art ? Visibility.Visible : Visibility.Collapsed;
         CompactGlyph.Foreground = new SolidColorBrush(content.Accent);
         CompactTitle.Text = content.Title;
         CompactSubtitle.Text = content.Subtitle ?? string.Empty;
@@ -184,6 +219,14 @@ public sealed partial class IslandPill : UserControl
 
     private (UIElement View, string Key, Size Size) BuildPanel(DateTimeOffset now)
     {
+        if (_scene.Media is { } media)
+        {
+            MediaView.Animate = Springs;
+            MediaView.Update(media, now);
+            AutomationProperties.SetName(Surface, string.Join(", ", new[] { media.Title, media.Artist }.Where(t => !string.IsNullOrEmpty(t))));
+            return (MediaView, "panel-media", MediaPanelSize);
+        }
+
         PanelClock.Text = IslandPresenter.FormatClock(now);
         PanelDate.Text = IslandPresenter.FormatDate(now);
         PowerSnapshot power = _scene.Power;
@@ -197,7 +240,7 @@ public sealed partial class IslandPill : UserControl
         }
 
         AutomationProperties.SetName(Surface, $"{PanelClock.Text}, {PanelDate.Text}");
-        return (PanelView, "panel", PanelSize);
+        return (PanelView, "panel-clock", PanelSize);
     }
 
     private void ShowView(UIElement view, string key)
@@ -221,6 +264,15 @@ public sealed partial class IslandPill : UserControl
             IslandMotion.Enter(PanelView, TimeSpan.Zero, Springs);
             IslandMotion.Enter(PanelHeader, IslandMotion.Stagger, Springs);
             IslandMotion.Enter(PanelHint, IslandMotion.Stagger * 2, Springs);
+        }
+        else if (view == MediaView)
+        {
+            IslandMotion.Enter(MediaView, TimeSpan.Zero, Springs);
+            UIElement[] rows = MediaView.Rows;
+            for (int i = 0; i < rows.Length; i++)
+            {
+                IslandMotion.Enter(rows[i], IslandMotion.Stagger * (i + 1), Springs);
+            }
         }
         else
         {
@@ -253,7 +305,9 @@ public sealed partial class IslandPill : UserControl
         _clockTimer.Interval = TimeSpan.FromMilliseconds(((60 - now.Second) * 1000) - now.Millisecond + 50);
         _clockTimer.Start();
 
-        bool counting = _scene.Primary?.Kind == ActivityKind.Timer && _scene.Timer?.State == TimerState.Running;
+        // Tick once a second only while something on screen moves: a running timer, or the seek bar of playing music.
+        bool counting = (_scene.Primary?.Kind == ActivityKind.Timer && _scene.Timer?.State == TimerState.Running)
+            || (_mode == PillMode.Panel && _scene.Media?.IsPlaying == true);
         if (counting && !_tickTimer.IsRunning)
         {
             _tickTimer.Start();

@@ -21,8 +21,8 @@ namespace FluxKit.App.Modules.FluxIsland;
 public sealed partial class IslandWindow : Window
 {
     // Room around the pill for its shadow, in DIPs. The shadow falls downwards, so the bottom gets more.
-    private const double ShadowSide = 12;
-    private const double ShadowBottom = 18;
+    private const double ShadowSide = 10;
+    private const double ShadowBottom = 14;
     private static readonly TimeSpan ShrinkDelay = TimeSpan.FromMilliseconds(500);
 
     private readonly IVirtualDesktopService _desktops;
@@ -81,6 +81,16 @@ public sealed partial class IslandWindow : Window
         {
             _ = PinAsync();
         }
+    }
+
+    /// <summary>Shows one of the <see cref="IslandSamples"/> until the tool next has something to show. Never runs commands.</summary>
+    public void ShowPreview(string sample, bool open)
+    {
+        IslandScene scene = IslandSamples.Create(sample, DateTimeOffset.Now);
+        RenderCore(scene);
+        Pill.Commands = null;
+        Pill.Preview(scene, open);
+        _log.Information("Island preview {Sample} (open={Open})", sample, open);
     }
 
     internal void RenderCore(IslandScene scene)

@@ -705,4 +705,19 @@
   <data name="Island_PercentFormat" xml:space="preserve">
     <value>{0}%</value>
   </data>
+  <data name="Island_PreviousButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Previous track</value>
+  </data>
+  <data name="Island_NextButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Next track</value>
+  </data>
+  <data name="Island_Play" xml:space="preserve">
+    <value>Play</value>
+  </data>
+  <data name="Island_Pause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="Island_RemainingFormat" xml:space="preserve">
+    <value>-{0}</value>
+  </data>
 </root>

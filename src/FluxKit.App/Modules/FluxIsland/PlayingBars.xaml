@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A "playing" indicator: three bars bouncing on the compositor. It is not a real audio meter (see Docs/FluxIsland-PLAN.md). -->
+<UserControl
+    x:Class="FluxKit.App.Modules.FluxIsland.PlayingBars"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    IsHitTestVisible="False">
+    <StackPanel
+        Height="14"
+        VerticalAlignment="Center"
+        Orientation="Horizontal"
+        Spacing="2">
+        <Rectangle
+            x:Name="Bar1"
+            Width="3"
+            Height="14"
+            RadiusX="1.5"
+            RadiusY="1.5" />
+        <Rectangle
+            x:Name="Bar2"
+            Width="3"
+            Height="14"
+            RadiusX="1.5"
+            RadiusY="1.5" />
+        <Rectangle
+            x:Name="Bar3"
+            Width="3"
+            Height="14"
+            RadiusX="1.5"
+            RadiusY="1.5" />
+    </StackPanel>
+</UserControl>

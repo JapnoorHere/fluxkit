@@ -8,6 +8,7 @@ public static class SystemSources
 {
     public static IslandSources Create(ILogger log) => new()
     {
+        Media = () => new MediaSource(log),
         FullScreen = () => new FullScreenSource(log),
     };
 }

@@ -8,16 +8,16 @@ namespace FluxKit.App.Modules.FluxIsland;
 internal static class IslandPresenter
 {
     // Segoe Fluent Icons.
-    private const string MusicGlyph = "";
-    private const string TimerGlyph = "";
-    private const string BellGlyph = "";
-    private const string ShelfGlyph = "";
-    private const string BoltGlyph = "";
-    private const string OfflineGlyph = "";
-    private const string OnlineGlyph = "";
-    private const string CopyGlyph = "";
-    private const string VolumeGlyph = "";
-    private const string MuteGlyph = "";
+    private const string MusicGlyph = "\xE8D6";
+    private const string TimerGlyph = "\xE916";
+    private const string BellGlyph = "\xEA8F";
+    private const string ShelfGlyph = "\xE7B8";
+    private const string BoltGlyph = "\xE945";
+    private const string OfflineGlyph = "\xF384";
+    private const string OnlineGlyph = "\xE774";
+    private const string CopyGlyph = "\xE8C8";
+    private const string VolumeGlyph = "\xE767";
+    private const string MuteGlyph = "\xE74F";
 
     public static CompactContent Describe(IslandActivity activity, DateTimeOffset now) => activity.Kind switch
     {
@@ -55,6 +55,15 @@ internal static class IslandPresenter
     public static string FormatRemaining(TimeSpan left)
     {
         var whole = TimeSpan.FromSeconds(Math.Ceiling(left.TotalSeconds));
+        return whole.TotalHours >= 1
+            ? whole.ToString(@"h\:mm\:ss", CultureInfo.CurrentCulture)
+            : whole.ToString(@"m\:ss", CultureInfo.CurrentCulture);
+    }
+
+    /// <summary>A position in a track, like 1:05 or 1:02:05.</summary>
+    public static string FormatPosition(TimeSpan position)
+    {
+        var whole = TimeSpan.FromSeconds(Math.Floor(Math.Max(0, position.TotalSeconds)));
         return whole.TotalHours >= 1
             ? whole.ToString(@"h\:mm\:ss", CultureInfo.CurrentCulture)
             : whole.ToString(@"m\:ss", CultureInfo.CurrentCulture);
