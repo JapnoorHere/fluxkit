@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Automated end-to-end driver: real OLE DoDragDrop + synthetic mouse input + DropProbe verification. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(FluxWindowsTfm)</TargetFramework>
+    <TargetPlatformMinVersion>$(FluxMinWindows)</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>$(FluxMinWindows)</SupportedOSPlatformVersion>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FluxKit.Platform\FluxKit.Platform.csproj" />
+  </ItemGroup>
+</Project>

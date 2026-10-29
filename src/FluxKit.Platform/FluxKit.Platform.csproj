@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Win32 / COM integration. No XAML here. -->
+  <PropertyGroup>
+    <TargetFramework>$(FluxWindowsTfm)</TargetFramework>
+    <TargetPlatformMinVersion>$(FluxMinWindows)</TargetPlatformMinVersion>
+    <RootNamespace>FluxKit.Platform</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SupportedOSPlatformVersion>$(FluxMinWindows)</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="FluxKit.Platform.IntegrationTests" />
+    <InternalsVisibleTo Include="VdProbe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FluxKit.Core\FluxKit.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Build
+        shell: pwsh
+        run: ./scripts/build.ps1 -Configuration Release
+      - name: Unit tests
+        shell: pwsh
+        run: ./scripts/test.ps1 -Configuration Release -Coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: artifacts/test-results
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-test
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        rid: [win-x64, win-arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Publish
+        shell: pwsh
+        run: ./scripts/publish.ps1 -Runtime ${{ matrix.rid }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FluxKit-${{ matrix.rid }}
+          path: artifacts/*.zip

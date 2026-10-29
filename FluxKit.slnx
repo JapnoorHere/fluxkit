@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/spikes/">
+    <Project Path="spikes/VdProbe/VdProbe.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/FluxKit.App/FluxKit.App.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/FluxKit.Core/FluxKit.Core.csproj" />
+    <Project Path="src/FluxKit.Platform/FluxKit.Platform.csproj" />
+    <Project Path="src/FluxKit.Utilities.DragToSwitch/FluxKit.Utilities.DragToSwitch.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FluxKit.Core.Tests/FluxKit.Core.Tests.csproj" />
+    <Project Path="tests/FluxKit.DragToSwitch.Tests/FluxKit.DragToSwitch.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/FluxKit.DragHarness/FluxKit.DragHarness.csproj" />
+    <Project Path="tools/FluxKit.DropProbe/FluxKit.DropProbe.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Phase 1 spike (H7): resolves the shell virtual desktop COM layout on this machine. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(FluxWindowsTfm)</TargetFramework>
+    <TargetPlatformMinVersion>$(FluxMinWindows)</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>$(FluxMinWindows)</SupportedOSPlatformVersion>
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FluxKit.Platform\FluxKit.Platform.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- FluxKit.exe: WinUI 3 shell, unpackaged and self-contained (no runtime installer needed). -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(FluxWindowsTfm)</TargetFramework>
+    <TargetPlatformMinVersion>$(FluxMinWindows)</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>$(FluxMinWindows)</SupportedOSPlatformVersion>
+    <RootNamespace>FluxKit.App</RootNamespace>
+    <AssemblyName>FluxKit</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\FluxKit.ico</ApplicationIcon>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- Needed so publish carries FluxKit.pri and the compiled .xbf files, even unpackaged. -->
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <!-- XAML-generated partial classes are public; keep analyzers at the default level for this project. -->
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\*.ico;Assets\*.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\Docs\*.md" Link="Docs\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\THIRD-PARTY-NOTICES.md')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FluxKit.Utilities.DragToSwitch\FluxKit.Utilities.DragToSwitch.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,276 @@
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
+
+namespace FluxKit.Platform.Windows;
+
+/// <summary>A rectangle in physical screen pixels.</summary>
+public readonly record struct PixelRect(int Left, int Top, int Right, int Bottom)
+{
+    public int Width => Right - Left;
+
+    public int Height => Bottom - Top;
+
+    public bool Contains(int x, int y) => x >= Left && x < Right && y >= Top && y < Bottom;
+
+    public PixelRect Inflate(int by) => new(Left - by, Top - by, Right + by, Bottom + by);
+}
+
+/// <summary>Information about the window under a point, used to filter drag sources.</summary>
+public sealed record WindowInfo(nint RootWindow, string ProcessName, string ClassName);
+
+/// <summary>Win32 helpers for overlay windows, monitors and foreground state.</summary>
+public static partial class WindowHelpers
+{
+    private const int GwlExStyle = -20;
+    private const long WsExTopmost = 0x8;
+    private const long WsExToolWindow = 0x80;
+    private const long WsExAppWindow = 0x40000;
+    private const long WsExNoActivate = 0x08000000;
+    private const uint SwpNoSize = 0x1;
+    private const uint SwpNoMove = 0x2;
+    private const uint SwpNoActivate = 0x10;
+    private const uint SwpShowWindow = 0x40;
+    private const int SwHide = 0;
+    private const int SwShowNoActivate = 4;
+    private const uint MonitorDefaultToNearest = 2;
+    private const uint GaRoot = 2;
+    private const uint GuiInMoveSize = 0x2;
+    private const uint GuiInMenuMode = 0x4;
+    private static readonly nint HwndTopmost = -1;
+
+    /// <summary>Makes a window a non-activating, topmost tool window that never appears in Alt+Tab or the taskbar.</summary>
+    public static void MakeOverlay(nint hwnd)
+    {
+        long style = GetWindowLongPtr(hwnd, GwlExStyle);
+        style = (style | WsExNoActivate | WsExToolWindow | WsExTopmost) & ~WsExAppWindow;
+        _ = SetWindowLongPtr(hwnd, GwlExStyle, (nint)style);
+        int round = 2; // DWMWCP_ROUND
+        _ = DwmSetWindowAttribute(hwnd, 33, ref round, sizeof(int));
+    }
+
+    /// <summary>Shows and positions a window without activating it.</summary>
+    public static void ShowNoActivate(nint hwnd, PixelRect bounds)
+    {
+        _ = SetWindowPos(hwnd, HwndTopmost, bounds.Left, bounds.Top, bounds.Width, bounds.Height, SwpNoActivate | SwpShowWindow);
+        _ = ShowWindow(hwnd, SwShowNoActivate);
+    }
+
+    /// <summary>Re-asserts topmost z-order (needed after a desktop switch).</summary>
+    public static void BringToTopNoActivate(nint hwnd) =>
+        _ = SetWindowPos(hwnd, HwndTopmost, 0, 0, 0, 0, SwpNoActivate | SwpNoMove | SwpNoSize | SwpShowWindow);
+
+    public static void Hide(nint hwnd) => _ = ShowWindow(hwnd, SwHide);
+
+    public static (int X, int Y) GetCursorPosition()
+    {
+        _ = GetCursorPos(out POINT p);
+        return (p.X, p.Y);
+    }
+
+    /// <summary>Work area (excluding taskbar) and DPI scale of the monitor nearest a point.</summary>
+    public static (PixelRect WorkArea, double Scale) GetMonitorAt(int x, int y)
+    {
+        nint monitor = MonitorFromPoint(new POINT { X = x, Y = y }, MonitorDefaultToNearest);
+        var info = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+        _ = GetMonitorInfo(monitor, ref info);
+        double scale = GetDpiForMonitor(monitor, 0, out uint dpiX, out _) == 0 ? dpiX / 96.0 : 1.0;
+        return (new PixelRect(info.rcWork.Left, info.rcWork.Top, info.rcWork.Right, info.rcWork.Bottom), scale);
+    }
+
+    public static WindowInfo? GetWindowAt(int x, int y)
+    {
+        nint hwnd = WindowFromPoint(new POINT { X = x, Y = y });
+        if (hwnd == 0)
+        {
+            return null;
+        }
+
+        nint root = GetAncestor(hwnd, GaRoot);
+        _ = GetWindowThreadProcessId(root, out uint pid);
+        string className = ReadClassName(root);
+        string processName;
+        try
+        {
+            using var process = Process.GetProcessById((int)pid);
+            processName = process.ProcessName;
+        }
+        catch (ArgumentException)
+        {
+            processName = string.Empty;
+        }
+
+        return new WindowInfo(root, processName, className);
+    }
+
+    private static unsafe string ReadClassName(nint hwnd)
+    {
+        char* buffer = stackalloc char[256];
+        int len = GetClassName(hwnd, buffer, 256);
+        return new string(buffer, 0, Math.Max(0, len));
+    }
+
+    /// <summary>True when the foreground thread is moving/resizing a window or tracking a menu.</summary>
+    public static bool IsForegroundInMoveSizeOrMenu()
+    {
+        var info = new GUITHREADINFO { cbSize = Marshal.SizeOf<GUITHREADINFO>() };
+        return GetGUIThreadInfo(0, ref info) && (info.flags & (GuiInMoveSize | GuiInMenuMode)) != 0;
+    }
+
+    /// <summary>
+    /// The top-level window the foreground thread is moving or resizing (title-bar drag), or 0 when none.
+    /// Use <see cref="IsResizeCursor"/> to tell a resize from a move.
+    /// </summary>
+    public static nint GetWindowInMoveSize()
+    {
+        var info = new GUITHREADINFO { cbSize = Marshal.SizeOf<GUITHREADINFO>() };
+        if (!GetGUIThreadInfo(0, ref info) || (info.flags & GuiInMoveSize) == 0 || info.hwndMoveSize == 0)
+        {
+            return 0;
+        }
+
+        return GetAncestor(info.hwndMoveSize, GaRoot);
+    }
+
+    /// <summary>
+    /// True while an OLE drag-and-drop (<c>DoDragDrop</c>) is running on the thread that owns
+    /// <paramref name="sourceWindow"/> or on the foreground thread. During <c>DoDragDrop</c> OLE gives mouse capture
+    /// to its own <c>CLIPBRDWNDCLASS</c> window (verified on build 26300); text selection, scrollbar drags and
+    /// rubber-band selection keep capture in the app's own window.
+    /// </summary>
+    public static bool IsOleDragInProgress(nint sourceWindow)
+    {
+        uint sourceThread = sourceWindow == 0 ? 0 : GetWindowThreadProcessId(sourceWindow, out _);
+        return (sourceThread != 0 && CaptureIsOleTracker(sourceThread)) || CaptureIsOleTracker(0);
+    }
+
+    private static bool CaptureIsOleTracker(uint threadId)
+    {
+        var info = new GUITHREADINFO { cbSize = Marshal.SizeOf<GUITHREADINFO>() };
+        return GetGUIThreadInfo(threadId, ref info) && info.hwndCapture != 0 && ReadClassName(info.hwndCapture) == "CLIPBRDWNDCLASS";
+    }
+
+    /// <summary>True while the cursor is one of the system resize arrows (a window edge is being dragged).</summary>
+    public static bool IsResizeCursor()
+    {
+        var info = new CURSORINFO { cbSize = Marshal.SizeOf<CURSORINFO>() };
+        return GetCursorInfo(ref info) && Array.IndexOf(ResizeCursors.Value, info.hCursor) >= 0;
+    }
+
+    // IDC_SIZENWSE, IDC_SIZENESW, IDC_SIZEWE, IDC_SIZENS: shared system cursors, so the handles are stable.
+    private static readonly Lazy<nint[]> ResizeCursors = new(() => [LoadCursor(0, 32642), LoadCursor(0, 32643), LoadCursor(0, 32644), LoadCursor(0, 32645)]);
+
+    /// <summary>True while a full-screen game or presentation is running (selector should stay hidden).</summary>
+    public static bool IsFullScreenAppRunning() =>
+        SHQueryUserNotificationState(out int state) == 0 && state is 3 or 4;
+
+    public static int DragThresholdPixels() => Math.Max(GetSystemMetrics(68), GetSystemMetrics(69)); // SM_CXDRAG / SM_CYDRAG
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MONITORINFO
+    {
+        public int cbSize;
+        public RECT rcMonitor;
+        public RECT rcWork;
+        public uint dwFlags;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct GUITHREADINFO
+    {
+        public int cbSize;
+        public uint flags;
+        public nint hwndActive;
+        public nint hwndFocus;
+        public nint hwndCapture;
+        public nint hwndMenuOwner;
+        public nint hwndMoveSize;
+        public nint hwndCaret;
+        public RECT rcCaret;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct CURSORINFO
+    {
+        public int cbSize;
+        public uint flags;
+        public nint hCursor;
+        public POINT ptScreenPos;
+    }
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetCursorInfo(ref CURSORINFO info);
+
+    [LibraryImport("user32.dll", EntryPoint = "LoadCursorW")]
+    private static partial nint LoadCursor(nint instance, nint cursorId);
+
+    [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
+    private static partial long GetWindowLongPtr(nint hwnd, int index);
+
+    [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+    private static partial nint SetWindowLongPtr(nint hwnd, int index, nint value);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetWindowPos(nint hwnd, nint insertAfter, int x, int y, int cx, int cy, uint flags);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool ShowWindow(nint hwnd, int cmd);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetCursorPos(out POINT point);
+
+    [LibraryImport("user32.dll")]
+    private static partial nint MonitorFromPoint(POINT point, uint flags);
+
+    [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetMonitorInfo(nint monitor, ref MONITORINFO info);
+
+    [LibraryImport("shcore.dll")]
+    private static partial int GetDpiForMonitor(nint monitor, int type, out uint dpiX, out uint dpiY);
+
+    [LibraryImport("user32.dll")]
+    private static partial nint WindowFromPoint(POINT point);
+
+    [LibraryImport("user32.dll")]
+    private static partial nint GetAncestor(nint hwnd, uint flags);
+
+    [LibraryImport("user32.dll")]
+    private static partial uint GetWindowThreadProcessId(nint hwnd, out uint pid);
+
+    [LibraryImport("user32.dll", EntryPoint = "GetClassNameW")]
+    private static unsafe partial int GetClassName(nint hwnd, char* name, int max);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetGUIThreadInfo(uint threadId, ref GUITHREADINFO info);
+
+    [LibraryImport("shell32.dll")]
+    private static partial int SHQueryUserNotificationState(out int state);
+
+    [LibraryImport("user32.dll")]
+    private static partial int GetSystemMetrics(int index);
+
+    [LibraryImport("dwmapi.dll")]
+    private static partial int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int size);
+}
