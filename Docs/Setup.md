@@ -30,6 +30,7 @@ src/FluxKit.App/bin/x64/Debug/net10.0-windows10.0.26100.0/win-x64/FluxKit.exe
 |---|---|
 | `--background` | Start in the tray without opening the window. The startup entry uses this. |
 | `--settings` | Open the Drag-to-Switch settings page. |
+| `--page <name>` | Open a page: `home`, `general`, `about`, or a tool id such as `drag-to-switch`. |
 
 Starting FluxKit a second time doesn't create a second instance. It brings the running one to the front.
 

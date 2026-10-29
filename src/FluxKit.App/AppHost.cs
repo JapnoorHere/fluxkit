@@ -120,7 +120,10 @@ public sealed class AppHost
         bool background = args.Contains("--background", StringComparer.OrdinalIgnoreCase);
         if (!global.FirstRunCompleted || !background)
         {
-            ShowMainWindow(args.Contains("--settings", StringComparer.OrdinalIgnoreCase) ? DragToSwitchTool.Id : null);
+            int page = Array.FindIndex(args, a => a.Equals("--page", StringComparison.OrdinalIgnoreCase));
+            ShowMainWindow(page >= 0 && page + 1 < args.Length
+                ? args[page + 1]
+                : args.Contains("--settings", StringComparer.OrdinalIgnoreCase) ? DragToSwitchTool.Id : null);
         }
 
         if (args.Contains("--preview-selector", StringComparer.OrdinalIgnoreCase))
