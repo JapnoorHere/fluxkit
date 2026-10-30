@@ -12,7 +12,11 @@ internal static class IslandSamples
     /// <summary>An empty shelf with a file being dragged over the island.</summary>
     public const string Drop = "drop";
 
-    public static readonly string[] Names = ["clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop];
+    public static readonly string[] Names =
+    [
+        "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch",
+    ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
     {
@@ -29,13 +33,26 @@ internal static class IslandSamples
             "offline" => new IslandActivity(ActivityKind.Offline),
             "volume" => new IslandActivity(ActivityKind.Volume) { Value = 64 },
             "shelf" => new IslandActivity(ActivityKind.Shelf) { Value = 4 },
+            "split" => new IslandActivity(ActivityKind.Timer) { Timer = timer },
+            "download" => new IslandActivity(ActivityKind.Download) { Text = "Holiday photos.zip", Value = 148 },
+            "downloaded" => new IslandActivity(ActivityKind.DownloadDone) { Text = "Holiday photos.zip", Path = @"C:\Windows\Web\Wallpaper\Windows\img0.jpg" },
+            "screenshot" => new IslandActivity(ActivityKind.Screenshot) { Text = "Screenshot 2026-10-30 101500.png", Path = @"C:\Windows\Web\Wallpaper\Windows\img0.jpg" },
+            "desktop" => new IslandActivity(ActivityKind.DesktopSwitched) { Text = "Work", Value = 2, Total = 4 },
+            "headphones" => new IslandActivity(ActivityKind.AudioDevice) { Text = "WH-1000XM5" },
+            "micmuted" => new IslandActivity(ActivityKind.MicMuted) { Flag = true },
+            "brightness" => new IslandActivity(ActivityKind.Brightness) { Value = 70 },
+            "caps" => new IslandActivity(ActivityKind.CapsLock) { Flag = true },
+            "saver" => new IslandActivity(ActivityKind.BatterySaver) { Flag = true, Value = 18 },
+            "device" => new IslandActivity(ActivityKind.DeviceConnected) { Text = "Galaxy Buds3 Pro", Value = 80 },
+            "stopwatch" => new IslandActivity(ActivityKind.Stopwatch) { Value = 83_400 },
             _ => null,
         };
         return new IslandScene
         {
             Primary = primary,
-            Media = name == "music" ? media : null,
-            Timer = name == "timer" ? timer : FocusTimerSnapshot.Idle,
+            Secondary = name == "split" ? new IslandActivity(ActivityKind.Media) { Media = media } : null,
+            Media = name is "music" or "split" ? media : null,
+            Timer = name is "timer" or "split" ? timer : FocusTimerSnapshot.Idle,
             Shelf = name == "shelf" ? [@"C:\Windows\Web\Wallpaper\Windows\img0.jpg", @"C:\Windows\Media\Alarm01.wav", @"C:\Windows\Web\Screen", @"C:\Windows\notepad.exe"] : [],
             Power = power,
             Privacy = new PrivacySnapshot(name == "music", false),

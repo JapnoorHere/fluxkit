@@ -142,5 +142,28 @@
                 </StackPanel>
             </Grid>
         </Grid>
+
+        <!-- The second activity, in a small bubble beside the pill (like a second Live Activity). Click to swap. -->
+        <Grid
+            x:Name="Bubble"
+            Width="36"
+            Height="36"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Background="Transparent"
+            Visibility="Collapsed">
+            <Ellipse x:Name="BubbleFill" />
+            <Ellipse x:Name="BubbleEdge" StrokeThickness="1" />
+            <FontIcon x:Name="BubbleGlyph" FontSize="15" />
+            <Ellipse
+                x:Name="BubbleArt"
+                Width="26"
+                Height="26"
+                Visibility="Collapsed">
+                <Ellipse.Fill>
+                    <ImageBrush x:Name="BubbleArtBrush" Stretch="UniformToFill" />
+                </Ellipse.Fill>
+            </Ellipse>
+        </Grid>
     </Grid>
 </UserControl>

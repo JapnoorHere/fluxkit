@@ -4,6 +4,7 @@ using FluxKit.Tools.FluxIsland.Abstractions;
 using FluxKit.Tools.FluxIsland.Activities;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -35,6 +36,8 @@ public sealed partial class IslandPill : UserControl
     private const float HoverScale = 1.04f;
     private const float PressScale = 0.94f;
     private const int WheelNotch = 120;
+    private const double BubbleSize = 36;
+    private const double BubbleGap = 8;
     private static readonly Size IdleSize = new(120, 32);
     private static readonly Size BareSize = new(88, 28);
     private static readonly Size PeekSize = new(320, 52);
@@ -58,6 +61,8 @@ public sealed partial class IslandPill : UserControl
     private IslandScene _scene = IslandScene.Empty;
     private bool _dragging;
     private bool _previewDrop;
+    private bool _bubbleShown;
+    private long _lastSwap;
     private int _wheel;
     private PillMode _mode;
     private PanelPage? _page;
@@ -75,6 +80,17 @@ public sealed partial class IslandPill : UserControl
         CompactSubtitle.Foreground = secondary;
         CompactBurst.Stroke = new SolidColorBrush(IslandPalette.Orange);
         CompactLevelFill.Background = new SolidColorBrush(IslandPalette.TextPrimary);
+        BubbleFill.Fill = new SolidColorBrush(IslandPalette.Surface);
+        BubbleEdge.Stroke = new SolidColorBrush(IslandPalette.Highlight);
+        Bubble.Margin = new Thickness(0, TopInset + ((CompactHeight - BubbleSize) / 2), 0, 0);
+        ElementCompositionPreview.SetIsTranslationEnabled(Bubble, true);
+        Bubble.Tapped += (_, e) =>
+        {
+            e.Handled = true;
+            Commands?.SwapActivities();
+        };
+        PressFeedback.Attach(Bubble);
+        Surface.RightTapped += OnRightTapped;
         Stage.Width = StageWidth;
         Stage.Height = StageHeight;
         Surface.Margin = new Thickness(0, TopInset, 0, 0);
@@ -156,6 +172,9 @@ public sealed partial class IslandPill : UserControl
 
     /// <summary>The pill's resting bounds in stage DIPs. The window keeps its click region in step with it.</summary>
     public Rect TargetBounds { get; private set; }
+
+    /// <summary>The pill plus the bubble, when it shows. The window's click region follows this.</summary>
+    public Rect RegionBounds { get; private set; }
 
     public event EventHandler<Rect>? TargetChanged;
 
@@ -242,8 +261,97 @@ public sealed partial class IslandPill : UserControl
             }
         }
 
+        UpdateBubble(view == CompactView && _mode == PillMode.Compact ? _scene.Secondary : null, size, now);
         MorphTo(size);
         ScheduleTimers(now);
+    }
+
+    /// <summary>Shows the second activity in a bubble that springs out from the pill's right edge, or tucks it away.</summary>
+    private void UpdateBubble(IslandActivity? secondary, Size pill, DateTimeOffset now)
+    {
+        Visual visual = ElementCompositionPreview.GetElementVisual(Bubble);
+        visual.CenterPoint = new Vector3((float)BubbleSize / 2, (float)BubbleSize / 2, 0);
+        bool show = secondary is not null;
+        float x = (float)((pill.Width / 2) + BubbleGap + (BubbleSize / 2));
+        if (show)
+        {
+            CompactContent content = IslandPresenter.Describe(secondary!, now);
+            bool art = secondary!.Kind == ActivityKind.Media && _art.Image is not null;
+            BubbleArtBrush.ImageSource = art ? _art.Image : null;
+            BubbleArt.Visibility = art ? Visibility.Visible : Visibility.Collapsed;
+            BubbleGlyph.Visibility = art ? Visibility.Collapsed : Visibility.Visible;
+            BubbleGlyph.Glyph = content.Glyph;
+            BubbleGlyph.Foreground = new SolidColorBrush(secondary.Kind == ActivityKind.Media ? _art.Accent : content.Accent);
+            AutomationProperties.SetName(Bubble, string.Join(", ", new[] { content.Title, content.Trail }.Where(t => !string.IsNullOrEmpty(t))));
+            ToolTipService.SetToolTip(Bubble, content.Title);
+        }
+
+        if (show == _bubbleShown)
+        {
+            // Already out: just follow the pill's width.
+            if (show)
+            {
+                Spring(visual, "Translation", new Vector3(x, 0, 0));
+            }
+
+            return;
+        }
+
+        _bubbleShown = show;
+        if (show)
+        {
+            // It buds off the pill's edge: starts small and tucked in, then springs out to its place.
+            Bubble.Visibility = Visibility.Visible;
+            visual.StopAnimation("Opacity");
+            visual.Opacity = 1;
+            visual.Properties.InsertVector3("Translation", new Vector3(x - 24, 0, 0));
+            visual.Scale = new Vector3(0.4f, 0.4f, 1);
+            Spring(visual, "Translation", new Vector3(x, 0, 0));
+            Spring(visual, "Scale", Vector3.One);
+            return;
+        }
+
+        Spring(visual, "Translation", new Vector3(x - 24, 0, 0));
+        Spring(visual, "Scale", new Vector3(0.4f, 0.4f, 1));
+        IslandMotion.Exit(Bubble, () => !_bubbleShown);
+    }
+
+    private void Spring(Visual visual, string property, Vector3 to)
+    {
+        if (!Springs)
+        {
+            visual.StopAnimation(property);
+            if (property == "Scale")
+            {
+                visual.Scale = to;
+            }
+            else
+            {
+                visual.Properties.InsertVector3(property, to);
+            }
+
+            return;
+        }
+
+        SpringVector3NaturalMotionAnimation spring = visual.Compositor.CreateSpringVector3Animation();
+        spring.DampingRatio = 0.62f;
+        spring.Period = TimeSpan.FromMilliseconds(50);
+        spring.FinalValue = to;
+        visual.StartAnimation(property, spring);
+    }
+
+    /// <summary>Right-click waves away the alert on screen, or closes the open panel.</summary>
+    private void OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (_mode == PillMode.Panel)
+        {
+            SetMode(PillMode.Compact);
+        }
+        else if (_scene.Primary is { IsAlert: true })
+        {
+            Commands?.DismissAlert();
+        }
     }
 
     private (UIElement View, string Key, Size Size) BuildCompact(DateTimeOffset now)
@@ -291,7 +399,7 @@ public sealed partial class IslandPill : UserControl
         CompactGlyph.Glyph = content.Glyph;
         CompactGlyph.Visibility = content.Glyph.Length > 0 && !art && !charging ? Visibility.Visible : Visibility.Collapsed;
         CompactGlyph.Foreground = new SolidColorBrush(content.Accent);
-        bool level = activity?.Kind == ActivityKind.Volume;
+        bool level = activity?.Kind is ActivityKind.Volume or ActivityKind.Brightness;
         CompactLevel.Visibility = level ? Visibility.Visible : Visibility.Collapsed;
         CompactTitle.Visibility = level ? Visibility.Collapsed : Visibility.Visible;
         if (level)
@@ -340,7 +448,24 @@ public sealed partial class IslandPill : UserControl
     /// <summary>The mouse wheel over the island changes the volume (the tool ignores it when that setting is off).</summary>
     private void OnWheel(object sender, PointerRoutedEventArgs e)
     {
-        _wheel += e.GetCurrentPoint(Surface).Properties.MouseWheelDelta;
+        PointerPointProperties properties = e.GetCurrentPoint(Surface).Properties;
+        bool sideways = properties.IsHorizontalMouseWheel || e.KeyModifiers.HasFlag(Windows.System.VirtualKeyModifiers.Shift);
+        if (sideways)
+        {
+            // Tilt the wheel (or Shift+scroll) to swap the pill and the bubble.
+            // A tilt sends a stream of events; one swap per gesture.
+            long tick = Environment.TickCount64;
+            if (_mode == PillMode.Compact && _scene.Secondary is not null && tick - _lastSwap > 450)
+            {
+                _lastSwap = tick;
+                Commands?.SwapActivities();
+            }
+
+            e.Handled = true;
+            return;
+        }
+
+        _wheel += properties.MouseWheelDelta;
         int notches = _wheel / WheelNotch;
         if (notches != 0)
         {
@@ -487,10 +612,17 @@ public sealed partial class IslandPill : UserControl
         Surface.Height = size.Height;
         _shape.MorphTo(new Vector2((float)size.Width, (float)size.Height), Springs);
         var bounds = new Rect((StageWidth - size.Width) / 2, TopInset, size.Width, size.Height);
-        if (bounds != TargetBounds)
+        Rect region = bounds;
+        if (_bubbleShown)
         {
-            TargetBounds = bounds;
-            TargetChanged?.Invoke(this, bounds);
+            region.Union(new Rect(bounds.Right + BubbleGap, TopInset + ((CompactHeight - BubbleSize) / 2), BubbleSize, BubbleSize));
+        }
+
+        TargetBounds = bounds;
+        if (region != RegionBounds)
+        {
+            RegionBounds = region;
+            TargetChanged?.Invoke(this, region);
         }
     }
 
@@ -569,6 +701,18 @@ public sealed partial class IslandPill : UserControl
 
     private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
     {
+        if (e.GetCurrentPoint(Surface).Properties.IsMiddleButtonPressed)
+        {
+            // Middle-click waves an alert away, like closing a tab.
+            if (_scene.Primary is { IsAlert: true })
+            {
+                Commands?.DismissAlert();
+            }
+
+            e.Handled = true;
+            return;
+        }
+
         if (_mode == PillMode.Panel)
         {
             return;

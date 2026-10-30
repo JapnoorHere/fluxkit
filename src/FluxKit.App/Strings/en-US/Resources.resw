@@ -939,4 +939,64 @@
   <data name="Island_NothingPlayingHint.Text" xml:space="preserve">
     <value>Play music or a video in any app and it shows up here.</value>
   </data>
+  <data name="Island_Brightness" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="Island_Downloading" xml:space="preserve">
+    <value>Downloading</value>
+  </data>
+  <data name="Island_Downloaded" xml:space="preserve">
+    <value>Downloaded</value>
+  </data>
+  <data name="Island_Screenshot" xml:space="preserve">
+    <value>Screenshot saved</value>
+  </data>
+  <data name="Island_DesktopFormat" xml:space="preserve">
+    <value>Desktop {0}</value>
+  </data>
+  <data name="Island_OfFormat" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="Island_AudioDeviceNow" xml:space="preserve">
+    <value>Now playing here</value>
+  </data>
+  <data name="Island_MicMuted" xml:space="preserve">
+    <value>Mic muted</value>
+  </data>
+  <data name="Island_MicOn" xml:space="preserve">
+    <value>Mic on</value>
+  </data>
+  <data name="Island_CapsOn" xml:space="preserve">
+    <value>Caps Lock on</value>
+  </data>
+  <data name="Island_CapsOff" xml:space="preserve">
+    <value>Caps Lock off</value>
+  </data>
+  <data name="Island_NumOn" xml:space="preserve">
+    <value>Num Lock on</value>
+  </data>
+  <data name="Island_NumOff" xml:space="preserve">
+    <value>Num Lock off</value>
+  </data>
+  <data name="Island_SaverOn" xml:space="preserve">
+    <value>Battery saver on</value>
+  </data>
+  <data name="Island_SaverOff" xml:space="preserve">
+    <value>Battery saver off</value>
+  </data>
+  <data name="Island_DeviceConnected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="Island_DeviceDisconnected" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
+  <data name="Island_Stopwatch" xml:space="preserve">
+    <value>Stopwatch</value>
+  </data>
+  <data name="Island_SizeMbFormat" xml:space="preserve">
+    <value>{0} MB</value>
+  </data>
+  <data name="Island_SizeGbFormat" xml:space="preserve">
+    <value>{0} GB</value>
+  </data>
 </root>

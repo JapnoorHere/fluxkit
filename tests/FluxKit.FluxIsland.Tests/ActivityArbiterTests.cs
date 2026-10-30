@@ -37,6 +37,47 @@ public sealed class ActivityArbiterTests
     }
 
     [Fact]
+    public void Dismiss_drops_the_alert_and_shows_the_next_queued_one()
+    {
+        _arbiter.SetLasting(ActivityKind.Media, Playing());
+        _arbiter.Raise(new IslandActivity(ActivityKind.LowBattery));
+        _arbiter.Raise(new IslandActivity(ActivityKind.Copied));
+
+        Assert.True(_arbiter.Dismiss());
+        Assert.Equal(ActivityKind.Copied, _arbiter.Primary?.Kind);
+
+        Assert.True(_arbiter.Dismiss());
+        Assert.Equal(ActivityKind.Media, _arbiter.Primary?.Kind);
+        Assert.False(_arbiter.Dismiss());
+    }
+
+    [Fact]
+    public void Swap_puts_the_bubble_in_front_until_it_ends()
+    {
+        _arbiter.SetLasting(ActivityKind.Media, Playing());
+        _arbiter.SetLasting(ActivityKind.Timer, new IslandActivity(ActivityKind.Timer));
+        Assert.Equal(ActivityKind.Timer, _arbiter.Primary?.Kind);
+
+        Assert.True(_arbiter.Swap());
+
+        Assert.Equal(ActivityKind.Media, _arbiter.Primary?.Kind);
+        Assert.Equal(ActivityKind.Timer, _arbiter.Secondary?.Kind);
+
+        _arbiter.SetLasting(ActivityKind.Media, null);
+        Assert.Equal(ActivityKind.Timer, _arbiter.Primary?.Kind);
+        Assert.False(_arbiter.Swap());
+    }
+
+    [Fact]
+    public void Screenshot_outranks_a_volume_change()
+    {
+        _arbiter.Raise(new IslandActivity(ActivityKind.Volume));
+        _arbiter.Raise(new IslandActivity(ActivityKind.Screenshot));
+
+        Assert.Equal(ActivityKind.Screenshot, _arbiter.Primary?.Kind);
+    }
+
+    [Fact]
     public void Running_timer_outranks_music_and_music_moves_to_the_side()
     {
         _arbiter.SetLasting(ActivityKind.Media, Playing());

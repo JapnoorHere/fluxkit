@@ -12,6 +12,7 @@ internal sealed class ActivityArbiter(TimeProvider time)
     private readonly Dictionary<ActivityKind, (IslandActivity Activity, DateTimeOffset? Until)> _lasting = [];
     private readonly List<(IslandActivity Activity, TimeSpan Duration)> _queue = [];
     private (IslandActivity Activity, DateTimeOffset Until)? _alert;
+    private ActivityKind? _preferred;
 
     /// <summary>The alert on screen, or else the most important lasting activity.</summary>
     public IslandActivity? Primary => _alert?.Activity ?? Lasting().FirstOrDefault();
@@ -39,13 +40,23 @@ internal sealed class ActivityArbiter(TimeProvider time)
         ActivityKind.TimerDone => 90,
         ActivityKind.LowBattery => 80,
         ActivityKind.Offline => 70,
+        ActivityKind.Screenshot => 66,
+        ActivityKind.DownloadDone => 64,
         ActivityKind.PluggedIn => 60,
+        ActivityKind.DeviceConnected or ActivityKind.DeviceDisconnected => 58,
         ActivityKind.Unplugged => 55,
+        ActivityKind.BatterySaver => 54,
+        ActivityKind.AudioDevice => 52,
         ActivityKind.Online => 50,
-        ActivityKind.Volume => 45,
+        ActivityKind.DesktopSwitched => 48,
+        ActivityKind.Volume or ActivityKind.Brightness => 45,
+        ActivityKind.CapsLock or ActivityKind.NumLock => 44,
         ActivityKind.Copied => 40,
+        ActivityKind.MicMuted => 35,
         ActivityKind.Timer => 30,
+        ActivityKind.Stopwatch => 28,
         ActivityKind.Media => activity.Media?.IsPlaying == true ? 25 : 10,
+        ActivityKind.Download => 20,
         ActivityKind.Shelf => 15,
         _ => 0,
     };
@@ -54,11 +65,45 @@ internal sealed class ActivityArbiter(TimeProvider time)
     {
         ActivityKind.TimerDone => TimeSpan.FromSeconds(6),
         ActivityKind.LowBattery => TimeSpan.FromSeconds(4),
+        ActivityKind.Screenshot or ActivityKind.DownloadDone => TimeSpan.FromSeconds(5),
         ActivityKind.PluggedIn => TimeSpan.FromSeconds(3.2),
         ActivityKind.Copied => TimeSpan.FromSeconds(1.4),
-        ActivityKind.Volume => TimeSpan.FromSeconds(1.6),
+        ActivityKind.Volume or ActivityKind.Brightness => TimeSpan.FromSeconds(1.6),
+        ActivityKind.CapsLock or ActivityKind.NumLock or ActivityKind.DesktopSwitched => TimeSpan.FromSeconds(1.4),
         _ => TimeSpan.FromSeconds(2.8),
     };
+
+    /// <summary>Drops the alert on screen at once (the user waved it away) and shows the next queued one. Returns true if one was showing.</summary>
+    public bool Dismiss()
+    {
+        if (_alert is null)
+        {
+            return false;
+        }
+
+        _alert = null;
+        if (_queue.Count > 0)
+        {
+            (IslandActivity next, TimeSpan duration) = _queue[0];
+            _queue.RemoveAt(0);
+            _alert = (next, time.GetUtcNow() + duration);
+        }
+
+        return true;
+    }
+
+    /// <summary>Puts the second lasting activity in front (and the first in the bubble). Returns true if anything moved.</summary>
+    public bool Swap()
+    {
+        List<IslandActivity> lasting = Lasting().ToList();
+        if (lasting.Count < 2)
+        {
+            return false;
+        }
+
+        _preferred = lasting[1].Kind;
+        return true;
+    }
 
     /// <summary>Sets or clears a lasting activity. <paramref name="until"/> lets it run out on its own (e.g. paused music).</summary>
     public void SetLasting(ActivityKind kind, IslandActivity? activity, DateTimeOffset? until = null)
@@ -138,6 +183,7 @@ internal sealed class ActivityArbiter(TimeProvider time)
         }
     }
 
+    /// <summary>Lasting activities, most important first, except that the one the user swapped to stays in front while it lasts.</summary>
     private IEnumerable<IslandActivity> Lasting() =>
-        _lasting.Values.Select(v => v.Activity).OrderByDescending(PriorityOf);
+        _lasting.Values.Select(v => v.Activity).OrderByDescending(a => a.Kind == _preferred).ThenByDescending(PriorityOf);
 }

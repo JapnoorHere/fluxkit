@@ -24,6 +24,7 @@ public sealed partial class IslandWindow : Window
     private const double ShadowSide = 10;
     private const double ShadowBottom = 14;
     private static readonly TimeSpan ShrinkDelay = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan PreviewHold = TimeSpan.FromSeconds(12);
 
     private readonly IVirtualDesktopService _desktops;
     private readonly ILogger _log;
@@ -35,6 +36,8 @@ public sealed partial class IslandWindow : Window
     private bool _visible;
     private bool _pinned;
     private bool _closed;
+    private readonly IIslandCommands? _commands;
+    private long _previewUntil;
 
     public IslandWindow(IIslandCommands commands, IVirtualDesktopService desktops, ILogger log)
     {
@@ -57,6 +60,7 @@ public sealed partial class IslandWindow : Window
         WindowHelpers.MakeOverlay(_hwnd);
         WindowHelpers.RemoveFrame(_hwnd);
 
+        _commands = commands;
         Pill.Commands = commands;
         Pill.TargetChanged += OnTargetChanged;
         _shrinkTimer = DispatcherQueue.CreateTimer();
@@ -65,7 +69,7 @@ public sealed partial class IslandWindow : Window
         _shrinkTimer.Tick += (t, _) =>
         {
             t.Stop();
-            ApplyRegion(Pill.TargetBounds);
+            ApplyRegion(Pill.RegionBounds);
         };
         View = new IslandViewAdapter(this);
     }
@@ -83,11 +87,16 @@ public sealed partial class IslandWindow : Window
         }
     }
 
-    /// <summary>Shows one of the <see cref="IslandSamples"/> until the tool next has something to show. Never runs commands.</summary>
+    /// <summary>
+    /// Shows one of the <see cref="IslandSamples"/> for <see cref="PreviewHold"/>, even while live updates arrive
+    /// (music keeps sending them). Buttons do nothing meanwhile; afterwards the live island and its commands return.
+    /// </summary>
     public void ShowPreview(string sample, bool open)
     {
         IslandScene scene = IslandSamples.Create(sample, DateTimeOffset.Now);
+        _previewUntil = 0;
         RenderCore(scene);
+        _previewUntil = Environment.TickCount64 + (long)PreviewHold.TotalMilliseconds;
         Pill.Commands = null;
         Pill.Preview(scene, open, dropping: sample == IslandSamples.Drop);
         _log.Information("Island preview {Sample} (open={Open})", sample, open);
@@ -98,6 +107,17 @@ public sealed partial class IslandWindow : Window
         if (_closed)
         {
             return;
+        }
+
+        if (_previewUntil != 0)
+        {
+            if (Environment.TickCount64 < _previewUntil)
+            {
+                return;
+            }
+
+            _previewUntil = 0;
+            Pill.Commands = _commands;
         }
 
         Pill.Springs = scene.Settings.Effects == IslandEffects.Full && _uiSettings.AnimationsEnabled;
@@ -133,7 +153,7 @@ public sealed partial class IslandWindow : Window
         _visible = true;
         Pill.SetActive(true);
         Pill.SnapToTarget();
-        ApplyRegion(Pill.TargetBounds);
+        ApplyRegion(Pill.RegionBounds);
         WindowHelpers.ShowNoActivate(_hwnd, placement);
         if (!_pinned)
         {

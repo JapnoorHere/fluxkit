@@ -26,4 +26,10 @@ public interface IIslandCommands
     void ClearShelf();
 
     void StepVolume(int notches);
+
+    /// <summary>Waves away the alert on screen; the next one (or the lasting activity) comes back.</summary>
+    void DismissAlert();
+
+    /// <summary>Swaps the pill and the bubble when two lasting activities are running.</summary>
+    void SwapActivities();
 }

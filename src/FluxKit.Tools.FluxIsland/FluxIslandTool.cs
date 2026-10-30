@@ -150,6 +150,10 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         }
     }
 
+    public void DismissAlert() => Change(() => _arbiter.Dismiss());
+
+    public void SwapActivities() => Change(() => _arbiter.Swap());
+
     /// <summary>Builds the scene from the current state. Internal so tests can check what the view would get.</summary>
     internal IslandScene BuildScene()
     {
