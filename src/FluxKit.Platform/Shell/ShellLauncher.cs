@@ -8,6 +8,12 @@ public static class ShellLauncher
     /// <summary>Opens <paramref name="path"/> in its default app. Returns false if the file is gone or nothing opened.</summary>
     public static bool Open(string path) => File.Exists(path) && Start(new ProcessStartInfo(path) { UseShellExecute = true });
 
+    /// <summary>Opens a web page in the default browser or a mailto link in the mail app. Any other kind of link is refused.</summary>
+    public static bool OpenLink(string link) =>
+        Uri.TryCreate(link, UriKind.Absolute, out Uri? uri)
+        && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeMailto)
+        && Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+
     /// <summary>Opens File Explorer with <paramref name="path"/> selected, or just its folder if the file is gone.</summary>
     public static bool ShowInFolder(string path)
     {

@@ -15,7 +15,7 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
@@ -45,6 +45,8 @@ internal static class IslandSamples
             "saver" => new IslandActivity(ActivityKind.BatterySaver) { Flag = true, Value = 18 },
             "device" => new IslandActivity(ActivityKind.DeviceConnected) { Text = "Galaxy Buds3 Pro", Value = 80 },
             "stopwatch" => new IslandActivity(ActivityKind.Stopwatch) { Value = 83_400 },
+            "link" => new IslandActivity(ActivityKind.Copied) { Clipboard = ClipboardKind.Text, Smart = SmartText.Link, Text = "github.com", Path = "https://github.com/" },
+            "colour" => new IslandActivity(ActivityKind.Copied) { Clipboard = ClipboardKind.Text, Smart = SmartText.Color, Text = "#3A7BFF", Value = 0x3A7BFF },
             _ => null,
         };
         return new IslandScene

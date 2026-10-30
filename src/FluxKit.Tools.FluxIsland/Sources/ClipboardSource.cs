@@ -9,19 +9,21 @@ internal sealed class ClipboardSource : IClipboardSource
 {
     private readonly ClipboardWatcher _watcher;
 
-    public ClipboardSource(ILogger log)
+    public ClipboardSource(ILogger log, bool readText)
     {
-        _watcher = new ClipboardWatcher(log);
-        _watcher.Copied += (_, content) => Copied?.Invoke(this, content switch
-        {
-            ClipboardContent.Text => ClipboardKind.Text,
-            ClipboardContent.Image => ClipboardKind.Image,
-            ClipboardContent.Files => ClipboardKind.Files,
-            _ => ClipboardKind.Other,
-        });
+        _watcher = new ClipboardWatcher(log, readText);
+        _watcher.Copied += (_, copy) => Copied?.Invoke(this, new ClipboardCopied(
+            copy.Content switch
+            {
+                ClipboardContent.Text => ClipboardKind.Text,
+                ClipboardContent.Image => ClipboardKind.Image,
+                ClipboardContent.Files => ClipboardKind.Files,
+                _ => ClipboardKind.Other,
+            },
+            copy.Text));
     }
 
-    public event EventHandler<ClipboardKind>? Copied;
+    public event EventHandler<ClipboardCopied>? Copied;
 
     public void Start() => _watcher.Start();
 

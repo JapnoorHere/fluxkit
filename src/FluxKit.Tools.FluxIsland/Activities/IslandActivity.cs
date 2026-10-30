@@ -46,6 +46,9 @@ public sealed record IslandActivity(ActivityKind Kind)
 
     public ClipboardKind Clipboard { get; init; }
 
+    /// <summary>What copied text turned out to be, when smart copy is on.</summary>
+    public SmartText Smart { get; init; }
+
     /// <summary>A name to show: a file, a device or a desktop. Shown on screen only, never logged.</summary>
     public string? Text { get; init; }
 

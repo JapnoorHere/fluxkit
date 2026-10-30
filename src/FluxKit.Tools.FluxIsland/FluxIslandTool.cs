@@ -24,6 +24,9 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     /// <summary>A download that hasn't grown for this long is taken off the island (the browser may have stopped it).</summary>
     internal static readonly TimeSpan StalledDownload = TimeSpan.FromMinutes(2);
 
+    /// <summary>A copied link, address, number or colour stays a little longer than a plain copy, so its button can be reached.</summary>
+    internal static readonly TimeSpan SmartCopyDuration = TimeSpan.FromSeconds(4);
+
     private readonly ISettingsService _settings;
     private readonly Func<IIslandCommands, IIslandView> _viewFactory;
     private readonly IslandSources _factories;
@@ -210,7 +213,8 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _power = Start(_options.ShowPower ? _factories.Power : null, s => s.Changed += OnPowerChanged);
         _network = Start(_options.ShowNetwork ? _factories.Network : null, s => s.Changed += OnNetworkChanged);
         _privacy = Start(_options.ShowPrivacy ? _factories.Privacy : null, s => s.Changed += OnAnyChanged);
-        _clipboard = Start(_options.ShowClipboard ? _factories.Clipboard : null, s => s.Copied += OnCopied);
+        Func<IClipboardSource>? clipboard = _options.ShowClipboard && _factories.Clipboard is { } makeClipboard ? () => makeClipboard(_options.SmartCopy) : null;
+        _clipboard = Start(clipboard, s => s.Copied += OnCopied);
         _fullScreen = Start(_options.HideInFullScreen ? _factories.FullScreen : null, s => s.Changed += OnAnyChanged);
         _volume = Start(_options.ScrollForVolume ? _factories.Volume : null, _ => { });
         bool listenToAudio = _options.ShowVolumeChanges || _options.ShowAudioDevices || _options.ShowMicMute;
@@ -395,8 +399,18 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private void OnScreenshotSaved(object? sender, string path) =>
         Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Screenshot) { Text = Path.GetFileName(path), Path = path }));
 
-    private void OnCopied(object? sender, ClipboardKind kind) =>
-        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Copied) { Clipboard = kind }));
+    private void OnCopied(object? sender, ClipboardCopied copy)
+    {
+        var moment = new IslandActivity(ActivityKind.Copied) { Clipboard = copy.Kind };
+        if (_options.SmartCopy && copy.Text is { } text)
+        {
+            // Looked at once, here, and dropped with the moment. Never logged.
+            (SmartText kind, string display, string? target, int rgb) = CopiedTextClassifier.Classify(text);
+            moment = moment with { Smart = kind, Text = display.Length > 0 ? display : null, Path = target, Value = kind == SmartText.Color ? rgb : text.Trim().Length };
+        }
+
+        Change(() => _arbiter.Raise(moment, moment.Smart is SmartText.Link or SmartText.Email or SmartText.Color or SmartText.Phone ? SmartCopyDuration : ActivityArbiter.DurationOf(ActivityKind.Copied)));
+    }
 
     private void OnWake()
     {

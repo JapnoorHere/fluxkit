@@ -9,10 +9,15 @@ namespace FluxKit.Platform.Watchers;
 
 /// <summary>
 /// Raises <see cref="Copied"/> when something is copied, through a clipboard format listener on a hidden
-/// message-only window. Only the formats on offer are checked; the clipboard is never opened or read.
+/// message-only window. By default only the formats on offer are checked and the clipboard is never opened; with
+/// <c>readText</c> the text of a text copy is read too. Copies that apps mark as private (password managers) are
+/// skipped entirely, as Windows asks clipboard monitors to do.
 /// </summary>
 public sealed partial class ClipboardWatcher : IDisposable
 {
+    /// <summary>Longer text is cut to this many characters; nothing longer is ever needed.</summary>
+    public const int MaxTextLength = 2048;
+
     private const string ClassName = "FluxKit.ClipboardWatcher";
     private const uint WmClipboardUpdate = 0x031D;
     private const uint CfText = 1;
@@ -30,18 +35,25 @@ public sealed partial class ClipboardWatcher : IDisposable
     private readonly MessageLoopThread _loop = new("FluxKit.ClipboardWatcher");
     private readonly WindowProc _proc;
     private nint _hwnd;
-    private long _lastCopyMs = long.MinValue;
+    private readonly bool _readText;
+    private readonly uint[] _privateFormats;
+    // Not long.MinValue: "now - MinValue" overflows to a negative number and no copy would ever be reported.
+    private long _lastCopyMs = -CoalesceMs;
 
-    public ClipboardWatcher(ILogger log)
+    public ClipboardWatcher(ILogger log, bool readText = false)
     {
         _log = log.ForContext<ClipboardWatcher>();
+        _readText = readText;
         _proc = OnMessage;
+
+        // Documented markers for content that clipboard history and monitors should leave alone.
+        _privateFormats = [RegisterClipboardFormat("ExcludeClipboardContentFromMonitorProcessing"), RegisterClipboardFormat("Clipboard Viewer Ignore")];
     }
 
     private delegate nint WindowProc(nint hwnd, uint msg, nint wParam, nint lParam);
 
-    /// <summary>Raised on the watcher thread after each copy.</summary>
-    public event EventHandler<ClipboardContent>? Copied;
+    /// <summary>Raised on the watcher thread after each copy, except private ones.</summary>
+    public event EventHandler<ClipboardCopy>? Copied;
 
     public void Start() => _loop.Start(CreateListener, DestroyListener);
 
@@ -86,13 +98,49 @@ public sealed partial class ClipboardWatcher : IDisposable
         }
 
         long now = Environment.TickCount64;
-        if (now - _lastCopyMs >= CoalesceMs)
+        if (now - _lastCopyMs >= CoalesceMs && !_privateFormats.Any(f => f != 0 && IsClipboardFormatAvailable(f)))
         {
             _lastCopyMs = now;
-            Copied?.Invoke(this, Classify());
+            ClipboardContent content = Classify();
+            Copied?.Invoke(this, new ClipboardCopy(content, _readText && content == ClipboardContent.Text ? ReadText(hwnd) : null));
         }
 
         return 0;
+    }
+
+    /// <summary>The clipboard's Unicode text, cut to <see cref="MaxTextLength"/>, or null if it can't be had right now.</summary>
+    private static string? ReadText(nint owner)
+    {
+        if (!IsClipboardFormatAvailable(CfUnicodeText) || !OpenClipboard(owner))
+        {
+            return null;
+        }
+
+        try
+        {
+            nint handle = GetClipboardData(CfUnicodeText);
+            nint data = handle == 0 ? 0 : GlobalLock(handle);
+            if (data == 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                int chars = (int)Math.Min((long)GlobalSize(handle) / 2, MaxTextLength);
+                string text = Marshal.PtrToStringUni(data, chars);
+                int end = text.IndexOf('\0', StringComparison.Ordinal);
+                return end >= 0 ? text[..end] : text;
+            }
+            finally
+            {
+                _ = GlobalUnlock(handle);
+            }
+        }
+        finally
+        {
+            _ = CloseClipboard();
+        }
     }
 
     private static ClipboardContent Classify()
@@ -121,6 +169,30 @@ public sealed partial class ClipboardWatcher : IDisposable
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool IsClipboardFormatAvailable(uint format);
+
+    [LibraryImport("user32.dll", EntryPoint = "RegisterClipboardFormatW", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial uint RegisterClipboardFormat(string name);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool OpenClipboard(nint owner);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool CloseClipboard();
+
+    [LibraryImport("user32.dll")]
+    private static partial nint GetClipboardData(uint format);
+
+    [LibraryImport("kernel32.dll")]
+    private static partial nint GlobalLock(nint memory);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GlobalUnlock(nint memory);
+
+    [LibraryImport("kernel32.dll")]
+    private static partial nuint GlobalSize(nint memory);
 
     [LibraryImport("user32.dll", EntryPoint = "DefWindowProcW")]
     private static partial nint DefWindowProc(nint hwnd, uint msg, nint wParam, nint lParam);

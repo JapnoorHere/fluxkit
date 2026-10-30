@@ -1050,4 +1050,28 @@
   <data name="FluxIsland_ShowScreenshots.Description" xml:space="preserve">
     <value>Show each screenshot saved to Pictures\Screenshots with a small preview and a button to open it.</value>
   </data>
+  <data name="Island_Copied_Link" xml:space="preserve">
+    <value>Link</value>
+  </data>
+  <data name="Island_Copied_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Island_Copied_Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Island_Copied_Color" xml:space="preserve">
+    <value>Colour</value>
+  </data>
+  <data name="Island_CharactersFormat" xml:space="preserve">
+    <value>{0} characters</value>
+  </data>
+  <data name="Island_Action_Write" xml:space="preserve">
+    <value>Write</value>
+  </data>
+  <data name="FluxIsland_SmartCopy.Header" xml:space="preserve">
+    <value>Smart copy</value>
+  </data>
+  <data name="FluxIsland_SmartCopy.Description" xml:space="preserve">
+    <value>Off unless you turn it on. Reads copied text on this PC to spot links, email addresses, phone numbers and colours, and offers a button to open them. Nothing is kept or sent, and copies from password managers are always skipped.</value>
+  </data>
 </root>

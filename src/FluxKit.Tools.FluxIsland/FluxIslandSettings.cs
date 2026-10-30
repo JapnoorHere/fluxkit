@@ -52,6 +52,12 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// <summary>Shows each new screenshot with a preview and a button to open it.</summary>
     public bool ShowScreenshots { get; set; } = true;
 
+    /// <summary>
+    /// Off unless the user turns it on: reads copied text to spot links, email addresses, phone numbers and colours and
+    /// offer what to do with them. The text is looked at on this PC once and never kept or logged.
+    /// </summary>
+    public bool SmartCopy { get; set; }
+
     public bool HideInFullScreen { get; set; } = true;
 
     public bool ShowClockWhenIdle { get; set; } = true;

@@ -13,7 +13,7 @@ public static class SystemSources
         Power = () => new PowerSource(),
         Network = () => new NetworkSource(),
         Privacy = () => new PrivacySource(log),
-        Clipboard = () => new ClipboardSource(log),
+        Clipboard = readText => new ClipboardSource(log, readText),
         FullScreen = () => new FullScreenSource(log),
         Volume = () => new VolumeSource(),
         Audio = () => new AudioSource(log),

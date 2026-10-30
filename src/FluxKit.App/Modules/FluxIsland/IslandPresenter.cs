@@ -30,6 +30,10 @@ internal static class IslandPresenter
     private const string LeafGlyph = "\xEC0A";
     private const string BluetoothGlyph = "\xE702";
     private const string StopwatchGlyph = "\xE916";
+    private const string LinkGlyph = "\xE71B";
+    private const string MailGlyph = "\xE715";
+    private const string PhoneGlyph = "\xE717";
+    private const string SwatchGlyph = "\xE790";
 
     public static CompactContent Describe(IslandActivity activity, DateTimeOffset now) => activity.Kind switch
     {
@@ -52,13 +56,7 @@ internal static class IslandPresenter
         ActivityKind.LowBattery => new(BatteryGlyph(activity.Value), Strings.Get("Island_BatteryLow"), null, Percent(activity.Value), IslandPalette.Red),
         ActivityKind.Offline => new(OfflineGlyph, Strings.Get("Island_Offline"), null, null, IslandPalette.Orange),
         ActivityKind.Online => new(OnlineGlyph, Strings.Get("Island_Online"), null, null, IslandPalette.Green),
-        ActivityKind.Copied => new(CopyGlyph, Strings.Get("Island_Copied"), null, activity.Clipboard switch
-        {
-            ClipboardKind.Text => Strings.Get("Island_Copied_Text"),
-            ClipboardKind.Image => Strings.Get("Island_Copied_Image"),
-            ClipboardKind.Files => Strings.Get("Island_Copied_Files"),
-            _ => null,
-        }, IslandPalette.Cyan),
+        ActivityKind.Copied => DescribeCopied(activity),
         ActivityKind.Volume => new(activity.Value == 0 ? MuteGlyph : VolumeGlyph, Strings.Get("Island_Volume"), null, Percent(activity.Value), IslandPalette.TextPrimary),
         ActivityKind.Brightness => new(BrightnessGlyph, Strings.Get("Island_Brightness"), null, Percent(activity.Value), IslandPalette.TextPrimary),
         ActivityKind.Download => new(
@@ -87,6 +85,7 @@ internal static class IslandPresenter
         ActivityKind.MicMuted => Strings.Get(activity.Flag ? "Island_Action_Unmute" : "Island_Action_Mute"),
         ActivityKind.DownloadDone when activity.Path is not null => Strings.Get("Island_Action_ShowInFolder"),
         ActivityKind.Screenshot when activity.Path is not null => Strings.Get("Island_Action_Open"),
+        ActivityKind.Copied when activity.Path is not null => Strings.Get(activity.Smart == SmartText.Email ? "Island_Action_Write" : "Island_Action_Open"),
         _ => null,
     };
 
@@ -120,6 +119,31 @@ internal static class IslandPresenter
     public static string FormatClock(DateTimeOffset now) => now.ToLocalTime().ToString("t", CultureInfo.CurrentCulture);
 
     public static string FormatDate(DateTimeOffset now) => now.ToLocalTime().ToString("ddd d MMM", CultureInfo.CurrentCulture);
+
+    private static CompactContent DescribeCopied(IslandActivity activity)
+    {
+        string copied = Strings.Get("Island_Copied");
+        return activity.Smart switch
+        {
+            SmartText.Link => new(LinkGlyph, activity.Text ?? copied, copied, Strings.Get("Island_Copied_Link"), IslandPalette.Cyan),
+            SmartText.Email => new(MailGlyph, activity.Text ?? copied, copied, Strings.Get("Island_Copied_Email"), IslandPalette.Cyan),
+            SmartText.Phone => new(PhoneGlyph, activity.Text ?? copied, copied, Strings.Get("Island_Copied_Phone"), IslandPalette.Cyan),
+            SmartText.Color => new(
+                SwatchGlyph,
+                activity.Text ?? copied,
+                copied,
+                Strings.Get("Island_Copied_Color"),
+                Windows.UI.Color.FromArgb(255, (byte)(activity.Value >> 16), (byte)(activity.Value >> 8), (byte)activity.Value)),
+            SmartText.Plain when activity.Value > 0 => new(CopyGlyph, copied, Strings.Format("Island_CharactersFormat", activity.Value), Strings.Get("Island_Copied_Text"), IslandPalette.Cyan),
+            _ => new(CopyGlyph, copied, null, activity.Clipboard switch
+            {
+                ClipboardKind.Text => Strings.Get("Island_Copied_Text"),
+                ClipboardKind.Image => Strings.Get("Island_Copied_Image"),
+                ClipboardKind.Files => Strings.Get("Island_Copied_Files"),
+                _ => null,
+            }, IslandPalette.Cyan),
+        };
+    }
 
     private static CompactContent DescribeTimer(FocusTimerSnapshot timer, DateTimeOffset now)
     {

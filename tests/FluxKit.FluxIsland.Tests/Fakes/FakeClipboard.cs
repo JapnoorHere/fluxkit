@@ -4,11 +4,11 @@ namespace FluxKit.FluxIsland.Tests.Fakes;
 
 internal sealed class FakeClipboard : IClipboardSource
 {
-    public event EventHandler<ClipboardKind>? Copied;
+    public event EventHandler<ClipboardCopied>? Copied;
 
     public bool Disposed { get; private set; }
 
-    public void Copy(ClipboardKind kind) => Copied?.Invoke(this, kind);
+    public void Copy(ClipboardKind kind, string? text = null) => Copied?.Invoke(this, new ClipboardCopied(kind, text));
 
     public void Start()
     {

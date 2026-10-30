@@ -11,7 +11,8 @@ public sealed class IslandSources
 
     public Func<IPrivacySource>? Privacy { get; init; }
 
-    public Func<IClipboardSource>? Clipboard { get; init; }
+    /// <summary>Creates the clipboard watcher; the flag says whether it may read copied text (smart copy).</summary>
+    public Func<bool, IClipboardSource>? Clipboard { get; init; }
 
     public Func<IFullScreenSource>? FullScreen { get; init; }
 

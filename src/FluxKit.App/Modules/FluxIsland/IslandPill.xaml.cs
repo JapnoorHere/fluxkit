@@ -362,6 +362,10 @@ public sealed partial class IslandPill : UserControl
                 ShellLauncher.Open(screenshot);
                 Commands?.DismissAlert();
                 break;
+            case { Kind: ActivityKind.Copied, Path: { } link }:
+                ShellLauncher.OpenLink(link);
+                Commands?.DismissAlert();
+                break;
         }
     }
 

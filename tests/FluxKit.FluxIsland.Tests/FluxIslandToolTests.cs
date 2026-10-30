@@ -31,7 +31,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
             Media = () => _media,
             Power = () => _power,
             Network = () => _network,
-            Clipboard = () => _clipboard,
+            Clipboard = _ => _clipboard,
             FullScreen = () => _fullScreen,
             Audio = () => _audio,
             Privacy = () => _privacy,
@@ -173,6 +173,36 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
         Assert.Equal(ActivityKind.Screenshot, _view.Last.Primary?.Kind);
         Assert.Equal("Screenshot 1.png", _view.Last.Primary?.Text);
         Assert.Equal(@"C:\p\Screenshot 1.png", _view.Last.Primary?.Path);
+    }
+
+    [Fact]
+    public void Copied_text_is_not_looked_at_unless_smart_copy_is_on()
+    {
+        _clipboard.Copy(ClipboardKind.Text, "https://example.com/page");
+
+        Assert.Equal(SmartText.None, _view.Last.Primary?.Smart);
+        Assert.Null(_view.Last.Primary?.Path);
+    }
+
+    [Fact]
+    public async Task Smart_copy_offers_to_open_a_copied_link()
+    {
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.SmartCopy = true;
+            return s;
+        });
+
+        _clipboard.Copy(ClipboardKind.Text, "  https://www.example.com/page  ");
+
+        IslandActivity? shown = _view.Last.Primary;
+        Assert.Equal(SmartText.Link, shown?.Smart);
+        Assert.Equal("example.com", shown?.Text);
+        Assert.Equal("https://www.example.com/page", shown?.Path);
+
+        _time.Advance(FluxIslandTool.SmartCopyDuration);
+
+        Assert.Null(_view.Last.Primary);
     }
 
     [Fact]
