@@ -32,6 +32,9 @@ public sealed class FluxIslandSettings : ISettingsSection
 
     public bool ShelfEnabled { get; set; } = true;
 
+    /// <summary>Keeps the files on the shelf after FluxKit or Windows restarts. Only their paths are saved, on this PC.</summary>
+    public bool KeepShelf { get; set; } = true;
+
     public bool ScrollForVolume { get; set; } = true;
 
     /// <summary>Shows the volume on the island whenever it changes, from the keyboard keys or anywhere else.</summary>

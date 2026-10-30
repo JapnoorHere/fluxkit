@@ -1,3 +1,4 @@
+using FluxKit.Platform.Shell;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -52,6 +53,8 @@ public sealed partial class ShelfTile : UserControl
         PointerExited += OnPointerExited;
         DragStarting += OnDragStarting;
         DropCompleted += (_, _) => DragFinished?.Invoke(this, EventArgs.Empty);
+        DoubleTapped += (_, _) => Open();
+        ContextFlyout = BuildMenu(exists, folder);
         if (exists)
         {
             _ = LoadAsync(folder);
@@ -69,6 +72,51 @@ public sealed partial class ShelfTile : UserControl
     public event EventHandler? DragBegan;
 
     public event EventHandler? DragFinished;
+
+    public event EventHandler? ShareRequested;
+
+    /// <summary>Raised with true when the right-click menu opens and false when it closes, so the island stays open meanwhile.</summary>
+    public event EventHandler<bool>? MenuShown;
+
+    /// <summary>Open, Show in folder, Share, Copy path and Remove. A missing file only offers Show in folder and Remove.</summary>
+    private MenuFlyout BuildMenu(bool exists, bool folder)
+    {
+        var menu = new MenuFlyout();
+        if (exists)
+        {
+            menu.Items.Add(Item("Island_Shelf_Open", "\xE8E5", Open));
+        }
+
+        menu.Items.Add(Item("Island_Action_ShowInFolder", "\xE838", () => ShellLauncher.ShowInFolder(FilePath)));
+        if (exists && !folder)
+        {
+            menu.Items.Add(Item("Island_Shelf_Share", "\xE72D", () => ShareRequested?.Invoke(this, EventArgs.Empty)));
+        }
+
+        menu.Items.Add(Item("Island_Shelf_CopyPath", "\xE8C8", CopyPath));
+        menu.Items.Add(new MenuFlyoutSeparator());
+        menu.Items.Add(Item("Island_Shelf_Remove", "\xE711", () => RemoveRequested?.Invoke(this, EventArgs.Empty)));
+        menu.Opened += (_, _) => MenuShown?.Invoke(this, true);
+        menu.Closed += (_, _) => MenuShown?.Invoke(this, false);
+        return menu;
+    }
+
+    private static MenuFlyoutItem Item(string key, string glyph, Action action)
+    {
+        var item = new MenuFlyoutItem { Text = Strings.Get(key), Icon = new FontIcon { Glyph = glyph } };
+        item.Click += (_, _) => action();
+        return item;
+    }
+
+    /// <summary>Opens the file or folder the way a double-click in File Explorer would.</summary>
+    private void Open() => ShellLauncher.Open(FilePath);
+
+    private void CopyPath()
+    {
+        var package = new DataPackage();
+        package.SetText(FilePath);
+        Clipboard.SetContent(package);
+    }
 
     private async Task LoadAsync(bool folder)
     {

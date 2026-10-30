@@ -94,6 +94,14 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         {
             _options = _settings.Read<FluxIslandSettings>(FluxIslandSettings.Section);
             _wake = _time.CreateTimer(_ => OnWake(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+            if (_options.KeepShelf && _factories.ShelfStore is { } store)
+            {
+                lock (_sync)
+                {
+                    _shelf.Add(store.Load());
+                }
+            }
+
             _view = _viewFactory(this);
             StartSources();
             Publish();
@@ -142,11 +150,11 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
 
     public void CancelTimer() => Change(_timer.Cancel);
 
-    public void AddToShelf(IEnumerable<string> paths) => Change(() => _shelf.Add(paths));
+    public void AddToShelf(IEnumerable<string> paths) => ChangeShelf(() => _shelf.Add(paths));
 
-    public void RemoveFromShelf(string path) => Change(() => _shelf.Remove(path));
+    public void RemoveFromShelf(string path) => ChangeShelf(() => _shelf.Remove(path));
 
-    public void ClearShelf() => Change(() => _shelf.Clear());
+    public void ClearShelf() => ChangeShelf(() => _shelf.Clear());
 
     public void StepVolume(int notches)
     {
@@ -309,7 +317,21 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             return;
         }
 
+        bool keptBefore = _options.KeepShelf;
         _options = _settings.Read<FluxIslandSettings>(FluxIslandSettings.Section);
+        if (keptBefore != _options.KeepShelf && _factories.ShelfStore is { } store)
+        {
+            // Turning it off forgets the saved list at once; turning it on saves what is there now.
+            if (_options.KeepShelf)
+            {
+                store.Save(_shelf.Items);
+            }
+            else
+            {
+                store.Delete();
+            }
+        }
+
         StopSources();
         StartSources();
         Publish();
@@ -439,6 +461,23 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
 
             _arbiter.Expire();
         });
+    }
+
+    /// <summary>Changes the shelf, then saves it if the user keeps the shelf between runs.</summary>
+    private void ChangeShelf(Func<bool> change)
+    {
+        bool changed = false;
+        IReadOnlyList<string> items = [];
+        Change(() =>
+        {
+            changed = change();
+            items = _shelf.Items;
+        });
+
+        if (changed && _options.KeepShelf)
+        {
+            _factories.ShelfStore?.Save(items);
+        }
     }
 
     /// <summary>Applies a change under the lock, then publishes the new scene.</summary>

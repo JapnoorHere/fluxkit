@@ -1,3 +1,4 @@
+using FluxKit.Core;
 using FluxKit.Platform.VirtualDesktop;
 using FluxKit.Tools.FluxIsland.Abstractions;
 using Serilog;
@@ -20,5 +21,6 @@ public static class SystemSources
         Desktops = desktops is null ? null : () => new DesktopSource(desktops),
         Files = (downloads, screenshots) => new FileMomentsSource(downloads, screenshots, TimeProvider.System, log),
         Brightness = () => new BrightnessSource(log),
+        ShelfStore = new JsonShelfStore(FluxKitPaths.ShelfFile, log),
     };
 }

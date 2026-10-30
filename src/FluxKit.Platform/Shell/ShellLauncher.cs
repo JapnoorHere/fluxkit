@@ -5,8 +5,8 @@ namespace FluxKit.Platform.Shell;
 /// <summary>Hands a file to Windows: opens it in its default app, or shows it selected in File Explorer.</summary>
 public static class ShellLauncher
 {
-    /// <summary>Opens <paramref name="path"/> in its default app. Returns false if the file is gone or nothing opened.</summary>
-    public static bool Open(string path) => File.Exists(path) && Start(new ProcessStartInfo(path) { UseShellExecute = true });
+    /// <summary>Opens a file in its default app, or a folder in File Explorer. Returns false if it is gone or nothing opened.</summary>
+    public static bool Open(string path) => (File.Exists(path) || Directory.Exists(path)) && Start(new ProcessStartInfo(path) { UseShellExecute = true });
 
     /// <summary>Opens a web page in the default browser or a mailto link in the mail app. Any other kind of link is refused.</summary>
     public static bool OpenLink(string link) =>

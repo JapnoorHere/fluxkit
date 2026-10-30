@@ -12,6 +12,9 @@ public static class FluxKitPaths
 
     public static string LogsFolder => Path.Combine(Root, "Logs");
 
+    /// <summary>The paths on the Flux Island shelf, kept only while "Keep the shelf after restart" is on.</summary>
+    public static string ShelfFile => Path.Combine(Root, "shelf.json");
+
     /// <summary>The drop log written by the DropProbe test app.</summary>
     public static string DropProbeLog => Path.Combine(Root, "DropProbe", "drops.jsonl");
 }

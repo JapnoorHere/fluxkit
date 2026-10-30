@@ -1098,4 +1098,31 @@
   <data name="FluxIsland_ShowSaver.Description" xml:space="preserve">
     <value>Say when battery saver turns on or off, with the time left on battery.</value>
   </data>
+  <data name="Island_ShareShelf.Content" xml:space="preserve">
+    <value>Share</value>
+  </data>
+  <data name="Island_Shelf_Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Island_Shelf_Share" xml:space="preserve">
+    <value>Share</value>
+  </data>
+  <data name="Island_Shelf_CopyPath" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
+  <data name="Island_Shelf_Remove" xml:space="preserve">
+    <value>Remove from shelf</value>
+  </data>
+  <data name="Island_ShareTitle" xml:space="preserve">
+    <value>Files from the Flux Island shelf</value>
+  </data>
+  <data name="Island_ShareFailed" xml:space="preserve">
+    <value>These files can&apos;t be shared right now.</value>
+  </data>
+  <data name="FluxIsland_KeepShelf.Header" xml:space="preserve">
+    <value>Keep the shelf after restart</value>
+  </data>
+  <data name="FluxIsland_KeepShelf.Description" xml:space="preserve">
+    <value>Files stay on the shelf when FluxKit or Windows restarts. Only their locations are saved, on this PC. Right-click a file on the shelf to open, share or remove it.</value>
+  </data>
 </root>

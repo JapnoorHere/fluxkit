@@ -23,6 +23,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
     private readonly FakeDesktops _desktops = new();
     private readonly FakeFileMoments _files = new();
     private readonly FakeBrightness _brightness = new();
+    private readonly FakeShelfStore _store = new();
     private readonly FluxIslandTool _tool;
 
     public FluxIslandToolTests()
@@ -39,6 +40,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
             Desktops = () => _desktops,
             Files = (_, _) => _files,
             Brightness = () => _brightness,
+            ShelfStore = _store,
         };
         _tool = new FluxIslandTool(_settings, _ => _view, sources, _time, new LoggerConfiguration().CreateLogger());
     }
@@ -237,6 +239,44 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
 
         Assert.Equal(ActivityKind.PluggedIn, _view.Last.Primary?.Kind);
         Assert.Equal(45, _view.Last.Primary?.Total);
+    }
+
+    [Fact]
+    public void The_shelf_is_saved_as_it_changes()
+    {
+        _tool.AddToShelf([@"C:\a.txt", @"C:\b.txt"]);
+        _tool.RemoveFromShelf(@"C:\a.txt");
+
+        Assert.Equal([@"C:\b.txt"], _store.Saved);
+    }
+
+    [Fact]
+    public async Task Turning_off_keep_shelf_forgets_the_saved_list()
+    {
+        _tool.AddToShelf([@"C:\a.txt"]);
+
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.KeepShelf = false;
+            return s;
+        });
+        _tool.AddToShelf([@"C:\b.txt"]);
+
+        Assert.True(_store.Deleted);
+        Assert.Null(_store.Saved);
+        Assert.Equal(2, _view.Last.Shelf.Count);
+    }
+
+    [Fact]
+    public async Task A_saved_shelf_comes_back_on_start()
+    {
+        var store = new FakeShelfStore { Saved = [@"C:\kept.txt"] };
+        var view = new FakeIslandView();
+        await using var tool = new FluxIslandTool(_settings, _ => view, new IslandSources { ShelfStore = store }, _time, new LoggerConfiguration().CreateLogger());
+
+        await tool.StartAsync(CancellationToken.None);
+
+        Assert.Equal([@"C:\kept.txt"], view.Last.Shelf);
     }
 
     [Fact]

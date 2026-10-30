@@ -44,6 +44,7 @@ public sealed partial class FluxIslandPage : Page
         SaverToggle.IsOn = s.ShowBatterySaver;
         ClockToggle.IsOn = s.ShowClockWhenIdle;
         ShelfToggle.IsOn = s.ShelfEnabled;
+        KeepShelfToggle.IsOn = s.KeepShelf;
         VolumeToggle.IsOn = s.ScrollForVolume;
         FocusSlider.Value = s.FocusMinutes;
         BreakSlider.Value = s.BreakMinutes;
@@ -151,6 +152,7 @@ public sealed partial class FluxIslandPage : Page
             s.ShowBatterySaver = SaverToggle.IsOn;
             s.ShowClockWhenIdle = ClockToggle.IsOn;
             s.ShelfEnabled = ShelfToggle.IsOn;
+            s.KeepShelf = KeepShelfToggle.IsOn;
             s.ScrollForVolume = VolumeToggle.IsOn;
             s.Effects = (IslandEffects)Math.Max(0, EffectsCombo.SelectedIndex);
             s.HideInFullScreen = FullScreenToggle.IsOn;

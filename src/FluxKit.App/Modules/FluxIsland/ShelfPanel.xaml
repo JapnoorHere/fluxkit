@@ -38,15 +38,28 @@
                     VerticalAlignment="Center"
                     FontSize="12" />
             </StackPanel>
-            <Button
-                x:Name="ClearButton"
-                Height="26"
-                Padding="12,0"
+            <StackPanel
                 HorizontalAlignment="Right"
-                CornerRadius="13"
-                FontSize="12"
-                Style="{StaticResource IslandChipButtonStyle}"
-                x:Uid="Island_ClearShelf" />
+                Orientation="Horizontal"
+                Spacing="6">
+                <!-- Shares every file on the shelf through the Windows share sheet (Nearby Share, mail, apps). -->
+                <Button
+                    x:Name="ShareButton"
+                    Height="26"
+                    Padding="12,0"
+                    CornerRadius="13"
+                    FontSize="12"
+                    Style="{StaticResource IslandChipButtonStyle}"
+                    x:Uid="Island_ShareShelf" />
+                <Button
+                    x:Name="ClearButton"
+                    Height="26"
+                    Padding="12,0"
+                    CornerRadius="13"
+                    FontSize="12"
+                    Style="{StaticResource IslandChipButtonStyle}"
+                    x:Uid="Island_ClearShelf" />
+            </StackPanel>
         </Grid>
 
         <Grid x:Name="ItemsHost" Grid.Row="1">

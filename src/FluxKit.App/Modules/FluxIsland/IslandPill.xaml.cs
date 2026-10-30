@@ -75,6 +75,7 @@ public sealed partial class IslandPill : UserControl
     private bool _active;
     private string? _thumbPath;
     private ImageSource? _thumb;
+    private bool _held;
 
     public IslandPill()
     {
@@ -112,7 +113,13 @@ public sealed partial class IslandPill : UserControl
         };
 
         _peekTimer = OneShot(PeekDelay, () => SetMode(PillMode.Peek));
-        _closeTimer = OneShot(CloseDelay, () => SetMode(PillMode.Compact));
+        _closeTimer = OneShot(CloseDelay, () =>
+        {
+            if (!_held)
+            {
+                SetMode(PillMode.Compact);
+            }
+        });
         _clockTimer = OneShot(TimeSpan.FromMinutes(1), OnClockTick);
         _tickTimer = DispatcherQueue.CreateTimer();
         _tickTimer.Interval = TimeSpan.FromSeconds(1);
@@ -126,6 +133,16 @@ public sealed partial class IslandPill : UserControl
             }
         });
 
+        ShelfView.ShareRequested += (_, files) => ShareRequested?.Invoke(this, files);
+        ShelfView.MenuShown += (_, open) =>
+        {
+            // Keep the panel open under a tile's menu, then close as usual if the pointer has left.
+            _held = open;
+            if (!open && !_hovering && _mode != PillMode.Compact)
+            {
+                _closeTimer.Start();
+            }
+        };
         MediaTab.Click += (_, _) => ShowPage(PanelPage.Media);
         TimerTab.Click += (_, _) => ShowPage(PanelPage.Timer);
         ShelfTab.Click += (_, _) => ShowPage(PanelPage.Shelf);
@@ -182,6 +199,9 @@ public sealed partial class IslandPill : UserControl
     public Rect RegionBounds { get; private set; }
 
     public event EventHandler<Rect>? TargetChanged;
+
+    /// <summary>Files the user asked to share; the window opens the share sheet, which needs its handle.</summary>
+    public event EventHandler<IReadOnlyList<string>>? ShareRequested;
 
     public void Render(IslandScene scene)
     {
@@ -380,9 +400,27 @@ public sealed partial class IslandPill : UserControl
         }
     }
 
+    private static bool IsOnShelfTile(DependencyObject? element)
+    {
+        for (DependencyObject? at = element; at is not null; at = VisualTreeHelper.GetParent(at))
+        {
+            if (at is ShelfTile)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>Right-click waves away the alert on screen, or closes the open panel.</summary>
     private void OnRightTapped(object sender, RightTappedRoutedEventArgs e)
     {
+        if (IsOnShelfTile(e.OriginalSource as DependencyObject))
+        {
+            return; // The tile's own menu handles it.
+        }
+
         e.Handled = true;
         if (_mode == PillMode.Panel)
         {

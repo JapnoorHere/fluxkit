@@ -24,6 +24,8 @@ public sealed partial class ShelfPanel : UserControl
         Count.Foreground = new SolidColorBrush(IslandPalette.TextSecondary);
         HeaderGlyph.Foreground = new SolidColorBrush(IslandPalette.Cyan);
         ClearButton.Click += (_, _) => Commands?.ClearShelf();
+        ShareButton.Click += (_, _) => ShareRequested?.Invoke(this, [.. _tiles.Keys.Where(File.Exists)]);
+        PressFeedback.Attach(ShareButton);
         PressFeedback.Attach(ClearButton);
 
         // A mouse wheel only scrolls up and down; turn it sideways so a long shelf can be scrolled.
@@ -38,6 +40,12 @@ public sealed partial class ShelfPanel : UserControl
     /// <summary>True while one of the shelf's own files is being dragged out.</summary>
     public bool IsDraggingOut { get; private set; }
 
+    /// <summary>Files to hand to the Windows share sheet.</summary>
+    public event EventHandler<IReadOnlyList<string>>? ShareRequested;
+
+    /// <summary>True while a tile's right-click menu is open.</summary>
+    public event EventHandler<bool>? MenuShown;
+
     /// <summary>The rows, in the order they should appear when the page opens.</summary>
     internal UIElement[] Rows => [Header, ItemsHost];
 
@@ -48,6 +56,7 @@ public sealed partial class ShelfPanel : UserControl
     {
         Count.Text = paths.Count > 0 ? paths.Count.ToString(System.Globalization.CultureInfo.CurrentCulture) : string.Empty;
         ClearButton.Visibility = paths.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        ShareButton.Visibility = paths.Any(File.Exists) ? Visibility.Visible : Visibility.Collapsed;
 
         foreach (string gone in _tiles.Keys.Where(k => !paths.Contains(k, StringComparer.OrdinalIgnoreCase)).ToList())
         {
@@ -145,6 +154,8 @@ public sealed partial class ShelfPanel : UserControl
         tile.RemoveRequested += (_, _) => Commands?.RemoveFromShelf(tile.FilePath);
         tile.DragBegan += (_, _) => IsDraggingOut = true;
         tile.DragFinished += (_, _) => IsDraggingOut = false;
+        tile.ShareRequested += (_, _) => ShareRequested?.Invoke(this, [tile.FilePath]);
+        tile.MenuShown += (_, open) => MenuShown?.Invoke(this, open);
         return tile;
     }
 

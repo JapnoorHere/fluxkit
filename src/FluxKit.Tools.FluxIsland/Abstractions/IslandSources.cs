@@ -26,4 +26,7 @@ public sealed class IslandSources
     public Func<bool, bool, IFileMomentsSource>? Files { get; init; }
 
     public Func<IBrightnessSource>? Brightness { get; init; }
+
+    /// <summary>Where the shelf is kept between runs; null keeps it in memory only.</summary>
+    public IShelfStore? ShelfStore { get; init; }
 }

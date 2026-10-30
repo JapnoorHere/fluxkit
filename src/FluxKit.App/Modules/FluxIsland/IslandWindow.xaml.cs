@@ -1,3 +1,4 @@
+using FluxKit.App.Common;
 using FluxKit.App.Theming;
 using FluxKit.Platform.VirtualDesktop;
 using FluxKit.Platform.Windows;
@@ -63,6 +64,7 @@ public sealed partial class IslandWindow : Window
         _commands = commands;
         Pill.Commands = commands;
         Pill.TargetChanged += OnTargetChanged;
+        Pill.ShareRequested += (_, files) => ShareSheet.Show(_hwnd, files, Strings.Get("Island_ShareTitle"));
         _shrinkTimer = DispatcherQueue.CreateTimer();
         _shrinkTimer.Interval = ShrinkDelay;
         _shrinkTimer.IsRepeating = false;
