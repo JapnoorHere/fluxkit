@@ -21,6 +21,9 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     /// <summary>How long "Microphone muted/on" shows after the mute changes.</summary>
     internal static readonly TimeSpan MicToggleDuration = TimeSpan.FromSeconds(1.6);
 
+    /// <summary>A download that hasn't grown for this long is taken off the island (the browser may have stopped it).</summary>
+    internal static readonly TimeSpan StalledDownload = TimeSpan.FromMinutes(2);
+
     private readonly ISettingsService _settings;
     private readonly Func<IIslandCommands, IIslandView> _viewFactory;
     private readonly IslandSources _factories;
@@ -32,6 +35,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private readonly ShelfModel _shelf = new();
     private readonly BatteryAlertPolicy _battery = new();
     private readonly List<IIslandSource> _active = [];
+    private readonly Dictionary<string, (DownloadUpdate Update, DateTimeOffset At)> _downloads = [];
     private FluxIslandSettings _options = new();
     private IIslandView? _view;
     private ITimer? _wake;
@@ -44,6 +48,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private IVolumeControl? _volume;
     private IAudioSource? _audio;
     private IDesktopSource? _desktops;
+    private IFileMomentsSource? _files;
     private bool _micMuted;
     private bool? _wasOnline;
     private bool _mediaWasPlaying;
@@ -217,6 +222,14 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         });
         _micMuted = _audio?.MicMuted == true;
         _desktops = Start(_options.ShowDesktopSwitches ? _factories.Desktops : null, s => s.Switched += OnDesktopSwitched);
+        Func<IFileMomentsSource>? files = _factories.Files is { } makeFiles && (_options.ShowDownloads || _options.ShowScreenshots)
+            ? () => makeFiles(_options.ShowDownloads, _options.ShowScreenshots)
+            : null;
+        _files = Start(files, s =>
+        {
+            s.DownloadChanged += OnDownloadChanged;
+            s.ScreenshotSaved += OnScreenshotSaved;
+        });
         _wasOnline = _network?.IsOnline;
         lock (_sync)
         {
@@ -273,6 +286,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _volume = null;
         _audio = null;
         _desktops = null;
+        _files = null;
         lock (_sync)
         {
             _arbiter.SetLasting(ActivityKind.Media, null);
@@ -353,6 +367,34 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private void OnDesktopSwitched(object? sender, DesktopLanding landing) =>
         Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.DesktopSwitched) { Value = landing.Number, Total = landing.Count, Text = landing.Name }));
 
+    private void OnDownloadChanged(object? sender, DownloadUpdate update)
+    {
+        Change(() =>
+        {
+            if (update.Previous is { } previous)
+            {
+                _downloads.Remove(previous);
+            }
+
+            switch (update.Stage)
+            {
+                case DownloadStage.Arriving:
+                    _downloads[update.Key] = (update, _time.GetUtcNow());
+                    break;
+                case DownloadStage.Finished:
+                    _downloads.Remove(update.Key);
+                    _arbiter.Raise(new IslandActivity(ActivityKind.DownloadDone) { Text = update.Name, Path = update.Path });
+                    break;
+                default:
+                    _downloads.Remove(update.Key);
+                    break;
+            }
+        });
+    }
+
+    private void OnScreenshotSaved(object? sender, string path) =>
+        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Screenshot) { Text = Path.GetFileName(path), Path = path }));
+
     private void OnCopied(object? sender, ClipboardKind kind) =>
         Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Copied) { Clipboard = kind }));
 
@@ -420,6 +462,30 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         // A muted microphone matters while something is listening, such as a call: keep reminding until it ends.
         bool listening = _privacy?.Current.MicrophoneInUse == true;
         _arbiter.SetLasting(ActivityKind.MicMuted, _options.ShowMicMute && _micMuted && listening ? new IslandActivity(ActivityKind.MicMuted) { Flag = true } : null);
+
+        // The newest download that is still arriving; one that stalls drops off by itself.
+        DateTimeOffset now = _time.GetUtcNow();
+        foreach (string stalled in _downloads.Where(d => now - d.Value.At >= StalledDownload).Select(d => d.Key).ToList())
+        {
+            _downloads.Remove(stalled);
+        }
+
+        if (_downloads.Values.OrderByDescending(d => d.At).FirstOrDefault() is { Update.Key: not null } latest)
+        {
+            _arbiter.SetLasting(
+                ActivityKind.Download,
+                new IslandActivity(ActivityKind.Download)
+                {
+                    Text = latest.Update.Name.Length > 0 ? latest.Update.Name : null,
+                    Value = (int)(latest.Update.Bytes / (1024 * 1024)),
+                    Total = _downloads.Count,
+                },
+                latest.At + StalledDownload);
+        }
+        else
+        {
+            _arbiter.SetLasting(ActivityKind.Download, null);
+        }
     }
 
     private void Schedule()

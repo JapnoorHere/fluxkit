@@ -21,6 +21,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
     private readonly FakeAudio _audio = new();
     private readonly FakePrivacy _privacy = new();
     private readonly FakeDesktops _desktops = new();
+    private readonly FakeFileMoments _files = new();
     private readonly FluxIslandTool _tool;
 
     public FluxIslandToolTests()
@@ -35,6 +36,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
             Audio = () => _audio,
             Privacy = () => _privacy,
             Desktops = () => _desktops,
+            Files = (_, _) => _files,
         };
         _tool = new FluxIslandTool(_settings, _ => _view, sources, _time, new LoggerConfiguration().CreateLogger());
     }
@@ -130,6 +132,47 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
         _time.Advance(ActivityArbiter.DurationOf(ActivityKind.DesktopSwitched));
 
         Assert.Null(_view.Last.Primary);
+    }
+
+    [Fact]
+    public void A_download_stays_while_it_arrives_then_says_it_is_done()
+    {
+        _files.Download(new DownloadUpdate("k", DownloadStage.Arriving, "big.iso", 50L * 1024 * 1024));
+
+        Assert.Equal(ActivityKind.Download, _view.Last.Primary?.Kind);
+        Assert.Equal("big.iso", _view.Last.Primary?.Text);
+        Assert.Equal(50, _view.Last.Primary?.Value);
+
+        _files.Download(new DownloadUpdate("k", DownloadStage.Finished, "big.iso", 0, @"C:\d\big.iso"));
+
+        Assert.Equal(ActivityKind.DownloadDone, _view.Last.Primary?.Kind);
+        Assert.Equal(@"C:\d\big.iso", _view.Last.Primary?.Path);
+
+        _time.Advance(ActivityArbiter.DurationOf(ActivityKind.DownloadDone));
+
+        Assert.Null(_view.Last.Primary);
+    }
+
+    [Fact]
+    public void A_download_that_stalls_drops_off_by_itself()
+    {
+        _files.Download(new DownloadUpdate("k", DownloadStage.Arriving, string.Empty, 1));
+
+        Assert.Null(_view.Last.Primary?.Text);
+
+        _time.Advance(FluxIslandTool.StalledDownload);
+
+        Assert.Null(_view.Last.Primary);
+    }
+
+    [Fact]
+    public void A_screenshot_shows_its_name_and_path()
+    {
+        _files.Screenshot(@"C:\p\Screenshot 1.png");
+
+        Assert.Equal(ActivityKind.Screenshot, _view.Last.Primary?.Kind);
+        Assert.Equal("Screenshot 1.png", _view.Last.Primary?.Text);
+        Assert.Equal(@"C:\p\Screenshot 1.png", _view.Last.Primary?.Path);
     }
 
     [Fact]

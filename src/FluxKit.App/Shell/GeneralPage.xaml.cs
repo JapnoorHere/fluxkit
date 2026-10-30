@@ -128,7 +128,7 @@ public sealed partial class GeneralPage : Page
     private async void OnOpenSettingsFile(object sender, RoutedEventArgs e)
     {
         await _host.Settings.FlushAsync();
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", $"/select,\"{_host.SettingsPath}\"") { UseShellExecute = true });
+        FluxKit.Platform.Shell.ShellLauncher.ShowInFolder(_host.SettingsPath);
     }
 
     private async void OnReset(object sender, RoutedEventArgs e)

@@ -54,6 +54,12 @@
                         <c:SettingRow x:Uid="FluxIsland_ShowDesktops" Glyph="&#xE7C4;">
                             <ToggleSwitch x:Name="DesktopsToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowDownloads" Glyph="&#xE896;">
+                            <ToggleSwitch x:Name="DownloadsToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowScreenshots" Glyph="&#xE722;">
+                            <ToggleSwitch x:Name="ScreenshotsToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowClock" Glyph="&#xE823;">
                             <ToggleSwitch x:Name="ClockToggle" Toggled="OnChanged" />
                         </c:SettingRow>

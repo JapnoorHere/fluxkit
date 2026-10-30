@@ -46,6 +46,12 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// <summary>Names the desktop you land on when you switch virtual desktops.</summary>
     public bool ShowDesktopSwitches { get; set; } = true;
 
+    /// <summary>Shows downloads while they arrive and when they finish, with a button to find the file.</summary>
+    public bool ShowDownloads { get; set; } = true;
+
+    /// <summary>Shows each new screenshot with a preview and a button to open it.</summary>
+    public bool ShowScreenshots { get; set; } = true;
+
     public bool HideInFullScreen { get; set; } = true;
 
     public bool ShowClockWhenIdle { get; set; } = true;

@@ -1,5 +1,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
+using FluxKit.App.Common;
+using FluxKit.Platform.Shell;
 using FluxKit.Tools.FluxIsland.Abstractions;
 using FluxKit.Tools.FluxIsland.Activities;
 using Microsoft.UI.Composition;
@@ -71,6 +73,8 @@ public sealed partial class IslandPill : UserControl
     private bool _hovering;
     private bool _pressed;
     private bool _active;
+    private string? _thumbPath;
+    private ImageSource? _thumb;
 
     public IslandPill()
     {
@@ -344,11 +348,31 @@ public sealed partial class IslandPill : UserControl
     /// <summary>Runs the peek chip's action for <paramref name="activity"/> (see <see cref="IslandPresenter.ActionLabel"/>).</summary>
     private void RunAction(IslandActivity? activity)
     {
-        switch (activity?.Kind)
+        switch (activity)
         {
-            case ActivityKind.MicMuted:
+            case { Kind: ActivityKind.MicMuted }:
                 Commands?.ToggleMicMute();
                 break;
+            case { Kind: ActivityKind.DownloadDone, Path: { } download }:
+                // Shown, never opened: a download could be a program, and running one should be the user's own click.
+                ShellLauncher.ShowInFolder(download);
+                Commands?.DismissAlert();
+                break;
+            case { Kind: ActivityKind.Screenshot, Path: { } screenshot }:
+                ShellLauncher.Open(screenshot);
+                Commands?.DismissAlert();
+                break;
+        }
+    }
+
+    private async Task LoadThumbAsync(string path)
+    {
+        ImageSource? image = await FileThumbnail.LoadAsync(path, 48);
+        if (path == _thumbPath && image is not null)
+        {
+            _thumb = image;
+            _shownKey = null;
+            Update();
         }
     }
 
@@ -396,7 +420,20 @@ public sealed partial class IslandPill : UserControl
         // Music shows its art instead of the note glyph, and the bouncing bars on the right; the charger shows its ring.
         MediaInfo? media = activity?.Kind == ActivityKind.Media ? activity.Media : null;
         bool charging = activity?.Kind == ActivityKind.PluggedIn;
-        bool art = media is not null && _art.Image is not null;
+        string? thumbPath = activity?.Kind == ActivityKind.Screenshot ? activity.Path : null;
+        if (thumbPath != _thumbPath)
+        {
+            _thumbPath = thumbPath;
+            _thumb = null;
+            if (thumbPath is not null)
+            {
+                _ = LoadThumbAsync(thumbPath);
+            }
+        }
+
+        // A screenshot shows itself, small, where music shows its art.
+        bool art = media is not null ? _art.Image is not null : _thumb is not null;
+        CompactArt.Source = media is not null ? _art.Image : _thumb;
         CompactRing.Visibility = charging ? Visibility.Visible : Visibility.Collapsed;
         CompactDots.Update(_scene.Privacy, Springs);
         CompactArtFrame.Visibility = art ? Visibility.Visible : Visibility.Collapsed;

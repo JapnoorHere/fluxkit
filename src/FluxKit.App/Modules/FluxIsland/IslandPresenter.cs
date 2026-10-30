@@ -61,7 +61,12 @@ internal static class IslandPresenter
         }, IslandPalette.Cyan),
         ActivityKind.Volume => new(activity.Value == 0 ? MuteGlyph : VolumeGlyph, Strings.Get("Island_Volume"), null, Percent(activity.Value), IslandPalette.TextPrimary),
         ActivityKind.Brightness => new(BrightnessGlyph, Strings.Get("Island_Brightness"), null, Percent(activity.Value), IslandPalette.TextPrimary),
-        ActivityKind.Download => new(DownloadGlyph, activity.Text ?? Strings.Get("Island_Downloading"), Strings.Get("Island_Downloading"), FormatSize(activity.Value), IslandPalette.Cyan),
+        ActivityKind.Download => new(
+            DownloadGlyph,
+            activity.Text ?? Strings.Get("Island_Downloading"),
+            activity.Total > 1 ? Strings.Format("Island_DownloadsFormat", activity.Total) : Strings.Get("Island_Downloading"),
+            FormatSize(activity.Value),
+            IslandPalette.Cyan),
         ActivityKind.DownloadDone => new(DoneGlyph, Strings.Get("Island_Downloaded"), activity.Text, null, IslandPalette.Green),
         ActivityKind.Screenshot => new(ScreenshotGlyph, Strings.Get("Island_Screenshot"), activity.Text, null, IslandPalette.Violet),
         ActivityKind.DesktopSwitched => new(DesktopGlyph, activity.Text ?? Strings.Format("Island_DesktopFormat", activity.Value), null, Strings.Format("Island_OfFormat", activity.Value, activity.Total), IslandPalette.Violet),
@@ -80,6 +85,8 @@ internal static class IslandPresenter
     public static string? ActionLabel(IslandActivity activity) => activity.Kind switch
     {
         ActivityKind.MicMuted => Strings.Get(activity.Flag ? "Island_Action_Unmute" : "Island_Action_Mute"),
+        ActivityKind.DownloadDone when activity.Path is not null => Strings.Get("Island_Action_ShowInFolder"),
+        ActivityKind.Screenshot when activity.Path is not null => Strings.Get("Island_Action_Open"),
         _ => null,
     };
 

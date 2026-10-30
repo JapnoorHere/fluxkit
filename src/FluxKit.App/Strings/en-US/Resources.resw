@@ -1029,4 +1029,25 @@
   <data name="FluxIsland_ShowDesktops.Description" xml:space="preserve">
     <value>Name the virtual desktop you land on when you switch, with where it sits among your desktops.</value>
   </data>
+  <data name="Island_DownloadsFormat" xml:space="preserve">
+    <value>{0} downloads</value>
+  </data>
+  <data name="Island_Action_ShowInFolder" xml:space="preserve">
+    <value>Show in folder</value>
+  </data>
+  <data name="Island_Action_Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="FluxIsland_ShowDownloads.Header" xml:space="preserve">
+    <value>Downloads</value>
+  </data>
+  <data name="FluxIsland_ShowDownloads.Description" xml:space="preserve">
+    <value>Show downloads from your browser while they arrive and when they finish, with a button to find the file. Only file names and sizes are looked at.</value>
+  </data>
+  <data name="FluxIsland_ShowScreenshots.Header" xml:space="preserve">
+    <value>Screenshots</value>
+  </data>
+  <data name="FluxIsland_ShowScreenshots.Description" xml:space="preserve">
+    <value>Show each screenshot saved to Pictures\Screenshots with a small preview and a button to open it.</value>
+  </data>
 </root>
