@@ -43,6 +43,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private IFullScreenSource? _fullScreen;
     private IVolumeControl? _volume;
     private IAudioSource? _audio;
+    private IDesktopSource? _desktops;
     private bool _micMuted;
     private bool? _wasOnline;
     private bool _mediaWasPlaying;
@@ -215,6 +216,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             s.MicMuteChanged += OnMicMuteChanged;
         });
         _micMuted = _audio?.MicMuted == true;
+        _desktops = Start(_options.ShowDesktopSwitches ? _factories.Desktops : null, s => s.Switched += OnDesktopSwitched);
         _wasOnline = _network?.IsOnline;
         lock (_sync)
         {
@@ -270,6 +272,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _fullScreen = null;
         _volume = null;
         _audio = null;
+        _desktops = null;
         lock (_sync)
         {
             _arbiter.SetLasting(ActivityKind.Media, null);
@@ -346,6 +349,9 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             }
         });
     }
+
+    private void OnDesktopSwitched(object? sender, DesktopLanding landing) =>
+        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.DesktopSwitched) { Value = landing.Number, Total = landing.Count, Text = landing.Name }));
 
     private void OnCopied(object? sender, ClipboardKind kind) =>
         Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Copied) { Clipboard = kind }));

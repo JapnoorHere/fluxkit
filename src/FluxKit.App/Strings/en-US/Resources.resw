@@ -1023,4 +1023,10 @@
   <data name="FluxIsland_ShowMicMute.Description" xml:space="preserve">
     <value>Show when the microphone is muted or unmuted, and remind you while an app is listening to a muted microphone.</value>
   </data>
+  <data name="FluxIsland_ShowDesktops.Header" xml:space="preserve">
+    <value>Desktop switches</value>
+  </data>
+  <data name="FluxIsland_ShowDesktops.Description" xml:space="preserve">
+    <value>Name the virtual desktop you land on when you switch, with where it sits among your desktops.</value>
+  </data>
 </root>

@@ -126,7 +126,7 @@ public sealed class AppHost
                 _island = new IslandWindow(commands, Desktops, Serilog.Log.Logger);
                 return _island.View;
             },
-            SystemSources.Create(Serilog.Log.Logger),
+            SystemSources.Create(Serilog.Log.Logger, Desktops),
             TimeProvider.System,
             Serilog.Log.Logger);
         FluxIsland.StateChanged += (_, _) => _dispatcher.TryEnqueue(OnStatusChanged);

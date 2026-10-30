@@ -51,6 +51,9 @@
                         <c:SettingRow x:Uid="FluxIsland_ShowMicMute" Glyph="&#xE720;">
                             <ToggleSwitch x:Name="MicMuteToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowDesktops" Glyph="&#xE7C4;">
+                            <ToggleSwitch x:Name="DesktopsToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowClock" Glyph="&#xE823;">
                             <ToggleSwitch x:Name="ClockToggle" Toggled="OnChanged" />
                         </c:SettingRow>

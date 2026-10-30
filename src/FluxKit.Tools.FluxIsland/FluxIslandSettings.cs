@@ -43,6 +43,9 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// <summary>Shows microphone mute changes, and a reminder while an app listens to a muted microphone.</summary>
     public bool ShowMicMute { get; set; } = true;
 
+    /// <summary>Names the desktop you land on when you switch virtual desktops.</summary>
+    public bool ShowDesktopSwitches { get; set; } = true;
+
     public bool HideInFullScreen { get; set; } = true;
 
     public bool ShowClockWhenIdle { get; set; } = true;

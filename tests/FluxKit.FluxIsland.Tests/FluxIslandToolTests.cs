@@ -20,6 +20,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
     private readonly FakeFullScreen _fullScreen = new();
     private readonly FakeAudio _audio = new();
     private readonly FakePrivacy _privacy = new();
+    private readonly FakeDesktops _desktops = new();
     private readonly FluxIslandTool _tool;
 
     public FluxIslandToolTests()
@@ -33,6 +34,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
             FullScreen = () => _fullScreen,
             Audio = () => _audio,
             Privacy = () => _privacy,
+            Desktops = () => _desktops,
         };
         _tool = new FluxIslandTool(_settings, _ => _view, sources, _time, new LoggerConfiguration().CreateLogger());
     }
@@ -110,6 +112,22 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
         Assert.Equal(ActivityKind.MicMuted, _view.Last.Primary?.Kind);
 
         _privacy.Set(microphone: false);
+
+        Assert.Null(_view.Last.Primary);
+    }
+
+    [Fact]
+    public void Landing_on_another_desktop_names_it_and_where_it_sits()
+    {
+        _desktops.Land(2, 4, "Work");
+
+        IslandActivity? shown = _view.Last.Primary;
+        Assert.Equal(ActivityKind.DesktopSwitched, shown?.Kind);
+        Assert.Equal("Work", shown?.Text);
+        Assert.Equal(2, shown?.Value);
+        Assert.Equal(4, shown?.Total);
+
+        _time.Advance(ActivityArbiter.DurationOf(ActivityKind.DesktopSwitched));
 
         Assert.Null(_view.Last.Primary);
     }

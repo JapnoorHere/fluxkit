@@ -18,4 +18,6 @@ public sealed class IslandSources
     public Func<IVolumeControl>? Volume { get; init; }
 
     public Func<IAudioSource>? Audio { get; init; }
+
+    public Func<IDesktopSource>? Desktops { get; init; }
 }
