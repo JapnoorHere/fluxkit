@@ -142,5 +142,34 @@
                 </Button>
             </StackPanel>
         </Grid>
+
+        <!-- Nothing playing: say so, and how to get something here. -->
+        <StackPanel
+            x:Name="EmptyState"
+            Padding="18,0"
+            VerticalAlignment="Center"
+            Spacing="6"
+            Visibility="Collapsed">
+            <Border
+                Width="44"
+                Height="44"
+                HorizontalAlignment="Center"
+                Background="#1FFFFFFF"
+                CornerRadius="12">
+                <FontIcon x:Name="EmptyGlyph" FontSize="20" Glyph="&#xE8D6;" />
+            </Border>
+            <TextBlock
+                HorizontalAlignment="Center"
+                FontSize="14"
+                FontWeight="SemiBold"
+                x:Uid="Island_NothingPlaying" />
+            <TextBlock
+                x:Name="EmptyHint"
+                HorizontalAlignment="Center"
+                FontSize="12"
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                x:Uid="Island_NothingPlayingHint" />
+        </StackPanel>
     </Grid>
 </UserControl>

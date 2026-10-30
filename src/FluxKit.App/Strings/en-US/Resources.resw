@@ -915,4 +915,28 @@
   <data name="IslandPreview_Caption.Text" xml:space="preserve">
     <value>Hover to peek, click to open. Buttons in the preview don&apos;t do anything.</value>
   </data>
+  <data name="Island_QuickTimerLabel.Text" xml:space="preserve">
+    <value>Start a timer</value>
+  </data>
+  <data name="Island_OneMinute.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Start a 1-minute timer</value>
+  </data>
+  <data name="Island_FiveMinutes.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Start a 5-minute timer</value>
+  </data>
+  <data name="Island_TenMinutes.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Start a 10-minute timer</value>
+  </data>
+  <data name="Island_FocusTipFormat" xml:space="preserve">
+    <value>Focus for {0} minutes, then take a {1}-minute break</value>
+  </data>
+  <data name="Island_NothingPlaying.Text" xml:space="preserve">
+    <value>Nothing playing</value>
+  </data>
+  <data name="Island_NothingPlayingName" xml:space="preserve">
+    <value>Nothing playing</value>
+  </data>
+  <data name="Island_NothingPlayingHint.Text" xml:space="preserve">
+    <value>Play music or a video in any app and it shows up here.</value>
+  </data>
 </root>

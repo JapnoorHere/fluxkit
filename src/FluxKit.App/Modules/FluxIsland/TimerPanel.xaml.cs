@@ -21,6 +21,7 @@ public sealed partial class TimerPanel : UserControl
         var secondary = new SolidColorBrush(IslandPalette.TextSecondary);
         Date.Foreground = secondary;
         BatteryText.Foreground = secondary;
+        QuickLabel.Foreground = secondary;
         Label.Foreground = new SolidColorBrush(IslandPalette.Orange);
         ProgressFill.Background = new SolidColorBrush(IslandPalette.Orange);
         Digits.TextBrush = new SolidColorBrush(IslandPalette.TextPrimary);
@@ -80,6 +81,7 @@ public sealed partial class TimerPanel : UserControl
             Clock.Text = IslandPresenter.FormatClock(now);
             Date.Text = IslandPresenter.FormatDate(now);
             FocusText.Text = Strings.Format("Island_FocusFormat", scene.Settings.FocusMinutes);
+            ToolTipService.SetToolTip(FocusButton, Strings.Format("Island_FocusTipFormat", scene.Settings.FocusMinutes, scene.Settings.BreakMinutes));
             PowerSnapshot power = scene.Power;
             Battery.Visibility = power.HasBattery ? Visibility.Visible : Visibility.Collapsed;
             if (power.HasBattery)

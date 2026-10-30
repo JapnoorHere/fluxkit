@@ -26,6 +26,8 @@ public sealed partial class MediaPanel : UserControl
         Elapsed.Foreground = secondary;
         Remaining.Foreground = secondary;
         ArtFallback.Foreground = secondary;
+        EmptyGlyph.Foreground = new SolidColorBrush(IslandPalette.Violet);
+        EmptyHint.Foreground = secondary;
 
         PreviousButton.Click += (_, _) => Commands?.PreviousTrack();
         NextButton.Click += (_, _) => Commands?.NextTrack();
@@ -43,14 +45,31 @@ public sealed partial class MediaPanel : UserControl
     public bool Animate { get; set; } = true;
 
     /// <summary>The rows, in the order they should appear when the panel opens.</summary>
-    internal UIElement[] Rows => [TrackRow, SeekRow, ControlsRow];
+    internal UIElement[] Rows => EmptyState.Visibility == Visibility.Visible ? [EmptyState] : [TrackRow, SeekRow, ControlsRow];
+
+    /// <summary>Shows the "nothing playing" state instead of a track.</summary>
+    public void ShowEmpty()
+    {
+        _media = null;
+        Bars.SetPlaying(false, Animate);
+        ContentGrid.Visibility = Visibility.Collapsed;
+        Glow.Visibility = Visibility.Collapsed;
+        EmptyState.Visibility = Visibility.Visible;
+    }
 
     /// <summary>Moves the content right to make room for the page rail; the glow still fills the panel.</summary>
-    internal void SetInset(double left) => ContentGrid.Margin = new Thickness(left, 0, 0, 0);
+    internal void SetInset(double left)
+    {
+        ContentGrid.Margin = new Thickness(left, 0, 0, 0);
+        EmptyState.Margin = new Thickness(left, 0, 0, 0);
+    }
 
     public void Update(MediaInfo media, DateTimeOffset now)
     {
         _media = media;
+        ContentGrid.Visibility = Visibility.Visible;
+        Glow.Visibility = Visibility.Visible;
+        EmptyState.Visibility = Visibility.Collapsed;
         Title.Text = string.IsNullOrWhiteSpace(media.Title) ? Strings.Get("Island_Media_Untitled") : media.Title;
         Artist.Text = media.Artist;
         Artist.Visibility = string.IsNullOrEmpty(media.Artist) ? Visibility.Collapsed : Visibility.Visible;

@@ -16,16 +16,13 @@ public sealed partial class ShelfPanel : UserControl
 {
     private readonly Dictionary<string, ShelfTile> _tiles = new(StringComparer.OrdinalIgnoreCase);
     private bool _dropping;
+    private bool _breathing;
 
     public ShelfPanel()
     {
         InitializeComponent();
         Count.Foreground = new SolidColorBrush(IslandPalette.TextSecondary);
         HeaderGlyph.Foreground = new SolidColorBrush(IslandPalette.Cyan);
-        DropOutline.Stroke = new SolidColorBrush(IslandPalette.Cyan);
-        DropOutline.Fill = new SolidColorBrush(Color.FromArgb(0x1A, IslandPalette.Cyan.R, IslandPalette.Cyan.G, IslandPalette.Cyan.B));
-        DropGlyph.Foreground = new SolidColorBrush(IslandPalette.Cyan);
-        DropText.Foreground = new SolidColorBrush(IslandPalette.TextPrimary);
         ClearButton.Click += (_, _) => Commands?.ClearShelf();
         PressFeedback.Attach(ClearButton);
 
@@ -108,25 +105,29 @@ public sealed partial class ShelfPanel : UserControl
         bool empty = _tiles.Count == 0;
         DropText.Text = Strings.Get(empty ? "Island_ShelfDropHere" : "Island_ShelfDropToAdd");
         Visual zone = ElementCompositionPreview.GetElementVisual(DropZone);
+        Scroller.Opacity = _dropping && !empty ? 0.25 : 1;
+
+        // An empty shelf always shows where to drop, calmly; during a drag the zone lights up and breathes.
+        Color accent = _dropping ? IslandPalette.Cyan : IslandPalette.TextSecondary;
+        DropOutline.Stroke = new SolidColorBrush(Color.FromArgb(_dropping ? (byte)0xFF : (byte)0x66, accent.R, accent.G, accent.B));
+        DropOutline.Fill = new SolidColorBrush(Color.FromArgb(_dropping ? (byte)0x1A : (byte)0x00, accent.R, accent.G, accent.B));
+        DropGlyph.Foreground = new SolidColorBrush(accent);
+        DropText.Foreground = new SolidColorBrush(_dropping ? IslandPalette.TextPrimary : IslandPalette.TextSecondary);
+        DropZone.Visibility = _dropping || empty ? Visibility.Visible : Visibility.Collapsed;
         if (!_dropping)
         {
             zone.StopAnimation("Opacity");
-            DropZone.Visibility = Visibility.Collapsed;
-            Scroller.Opacity = 1;
+            zone.Opacity = 1;
+            _breathing = false;
             return;
         }
 
-        Scroller.Opacity = empty ? 1 : 0.25;
-        if (DropZone.Visibility == Visibility.Visible)
+        if (_breathing || !Animate)
         {
             return;
         }
 
-        DropZone.Visibility = Visibility.Visible;
-        if (!Animate)
-        {
-            return;
-        }
+        _breathing = true;
 
         // The zone breathes gently while a file hovers over it; it runs only during a drag.
         ScalarKeyFrameAnimation breathe = zone.Compositor.CreateScalarKeyFrameAnimation();

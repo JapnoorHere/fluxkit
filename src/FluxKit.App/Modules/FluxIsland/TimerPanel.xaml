@@ -59,26 +59,28 @@
             x:Name="QuickRow"
             Grid.Row="1"
             VerticalAlignment="Bottom"
-            Orientation="Horizontal"
             Spacing="8">
-            <Button
-                x:Name="OneMinute"
-                Style="{StaticResource IslandChipButtonStyle}"
-                x:Uid="Island_OneMinute" />
-            <Button
-                x:Name="FiveMinutes"
-                Style="{StaticResource IslandChipButtonStyle}"
-                x:Uid="Island_FiveMinutes" />
-            <Button
-                x:Name="TenMinutes"
-                Style="{StaticResource IslandChipButtonStyle}"
-                x:Uid="Island_TenMinutes" />
-            <Button x:Name="FocusButton" Style="{StaticResource IslandChipButtonStyle}">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <FontIcon FontSize="12" Glyph="&#xE916;" />
-                    <TextBlock x:Name="FocusText" />
-                </StackPanel>
-            </Button>
+            <TextBlock x:Name="QuickLabel" FontSize="12" x:Uid="Island_QuickTimerLabel" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button
+                    x:Name="OneMinute"
+                    Style="{StaticResource IslandChipButtonStyle}"
+                    x:Uid="Island_OneMinute" />
+                <Button
+                    x:Name="FiveMinutes"
+                    Style="{StaticResource IslandChipButtonStyle}"
+                    x:Uid="Island_FiveMinutes" />
+                <Button
+                    x:Name="TenMinutes"
+                    Style="{StaticResource IslandChipButtonStyle}"
+                    x:Uid="Island_TenMinutes" />
+                <Button x:Name="FocusButton" Style="{StaticResource IslandChipButtonStyle}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon FontSize="12" Glyph="&#xE916;" />
+                        <TextBlock x:Name="FocusText" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
         </StackPanel>
 
         <StackPanel

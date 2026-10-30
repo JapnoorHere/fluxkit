@@ -38,7 +38,8 @@ public sealed partial class IslandPill : UserControl
     private static readonly Size IdleSize = new(120, 32);
     private static readonly Size BareSize = new(88, 28);
     private static readonly Size PeekSize = new(320, 52);
-    private static readonly Size PanelSize = new(400, 156);
+    private static readonly Size PanelSize = new(400, 172);
+    private static readonly Size EmptyMediaSize = new(400, 140);
     private static readonly Size MediaPanelSize = new(400, 172);
     private static readonly Size ShelfPanelSize = new(400, 132);
     private static readonly TimeSpan PeekDelay = TimeSpan.FromMilliseconds(350);
@@ -361,10 +362,17 @@ public sealed partial class IslandPill : UserControl
 
         ShowRail(pages, page);
         double inset = pages.Count > 1 ? RailRoom : 0;
-        if (page == PanelPage.Media && _scene.Media is { } media)
+        if (page == PanelPage.Media)
         {
             MediaView.SetInset(inset);
             MediaView.Animate = Springs;
+            if (_scene.Media is not { } media)
+            {
+                MediaView.ShowEmpty();
+                AutomationProperties.SetName(Surface, Strings.Get("Island_NothingPlayingName"));
+                return (MediaView, "panel-media-empty", EmptyMediaSize);
+            }
+
             MediaView.Update(media, now);
             AutomationProperties.SetName(Surface, string.Join(", ", new[] { media.Title, media.Artist }.Where(t => !string.IsNullOrEmpty(t))));
             return (MediaView, "panel-media", MediaPanelSize);
@@ -388,19 +396,19 @@ public sealed partial class IslandPill : UserControl
     }
 
     /// <summary>
-    /// The timer page is always there (it doubles as the clock); music only while something plays; the shelf while it
-    /// holds files or a file is being dragged over the island.
+    /// Every page that is turned on, so each can always be reached from the rail. Music and the shelf show an empty
+    /// state when there is nothing in them.
     /// </summary>
     private List<PanelPage> AvailablePages()
     {
         List<PanelPage> pages = [];
-        if (_scene.Media is not null)
+        if (_scene.Settings.ShowMedia || _scene.Media is not null)
         {
             pages.Add(PanelPage.Media);
         }
 
         pages.Add(PanelPage.Timer);
-        if (_scene.Settings.ShelfEnabled && (_scene.Shelf.Count > 0 || _dragging))
+        if (_scene.Settings.ShelfEnabled)
         {
             pages.Add(PanelPage.Shelf);
         }
@@ -408,13 +416,13 @@ public sealed partial class IslandPill : UserControl
         return pages;
     }
 
-    /// <summary>Opens on what the pill was showing: a running timer, the shelf, else the music, else the clock.</summary>
+    /// <summary>Opens on what the pill was showing: a running timer, the shelf, the music, else the clock and timers.</summary>
     private PanelPage DefaultPage(List<PanelPage> pages) => _scene.Primary?.Kind switch
     {
         _ when _dragging && pages.Contains(PanelPage.Shelf) => PanelPage.Shelf,
         ActivityKind.Timer or ActivityKind.TimerDone => PanelPage.Timer,
         ActivityKind.Shelf when pages.Contains(PanelPage.Shelf) => PanelPage.Shelf,
-        _ => pages.Contains(PanelPage.Media) ? PanelPage.Media : PanelPage.Timer,
+        _ => _scene.Media is not null && pages.Contains(PanelPage.Media) ? PanelPage.Media : PanelPage.Timer,
     };
 
     private void ShowPage(PanelPage page)
