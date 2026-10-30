@@ -22,6 +22,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
     private readonly FakePrivacy _privacy = new();
     private readonly FakeDesktops _desktops = new();
     private readonly FakeFileMoments _files = new();
+    private readonly FakeBrightness _brightness = new();
     private readonly FluxIslandTool _tool;
 
     public FluxIslandToolTests()
@@ -37,6 +38,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
             Privacy = () => _privacy,
             Desktops = () => _desktops,
             Files = (_, _) => _files,
+            Brightness = () => _brightness,
         };
         _tool = new FluxIslandTool(_settings, _ => _view, sources, _time, new LoggerConfiguration().CreateLogger());
     }
@@ -203,6 +205,38 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
         _time.Advance(FluxIslandTool.SmartCopyDuration);
 
         Assert.Null(_view.Last.Primary);
+    }
+
+    [Fact]
+    public void Brightness_changes_show_the_level()
+    {
+        _brightness.Set(70);
+
+        Assert.Equal(ActivityKind.Brightness, _view.Last.Primary?.Kind);
+        Assert.Equal(70, _view.Last.Primary?.Value);
+    }
+
+    [Fact]
+    public void Battery_saver_turning_on_says_so_with_the_time_left()
+    {
+        _power.Set(new PowerSnapshot(true, 50, false, SaverOn: true, TimeLeft: TimeSpan.FromMinutes(95)));
+
+        IslandActivity? shown = _view.Last.Primary;
+        Assert.Equal(ActivityKind.BatterySaver, shown?.Kind);
+        Assert.True(shown?.Flag);
+        Assert.Equal(95, shown?.Total);
+    }
+
+    [Fact]
+    public void Plugging_in_carries_the_time_until_full()
+    {
+        _power.Set(new PowerSnapshot(true, 50, false));
+        _time.Advance(TimeSpan.FromMinutes(1));
+
+        _power.Set(new PowerSnapshot(true, 50, true, TimeLeft: TimeSpan.FromMinutes(44.2)));
+
+        Assert.Equal(ActivityKind.PluggedIn, _view.Last.Primary?.Kind);
+        Assert.Equal(45, _view.Last.Primary?.Total);
     }
 
     [Fact]

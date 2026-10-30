@@ -51,9 +51,9 @@ internal static class IslandPresenter
             TimerMode.Break => "Island_TimerDone_Break",
             _ => "Island_TimerDone_Countdown",
         }), null, null, IslandPalette.Orange),
-        ActivityKind.PluggedIn => new(BoltGlyph, Strings.Get("Island_Charging"), null, Percent(activity.Value), IslandPalette.Green),
-        ActivityKind.Unplugged => new(BatteryGlyph(activity.Value), Strings.Get("Island_OnBattery"), null, Percent(activity.Value), IslandPalette.TextPrimary),
-        ActivityKind.LowBattery => new(BatteryGlyph(activity.Value), Strings.Get("Island_BatteryLow"), null, Percent(activity.Value), IslandPalette.Red),
+        ActivityKind.PluggedIn => new(BoltGlyph, Strings.Get("Island_Charging"), TimeLeft("Island_FullInFormat", activity.Total), Percent(activity.Value), IslandPalette.Green),
+        ActivityKind.Unplugged => new(BatteryGlyph(activity.Value), Strings.Get("Island_OnBattery"), TimeLeft("Island_LeftFormat", activity.Total), Percent(activity.Value), IslandPalette.TextPrimary),
+        ActivityKind.LowBattery => new(BatteryGlyph(activity.Value), Strings.Get("Island_BatteryLow"), TimeLeft("Island_LeftFormat", activity.Total), Percent(activity.Value), IslandPalette.Red),
         ActivityKind.Offline => new(OfflineGlyph, Strings.Get("Island_Offline"), null, null, IslandPalette.Orange),
         ActivityKind.Online => new(OnlineGlyph, Strings.Get("Island_Online"), null, null, IslandPalette.Green),
         ActivityKind.Copied => DescribeCopied(activity),
@@ -72,7 +72,7 @@ internal static class IslandPresenter
         ActivityKind.MicMuted => new(activity.Flag ? MicOffGlyph : MicGlyph, Strings.Get(activity.Flag ? "Island_MicMuted" : "Island_MicOn"), null, null, activity.Flag ? IslandPalette.Red : IslandPalette.Green),
         ActivityKind.CapsLock => new(KeyboardGlyph, Strings.Get(activity.Flag ? "Island_CapsOn" : "Island_CapsOff"), null, null, activity.Flag ? IslandPalette.Orange : IslandPalette.TextPrimary),
         ActivityKind.NumLock => new(KeyboardGlyph, Strings.Get(activity.Flag ? "Island_NumOn" : "Island_NumOff"), null, null, IslandPalette.TextPrimary),
-        ActivityKind.BatterySaver => new(LeafGlyph, Strings.Get(activity.Flag ? "Island_SaverOn" : "Island_SaverOff"), null, Percent(activity.Value), activity.Flag ? IslandPalette.Green : IslandPalette.TextPrimary),
+        ActivityKind.BatterySaver => new(LeafGlyph, Strings.Get(activity.Flag ? "Island_SaverOn" : "Island_SaverOff"), TimeLeft("Island_LeftFormat", activity.Total), Percent(activity.Value), activity.Flag ? IslandPalette.Green : IslandPalette.TextPrimary),
         ActivityKind.DeviceConnected => new(BluetoothGlyph, activity.Text ?? string.Empty, Strings.Get("Island_DeviceConnected"), activity.Value > 0 ? Percent(activity.Value) : null, IslandPalette.Cyan),
         ActivityKind.DeviceDisconnected => new(BluetoothGlyph, activity.Text ?? string.Empty, Strings.Get("Island_DeviceDisconnected"), null, IslandPalette.TextSecondary),
         ActivityKind.Stopwatch => new(StopwatchGlyph, FormatPosition(TimeSpan.FromMilliseconds(activity.Value)), null, Strings.Get("Island_Stopwatch"), IslandPalette.Orange),
@@ -88,6 +88,20 @@ internal static class IslandPresenter
         ActivityKind.Copied when activity.Path is not null => Strings.Get(activity.Smart == SmartText.Email ? "Island_Action_Write" : "Island_Action_Open"),
         _ => null,
     };
+
+    /// <summary>"1 h 20 min left" or "Full in 45 min", or null when Windows gave no estimate.</summary>
+    public static string? TimeLeft(string formatKey, int minutes)
+    {
+        if (minutes <= 0)
+        {
+            return null;
+        }
+
+        string span = minutes < 60
+            ? Strings.Format("Island_MinutesFormat", minutes)
+            : Strings.Format("Island_HoursMinutesFormat", minutes / 60, minutes % 60);
+        return Strings.Format(formatKey, span);
+    }
 
     /// <summary>A file size such as 12 MB or 1.4 GB, for a download that is still growing.</summary>
     public static string? FormatSize(int megabytes) => megabytes switch

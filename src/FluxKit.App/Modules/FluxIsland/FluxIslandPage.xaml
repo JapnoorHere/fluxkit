@@ -33,6 +33,12 @@
                         <c:SettingRow x:Uid="FluxIsland_ShowPower" Glyph="&#xE945;">
                             <ToggleSwitch x:Name="PowerToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowSaver" Glyph="&#xEC0A;">
+                            <ToggleSwitch x:Name="SaverToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowBrightness" Glyph="&#xE706;">
+                            <ToggleSwitch x:Name="BrightnessToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowNetwork" Glyph="&#xE774;">
                             <ToggleSwitch x:Name="NetworkToggle" Toggled="OnChanged" />
                         </c:SettingRow>

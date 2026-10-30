@@ -19,5 +19,6 @@ public static class SystemSources
         Audio = () => new AudioSource(log),
         Desktops = desktops is null ? null : () => new DesktopSource(desktops),
         Files = (downloads, screenshots) => new FileMomentsSource(downloads, screenshots, TimeProvider.System, log),
+        Brightness = () => new BrightnessSource(log),
     };
 }

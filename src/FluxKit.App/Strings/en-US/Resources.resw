@@ -1074,4 +1074,28 @@
   <data name="FluxIsland_SmartCopy.Description" xml:space="preserve">
     <value>Off unless you turn it on. Reads copied text on this PC to spot links, email addresses, phone numbers and colours, and offers a button to open them. Nothing is kept or sent, and copies from password managers are always skipped.</value>
   </data>
+  <data name="Island_FullInFormat" xml:space="preserve">
+    <value>Full in {0}</value>
+  </data>
+  <data name="Island_LeftFormat" xml:space="preserve">
+    <value>{0} left</value>
+  </data>
+  <data name="Island_MinutesFormat" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="Island_HoursMinutesFormat" xml:space="preserve">
+    <value>{0} h {1} min</value>
+  </data>
+  <data name="FluxIsland_ShowBrightness.Header" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="FluxIsland_ShowBrightness.Description" xml:space="preserve">
+    <value>Show the screen brightness when it changes. Works with built-in laptop screens.</value>
+  </data>
+  <data name="FluxIsland_ShowSaver.Header" xml:space="preserve">
+    <value>Battery saver</value>
+  </data>
+  <data name="FluxIsland_ShowSaver.Description" xml:space="preserve">
+    <value>Say when battery saver turns on or off, with the time left on battery.</value>
+  </data>
 </root>

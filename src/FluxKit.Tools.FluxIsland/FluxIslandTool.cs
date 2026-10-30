@@ -52,8 +52,10 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private IAudioSource? _audio;
     private IDesktopSource? _desktops;
     private IFileMomentsSource? _files;
+    private IBrightnessSource? _brightness;
     private bool _micMuted;
     private bool? _wasOnline;
+    private bool? _saverWasOn;
     private bool _mediaWasPlaying;
 
     public FluxIslandTool(ISettingsService settings, Func<IIslandCommands, IIslandView> viewFactory, IslandSources sources, TimeProvider time, ILogger log)
@@ -229,12 +231,14 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         Func<IFileMomentsSource>? files = _factories.Files is { } makeFiles && (_options.ShowDownloads || _options.ShowScreenshots)
             ? () => makeFiles(_options.ShowDownloads, _options.ShowScreenshots)
             : null;
+        _brightness = Start(_options.ShowBrightness ? _factories.Brightness : null, s => s.Changed += OnBrightnessChanged);
         _files = Start(files, s =>
         {
             s.DownloadChanged += OnDownloadChanged;
             s.ScreenshotSaved += OnScreenshotSaved;
         });
         _wasOnline = _network?.IsOnline;
+        _saverWasOn = _power?.Current.SaverOn;
         lock (_sync)
         {
             _battery.Evaluate(_power?.Current ?? default);
@@ -291,6 +295,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _audio = null;
         _desktops = null;
         _files = null;
+        _brightness = null;
         lock (_sync)
         {
             _arbiter.SetLasting(ActivityKind.Media, null);
@@ -317,14 +322,25 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private void OnPowerChanged(object? sender, EventArgs e)
     {
         PowerSnapshot power = _power?.Current ?? default;
+        int minutesLeft = power.TimeLeft is { } left ? (int)Math.Ceiling(left.TotalMinutes) : 0;
         Change(() =>
         {
             if (_battery.Evaluate(power) is { } alert)
             {
-                _arbiter.Raise(new IslandActivity(alert) { Value = power.Percent });
+                _arbiter.Raise(new IslandActivity(alert) { Value = power.Percent, Total = minutesLeft });
             }
+
+            if (_options.ShowBatterySaver && power.HasBattery && _saverWasOn is { } was && was != power.SaverOn)
+            {
+                _arbiter.Raise(new IslandActivity(ActivityKind.BatterySaver) { Flag = power.SaverOn, Value = power.Percent, Total = minutesLeft });
+            }
+
+            _saverWasOn = power.SaverOn;
         });
     }
+
+    private void OnBrightnessChanged(object? sender, int level) =>
+        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Brightness) { Value = level }));
 
     private void OnNetworkChanged(object? sender, EventArgs e)
     {

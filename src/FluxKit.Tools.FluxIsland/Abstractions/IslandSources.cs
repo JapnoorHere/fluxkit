@@ -24,4 +24,6 @@ public sealed class IslandSources
 
     /// <summary>Creates the downloads and screenshots watcher; the flags say which of the two folders to watch.</summary>
     public Func<bool, bool, IFileMomentsSource>? Files { get; init; }
+
+    public Func<IBrightnessSource>? Brightness { get; init; }
 }

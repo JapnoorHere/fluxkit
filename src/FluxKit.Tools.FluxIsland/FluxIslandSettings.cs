@@ -58,6 +58,12 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// </summary>
     public bool SmartCopy { get; set; }
 
+    /// <summary>Shows the screen brightness when it changes, on PCs with a built-in screen.</summary>
+    public bool ShowBrightness { get; set; } = true;
+
+    /// <summary>Says when battery saver turns on or off.</summary>
+    public bool ShowBatterySaver { get; set; } = true;
+
     public bool HideInFullScreen { get; set; } = true;
 
     public bool ShowClockWhenIdle { get; set; } = true;

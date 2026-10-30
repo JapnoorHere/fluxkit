@@ -8,4 +8,8 @@ public interface IPowerSource : IIslandSource
     event EventHandler? Changed;
 }
 
-public readonly record struct PowerSnapshot(bool HasBattery, int Percent, bool IsPluggedIn);
+/// <summary>
+/// The battery right now. <paramref name="SaverOn"/> is Windows battery saver (energy saver); <paramref name="TimeLeft"/> is
+/// the time until empty on battery, or until full while charging, when Windows can estimate it.
+/// </summary>
+public readonly record struct PowerSnapshot(bool HasBattery, int Percent, bool IsPluggedIn, bool SaverOn = false, TimeSpan? TimeLeft = null);

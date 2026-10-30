@@ -16,4 +16,9 @@
   <ItemGroup>
     <ProjectReference Include="..\FluxKit.Core\FluxKit.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- WMI, only for the laptop panel brightness event (an event subscription, not polling). -->
+    <PackageReference Include="System.Management" />
+  </ItemGroup>
 </Project>
