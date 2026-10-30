@@ -90,6 +90,7 @@ public sealed partial class IslandPill : UserControl
             Commands?.SwapActivities();
         };
         PressFeedback.Attach(Bubble);
+        CompactAction.Click += (_, _) => RunAction(_scene.Primary);
         Surface.RightTapped += OnRightTapped;
         Stage.Width = StageWidth;
         Stage.Height = StageHeight;
@@ -340,6 +341,17 @@ public sealed partial class IslandPill : UserControl
         visual.StartAnimation(property, spring);
     }
 
+    /// <summary>Runs the peek chip's action for <paramref name="activity"/> (see <see cref="IslandPresenter.ActionLabel"/>).</summary>
+    private void RunAction(IslandActivity? activity)
+    {
+        switch (activity?.Kind)
+        {
+            case ActivityKind.MicMuted:
+                Commands?.ToggleMicMute();
+                break;
+        }
+    }
+
     /// <summary>Right-click waves away the alert on screen, or closes the open panel.</summary>
     private void OnRightTapped(object sender, RightTappedRoutedEventArgs e)
     {
@@ -413,6 +425,13 @@ public sealed partial class IslandPill : UserControl
         CompactTrail.Text = content.Trail ?? string.Empty;
         CompactTrail.Foreground = new SolidColorBrush(content.Accent == IslandPalette.TextPrimary ? IslandPalette.TextSecondary : content.Accent);
         CompactTrail.Visibility = content.Trail is null ? Visibility.Collapsed : Visibility.Visible;
+        string? action = _mode == PillMode.Peek && Commands is not null && activity is not null ? IslandPresenter.ActionLabel(activity) : null;
+        CompactAction.Content = action;
+        CompactAction.Visibility = action is null ? Visibility.Collapsed : Visibility.Visible;
+        if (action is not null)
+        {
+            CompactTrail.Visibility = Visibility.Collapsed;
+        }
         AutomationProperties.SetName(Surface, string.Join(", ", new[] { content.Title, content.Subtitle, content.Trail }.Where(t => !string.IsNullOrEmpty(t))));
 
         if (twoLines)

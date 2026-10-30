@@ -18,6 +18,9 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     /// <summary>How long paused music stays on the pill before it steps aside.</summary>
     internal static readonly TimeSpan PausedMediaLinger = TimeSpan.FromSeconds(20);
 
+    /// <summary>How long "Microphone muted/on" shows after the mute changes.</summary>
+    internal static readonly TimeSpan MicToggleDuration = TimeSpan.FromSeconds(1.6);
+
     private readonly ISettingsService _settings;
     private readonly Func<IIslandCommands, IIslandView> _viewFactory;
     private readonly IslandSources _factories;
@@ -39,6 +42,8 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private IClipboardSource? _clipboard;
     private IFullScreenSource? _fullScreen;
     private IVolumeControl? _volume;
+    private IAudioSource? _audio;
+    private bool _micMuted;
     private bool? _wasOnline;
     private bool _mediaWasPlaying;
 
@@ -150,6 +155,23 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         }
     }
 
+    public void ToggleMicMute()
+    {
+        if (_audio is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _audio.SetMicMuted(!_audio.MicMuted);
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "Muting the microphone failed");
+        }
+    }
+
     public void DismissAlert() => Change(() => _arbiter.Dismiss());
 
     public void SwapActivities() => Change(() => _arbiter.Swap());
@@ -169,6 +191,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
                 Shelf = _shelf.Items,
                 Power = _power?.Current ?? default,
                 Privacy = _options.ShowPrivacy ? _privacy?.Current ?? default : default,
+                MicMuted = _micMuted,
                 Hidden = _options.HideInFullScreen && _fullScreen?.IsFullScreen == true,
                 Settings = _options,
             };
@@ -184,6 +207,14 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _clipboard = Start(_options.ShowClipboard ? _factories.Clipboard : null, s => s.Copied += OnCopied);
         _fullScreen = Start(_options.HideInFullScreen ? _factories.FullScreen : null, s => s.Changed += OnAnyChanged);
         _volume = Start(_options.ScrollForVolume ? _factories.Volume : null, _ => { });
+        bool listenToAudio = _options.ShowVolumeChanges || _options.ShowAudioDevices || _options.ShowMicMute;
+        _audio = Start(listenToAudio ? _factories.Audio : null, s =>
+        {
+            s.VolumeChanged += OnVolumeChanged;
+            s.OutputChanged += OnOutputChanged;
+            s.MicMuteChanged += OnMicMuteChanged;
+        });
+        _micMuted = _audio?.MicMuted == true;
         _wasOnline = _network?.IsOnline;
         lock (_sync)
         {
@@ -238,6 +269,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _clipboard = null;
         _fullScreen = null;
         _volume = null;
+        _audio = null;
         lock (_sync)
         {
             _arbiter.SetLasting(ActivityKind.Media, null);
@@ -284,6 +316,34 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             }
 
             _wasOnline = online;
+        });
+    }
+
+    private void OnVolumeChanged(object? sender, AudioLevel level)
+    {
+        if (_options.ShowVolumeChanges)
+        {
+            Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Volume) { Value = level.Muted ? 0 : level.Level }));
+        }
+    }
+
+    private void OnOutputChanged(object? sender, string name)
+    {
+        if (_options.ShowAudioDevices && !string.IsNullOrWhiteSpace(name))
+        {
+            Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.AudioDevice) { Text = name }));
+        }
+    }
+
+    private void OnMicMuteChanged(object? sender, bool muted)
+    {
+        Change(() =>
+        {
+            _micMuted = muted;
+            if (_options.ShowMicMute)
+            {
+                _arbiter.Raise(new IslandActivity(ActivityKind.MicMuted) { Flag = muted }, MicToggleDuration);
+            }
         });
     }
 
@@ -350,6 +410,10 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         FocusTimerSnapshot timer = _timer.Snapshot;
         _arbiter.SetLasting(ActivityKind.Timer, timer.IsActive ? new IslandActivity(ActivityKind.Timer) { Timer = timer } : null);
         _arbiter.SetLasting(ActivityKind.Shelf, _options.ShelfEnabled && _shelf.Count > 0 ? new IslandActivity(ActivityKind.Shelf) { Value = _shelf.Count } : null);
+
+        // A muted microphone matters while something is listening, such as a call: keep reminding until it ends.
+        bool listening = _privacy?.Current.MicrophoneInUse == true;
+        _arbiter.SetLasting(ActivityKind.MicMuted, _options.ShowMicMute && _micMuted && listening ? new IslandActivity(ActivityKind.MicMuted) { Flag = true } : null);
     }
 
     private void Schedule()

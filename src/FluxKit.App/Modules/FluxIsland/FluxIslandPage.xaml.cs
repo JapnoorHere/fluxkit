@@ -33,6 +33,9 @@ public sealed partial class FluxIslandPage : Page
         NetworkToggle.IsOn = s.ShowNetwork;
         PrivacyToggle.IsOn = s.ShowPrivacy;
         ClipboardToggle.IsOn = s.ShowClipboard;
+        VolumeChangesToggle.IsOn = s.ShowVolumeChanges;
+        AudioDevicesToggle.IsOn = s.ShowAudioDevices;
+        MicMuteToggle.IsOn = s.ShowMicMute;
         ClockToggle.IsOn = s.ShowClockWhenIdle;
         ShelfToggle.IsOn = s.ShelfEnabled;
         VolumeToggle.IsOn = s.ScrollForVolume;
@@ -131,6 +134,9 @@ public sealed partial class FluxIslandPage : Page
             s.ShowNetwork = NetworkToggle.IsOn;
             s.ShowPrivacy = PrivacyToggle.IsOn;
             s.ShowClipboard = ClipboardToggle.IsOn;
+            s.ShowVolumeChanges = VolumeChangesToggle.IsOn;
+            s.ShowAudioDevices = AudioDevicesToggle.IsOn;
+            s.ShowMicMute = MicMuteToggle.IsOn;
             s.ShowClockWhenIdle = ClockToggle.IsOn;
             s.ShelfEnabled = ShelfToggle.IsOn;
             s.ScrollForVolume = VolumeToggle.IsOn;

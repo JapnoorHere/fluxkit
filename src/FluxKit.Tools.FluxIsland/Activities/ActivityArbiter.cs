@@ -18,7 +18,7 @@ internal sealed class ActivityArbiter(TimeProvider time)
     public IslandActivity? Primary => _alert?.Activity ?? Lasting().FirstOrDefault();
 
     /// <summary>A second lasting activity shown small beside the primary one, if there is one.</summary>
-    public IslandActivity? Secondary => (_alert is null ? Lasting().Skip(1) : Lasting()).FirstOrDefault();
+    public IslandActivity? Secondary => (_alert is { } alert ? Lasting().Where(a => a.Kind != alert.Activity.Kind) : Lasting().Skip(1)).FirstOrDefault();
 
     /// <summary>When the next alert or lasting activity runs out, so the owner can wake up then and call <see cref="Expire"/>.</summary>
     public DateTimeOffset? NextChangeAt

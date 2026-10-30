@@ -999,4 +999,28 @@
   <data name="Island_SizeGbFormat" xml:space="preserve">
     <value>{0} GB</value>
   </data>
+  <data name="Island_Action_Unmute" xml:space="preserve">
+    <value>Unmute</value>
+  </data>
+  <data name="Island_Action_Mute" xml:space="preserve">
+    <value>Mute</value>
+  </data>
+  <data name="FluxIsland_ShowVolume.Header" xml:space="preserve">
+    <value>Volume changes</value>
+  </data>
+  <data name="FluxIsland_ShowVolume.Description" xml:space="preserve">
+    <value>Show the volume whenever it changes, from the keyboard keys or anywhere else.</value>
+  </data>
+  <data name="FluxIsland_ShowAudioDevices.Header" xml:space="preserve">
+    <value>Sound output</value>
+  </data>
+  <data name="FluxIsland_ShowAudioDevices.Description" xml:space="preserve">
+    <value>Say which device sound moved to, such as headphones that just connected.</value>
+  </data>
+  <data name="FluxIsland_ShowMicMute.Header" xml:space="preserve">
+    <value>Microphone mute</value>
+  </data>
+  <data name="FluxIsland_ShowMicMute.Description" xml:space="preserve">
+    <value>Show when the microphone is muted or unmuted, and remind you while an app is listening to a muted microphone.</value>
+  </data>
 </root>

@@ -18,6 +18,8 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
     private readonly FakeNetwork _network = new();
     private readonly FakeClipboard _clipboard = new();
     private readonly FakeFullScreen _fullScreen = new();
+    private readonly FakeAudio _audio = new();
+    private readonly FakePrivacy _privacy = new();
     private readonly FluxIslandTool _tool;
 
     public FluxIslandToolTests()
@@ -29,6 +31,8 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
             Network = () => _network,
             Clipboard = () => _clipboard,
             FullScreen = () => _fullScreen,
+            Audio = () => _audio,
+            Privacy = () => _privacy,
         };
         _tool = new FluxIslandTool(_settings, _ => _view, sources, _time, new LoggerConfiguration().CreateLogger());
     }
@@ -43,6 +47,71 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
         Assert.Equal(ToolStatus.Running, _tool.State.Status);
         Assert.Null(_view.Last.Primary);
         Assert.False(_view.Last.Hidden);
+    }
+
+    [Fact]
+    public void Volume_change_from_anywhere_shows_the_level_and_mute_shows_zero()
+    {
+        _audio.ChangeVolume(64, muted: false);
+
+        Assert.Equal(ActivityKind.Volume, _view.Last.Primary?.Kind);
+        Assert.Equal(64, _view.Last.Primary?.Value);
+
+        _audio.ChangeVolume(64, muted: true);
+
+        Assert.Equal(0, _view.Last.Primary?.Value);
+    }
+
+    [Fact]
+    public async Task Volume_changes_are_ignored_when_the_setting_is_off()
+    {
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.ShowVolumeChanges = false;
+            return s;
+        });
+
+        _audio.ChangeVolume(30, muted: false);
+
+        Assert.Null(_view.Last.Primary);
+    }
+
+    [Fact]
+    public void Switching_the_output_names_the_new_device()
+    {
+        _audio.SwitchOutput("Headphones");
+
+        Assert.Equal(ActivityKind.AudioDevice, _view.Last.Primary?.Kind);
+        Assert.Equal("Headphones", _view.Last.Primary?.Text);
+    }
+
+    [Fact]
+    public void Toggling_the_mic_flashes_its_state_then_goes_away_when_nothing_listens()
+    {
+        _tool.ToggleMicMute();
+
+        Assert.True(_audio.MicMuted);
+        Assert.True(_view.Last.MicMuted);
+        Assert.Equal(ActivityKind.MicMuted, _view.Last.Primary?.Kind);
+        Assert.True(_view.Last.Primary?.Flag);
+
+        _time.Advance(FluxIslandTool.MicToggleDuration);
+
+        Assert.Null(_view.Last.Primary);
+    }
+
+    [Fact]
+    public void A_muted_mic_stays_on_the_island_while_an_app_is_listening()
+    {
+        _tool.ToggleMicMute();
+        _privacy.Set(microphone: true);
+        _time.Advance(FluxIslandTool.MicToggleDuration);
+
+        Assert.Equal(ActivityKind.MicMuted, _view.Last.Primary?.Kind);
+
+        _privacy.Set(microphone: false);
+
+        Assert.Null(_view.Last.Primary);
     }
 
     [Fact]

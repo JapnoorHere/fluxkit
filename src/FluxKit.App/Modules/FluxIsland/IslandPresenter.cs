@@ -76,6 +76,13 @@ internal static class IslandPresenter
         _ => new(string.Empty, string.Empty, null, null, IslandPalette.TextPrimary),
     };
 
+    /// <summary>The label of the one action a moment offers while peeking, or null when it has none.</summary>
+    public static string? ActionLabel(IslandActivity activity) => activity.Kind switch
+    {
+        ActivityKind.MicMuted => Strings.Get(activity.Flag ? "Island_Action_Unmute" : "Island_Action_Mute"),
+        _ => null,
+    };
+
     /// <summary>A file size such as 12 MB or 1.4 GB, for a download that is still growing.</summary>
     public static string? FormatSize(int megabytes) => megabytes switch
     {

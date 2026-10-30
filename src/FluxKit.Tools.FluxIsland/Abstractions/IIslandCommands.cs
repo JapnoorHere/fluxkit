@@ -27,6 +27,9 @@ public interface IIslandCommands
 
     void StepVolume(int notches);
 
+    /// <summary>Mutes the microphone, or unmutes it if it is muted.</summary>
+    void ToggleMicMute();
+
     /// <summary>Waves away the alert on screen; the next one (or the lasting activity) comes back.</summary>
     void DismissAlert();
 

@@ -16,4 +16,6 @@ public sealed class IslandSources
     public Func<IFullScreenSource>? FullScreen { get; init; }
 
     public Func<IVolumeControl>? Volume { get; init; }
+
+    public Func<IAudioSource>? Audio { get; init; }
 }

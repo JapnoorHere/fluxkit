@@ -34,6 +34,15 @@ public sealed class FluxIslandSettings : ISettingsSection
 
     public bool ScrollForVolume { get; set; } = true;
 
+    /// <summary>Shows the volume on the island whenever it changes, from the keyboard keys or anywhere else.</summary>
+    public bool ShowVolumeChanges { get; set; } = true;
+
+    /// <summary>Says which device sound moved to, such as headphones that just connected.</summary>
+    public bool ShowAudioDevices { get; set; } = true;
+
+    /// <summary>Shows microphone mute changes, and a reminder while an app listens to a muted microphone.</summary>
+    public bool ShowMicMute { get; set; } = true;
+
     public bool HideInFullScreen { get; set; } = true;
 
     public bool ShowClockWhenIdle { get; set; } = true;

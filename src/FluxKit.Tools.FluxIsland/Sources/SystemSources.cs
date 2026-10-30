@@ -15,5 +15,6 @@ public static class SystemSources
         Clipboard = () => new ClipboardSource(log),
         FullScreen = () => new FullScreenSource(log),
         Volume = () => new VolumeSource(),
+        Audio = () => new AudioSource(log),
     };
 }

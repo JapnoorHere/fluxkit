@@ -96,6 +96,12 @@
                             FontSize="13"
                             FontWeight="SemiBold" />
                         <local:PlayingBars x:Name="CompactBars" Visibility="Collapsed" />
+                        <!-- The one thing to do about this moment (Unmute, Open…), offered while peeking. -->
+                        <Button
+                            x:Name="CompactAction"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource IslandChipButtonStyle}"
+                            Visibility="Collapsed" />
                         <local:PrivacyDots x:Name="CompactDots" />
                     </StackPanel>
                 </Grid>

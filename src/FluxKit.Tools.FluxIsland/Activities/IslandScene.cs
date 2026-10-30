@@ -24,6 +24,9 @@ public sealed record IslandScene
 
     public PrivacySnapshot Privacy { get; init; }
 
+    /// <summary>True when the default microphone is muted.</summary>
+    public bool MicMuted { get; init; }
+
     /// <summary>True while a full-screen app is in front and the island should stay out of the way.</summary>
     public bool Hidden { get; init; }
 

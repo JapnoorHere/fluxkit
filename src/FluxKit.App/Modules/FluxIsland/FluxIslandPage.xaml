@@ -42,6 +42,15 @@
                         <c:SettingRow x:Uid="FluxIsland_ShowClipboard" Glyph="&#xE8C8;">
                             <ToggleSwitch x:Name="ClipboardToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowVolume" Glyph="&#xE995;">
+                            <ToggleSwitch x:Name="VolumeChangesToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowAudioDevices" Glyph="&#xE7F6;">
+                            <ToggleSwitch x:Name="AudioDevicesToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowMicMute" Glyph="&#xE720;">
+                            <ToggleSwitch x:Name="MicMuteToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowClock" Glyph="&#xE823;">
                             <ToggleSwitch x:Name="ClockToggle" Toggled="OnChanged" />
                         </c:SettingRow>
