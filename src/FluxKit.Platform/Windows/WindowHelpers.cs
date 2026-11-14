@@ -55,6 +55,30 @@ public static partial class WindowHelpers
     /// <summary>Gives keyboard focus to one of FluxKit's own windows, e.g. when it is opened from the tray.</summary>
     public static void BringToForeground(nint hwnd) => _ = SetForegroundWindow(hwnd);
 
+    /// <summary>
+    /// Lets an overlay take keyboard focus (and gives it focus), or makes it non-activating again. Used while the
+    /// island's panel is opened from the keyboard. Returns the window that had focus before, to hand it back later.
+    /// </summary>
+    public static nint TakeFocus(nint hwnd)
+    {
+        nint previous = GetForegroundWindow();
+        long style = GetWindowLongPtr(hwnd, GwlExStyle);
+        _ = SetWindowLongPtr(hwnd, GwlExStyle, (nint)(style & ~WsExNoActivate));
+        _ = SetForegroundWindow(hwnd);
+        return previous == hwnd ? 0 : previous;
+    }
+
+    /// <summary>Makes an overlay non-activating again and gives focus back to <paramref name="previous"/>, if it still exists.</summary>
+    public static void ReleaseFocus(nint hwnd, nint previous)
+    {
+        long style = GetWindowLongPtr(hwnd, GwlExStyle);
+        _ = SetWindowLongPtr(hwnd, GwlExStyle, (nint)(style | WsExNoActivate));
+        if (previous != 0 && IsWindow(previous) && GetForegroundWindow() == hwnd)
+        {
+            _ = SetForegroundWindow(previous);
+        }
+    }
+
     /// <summary>The window's DPI (96 = 100 % scaling).</summary>
     public static uint GetDpi(nint hwnd) => GetDpiForWindow(hwnd);
 
@@ -185,9 +209,17 @@ public static partial class WindowHelpers
     }
 
     /// <summary>Full bounds (including the taskbar area) and DPI scale of the primary monitor.</summary>
-    public static (PixelRect Bounds, double Scale) GetPrimaryMonitor()
+    public static (PixelRect Bounds, double Scale) GetPrimaryMonitor() => GetMonitorBounds(MonitorFromPoint(default, MonitorDefaultToPrimary));
+
+    /// <summary>Full bounds and DPI scale of the monitor the mouse pointer is on.</summary>
+    public static (PixelRect Bounds, double Scale) GetPointerMonitor()
     {
-        nint monitor = MonitorFromPoint(default, MonitorDefaultToPrimary);
+        _ = GetCursorPos(out POINT p);
+        return GetMonitorBounds(MonitorFromPoint(p, MonitorDefaultToNearest));
+    }
+
+    private static (PixelRect Bounds, double Scale) GetMonitorBounds(nint monitor)
+    {
         var info = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
         _ = GetMonitorInfo(monitor, ref info);
         double scale = GetDpiForMonitor(monitor, 0, out uint dpiX, out _) == 0 ? dpiX / 96.0 : 1.0;
@@ -351,6 +383,13 @@ public static partial class WindowHelpers
     [LibraryImport("gdi32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool DeleteObject(nint handle);
+
+    [LibraryImport("user32.dll")]
+    private static partial nint GetForegroundWindow();
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool IsWindow(nint hwnd);
 
     [LibraryImport("dwmapi.dll")]
     private static partial int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int size);

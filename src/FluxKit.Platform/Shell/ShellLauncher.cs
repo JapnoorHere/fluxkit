@@ -14,6 +14,10 @@ public static class ShellLauncher
         && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeMailto)
         && Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
 
+    /// <summary>Opens one of Windows' own fixed links, such as <c>ms-screenclip:</c>. Only FluxKit passes these, never copied text.</summary>
+    internal static bool OpenSystemLink(string link) =>
+        link.StartsWith("ms-", StringComparison.Ordinal) && Start(new ProcessStartInfo(link) { UseShellExecute = true });
+
     /// <summary>Opens File Explorer with <paramref name="path"/> selected, or just its folder if the file is gone.</summary>
     public static bool ShowInFolder(string path)
     {
