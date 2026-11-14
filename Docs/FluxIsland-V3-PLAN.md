@@ -143,6 +143,8 @@ Every phase ends the same way:
 - Commit: "Give Flux Island a design system with an edge light, accent glow and shared spacing and type"
 
 ### Phase 2: Motion system
+
+> **As built:** the content blur was dropped to keep the island light: it needs the Win2D package or fragile D2D interop. Content changes scale and fade instead. The squash and stretch was also dropped, because the morph spring already overshoots. Everything else shipped.
 - `IslandMotion.cs` rewrite: use the spring presets.
   - **Content transitions (Apple style):**
     - The outgoing content fades, scales to 0.94 and slides 4 px up.

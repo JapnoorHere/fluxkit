@@ -29,6 +29,7 @@ internal sealed class PillShape
 
     private readonly Compositor _compositor;
     private readonly CompositionRoundedRectangleGeometry _geometry;
+    private readonly CompositionRoundedRectangleGeometry _neck;
     private readonly ShapeVisual _glow;
     private readonly List<(CompositionColorBrush Brush, byte Alpha)> _glowBrushes = [];
     private readonly Visual _stage;
@@ -74,6 +75,15 @@ internal sealed class PillShape
         {
             body.Shapes.Add(Halo(spread, drop, _compositor.CreateColorBrush(Color.FromArgb(alpha, 0, 0, 0))));
         }
+
+        // The neck that joins the pill and the second bubble while one buds off the other (see Bud).
+        _neck = _compositor.CreateRoundedRectangleGeometry();
+        ExpressionAnimation neckRound = _compositor.CreateExpressionAnimation("Vector2(n.Size.Y / 2, n.Size.Y / 2)");
+        neckRound.SetReferenceParameter("n", _neck);
+        _neck.StartAnimation("CornerRadius", neckRound);
+        CompositionSpriteShape neck = _compositor.CreateSpriteShape(_neck);
+        neck.FillBrush = _compositor.CreateColorBrush(IslandPalette.Surface);
+        body.Shapes.Add(neck);
 
         CompositionSpriteShape fill = _compositor.CreateSpriteShape(_geometry);
         fill.FillBrush = _compositor.CreateColorBrush(IslandPalette.Surface);
@@ -197,6 +207,46 @@ internal sealed class PillShape
         flare.InsertKeyFrame(1, _intensity, IslandSprings.EaseOut(_compositor));
         flare.Duration = TimeSpan.FromMilliseconds(900);
         _glow.StartAnimation("Opacity", flare);
+    }
+
+    /// <summary>
+    /// The second bubble splitting off the pill (or merging back): for a moment a thick black neck joins the pill's
+    /// right edge to the bubble, then thins away, so the two read as one drop of liquid dividing.
+    /// </summary>
+    /// <param name="pillWidth">The pill's width as the bubble appears.</param>
+    /// <param name="centreY">The vertical centre of the compact pill, in stage pixels.</param>
+    /// <param name="gap">The space between the pill and the bubble.</param>
+    /// <param name="splitting">True as the bubble buds off, false as it merges back.</param>
+    public void Bud(float pillWidth, float centreY, float gap, bool splitting, bool springs)
+    {
+        if (!springs)
+        {
+            return;
+        }
+
+        float left = (_stageWidth / 2) + (pillWidth / 2) - 10;
+        float width = gap + 22;
+        ExpressionAnimation offset = _compositor.CreateExpressionAnimation("Vector2(x, y - n.Size.Y / 2)");
+        offset.SetReferenceParameter("n", _neck);
+        offset.SetScalarParameter("x", left);
+        offset.SetScalarParameter("y", centreY);
+        _neck.StartAnimation("Offset", offset);
+
+        Vector2KeyFrameAnimation thin = _compositor.CreateVector2KeyFrameAnimation();
+        if (splitting)
+        {
+            thin.InsertKeyFrame(0, new Vector2(width, 22));
+            thin.InsertKeyFrame(0.35f, new Vector2(width, 14), IslandSprings.EaseOut(_compositor));
+        }
+        else
+        {
+            thin.InsertKeyFrame(0, new Vector2(width, 0));
+            thin.InsertKeyFrame(0.45f, new Vector2(width, 16), IslandSprings.EaseOut(_compositor));
+        }
+
+        thin.InsertKeyFrame(1, new Vector2(width, 0), IslandSprings.EaseIn(_compositor));
+        thin.Duration = TimeSpan.FromMilliseconds(splitting ? 320 : 300);
+        _neck.StartAnimation("Size", thin);
     }
 
     /// <summary>One happy bounce of the whole island: up to 106 % and back, settling on a spring.</summary>

@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using FluxKit.App.Common;
+using FluxKit.App.Modules.FluxIsland.Design;
 using FluxKit.Platform.Shell;
 using FluxKit.Tools.FluxIsland.Abstractions;
 using FluxKit.Tools.FluxIsland.Activities;
@@ -37,6 +38,7 @@ public sealed partial class IslandPill : UserControl
     private const double RailRoom = 34;
     private const float HoverScale = 1.04f;
     private const float PressScale = 0.94f;
+    private const float MaxLean = 3;
     private const int WheelNotch = 120;
     private const double BubbleSize = 36;
     private const double BubbleGap = 8;
@@ -76,6 +78,7 @@ public sealed partial class IslandPill : UserControl
     private string? _thumbPath;
     private ImageSource? _thumb;
     private bool _held;
+    private Vector3 _lean;
     private bool _keyboard;
 
     public IslandPill()
@@ -158,6 +161,8 @@ public sealed partial class IslandPill : UserControl
 
         Surface.PointerEntered += OnPointerEntered;
         Surface.PointerExited += OnPointerExited;
+        Surface.PointerMoved += OnPointerMoved;
+        ElementCompositionPreview.SetIsTranslationEnabled(Stage, true);
         Surface.PointerPressed += OnPointerPressed;
         Surface.PointerReleased += OnPointerReleased;
         Surface.PointerCaptureLost += (_, _) => Unpress();
@@ -287,28 +292,46 @@ public sealed partial class IslandPill : UserControl
         UpdateGlow(now, flare: changed && view == CompactView && _scene.Primary is { IsAlert: true });
         if (changed && view == CompactView && _scene.Primary is { IsAlert: true } alert)
         {
-            // An alert arriving gets a little flourish: the charger ring sweeps, any other icon pops.
-            if (alert.Kind == ActivityKind.PluggedIn)
-            {
-                CompactRing.Sweep(alert.Value, Springs);
-            }
-            else if (alert.Kind == ActivityKind.TimerDone)
-            {
-                // Time's up deserves more: a ring bursts out of the bell and the whole pill bounces once.
-                IslandMotion.Pop(CompactGlyph, Springs);
-                IslandMotion.Burst(CompactBurst, Springs);
-                _shape.Bounce(Springs);
-            }
-            else
-            {
-                IslandMotion.Pop(CompactGlyph, Springs);
-            }
+            PlayArrival(alert);
         }
 
         UpdateBubble(view == CompactView && _mode == PillMode.Compact ? _scene.Secondary : null, size, now);
         MorphTo(size);
         ScheduleTimers(now);
         GlanceView.SetLive(_active && _mode == PillMode.Panel && _page == PanelPage.Glance);
+    }
+
+    /// <summary>Each kind of alert arrives with its own small signature, so moments feel distinct, not generic.</summary>
+    private void PlayArrival(IslandActivity alert)
+    {
+        switch (alert.Kind)
+        {
+            case ActivityKind.PluggedIn:
+                CompactRing.Sweep(alert.Value, Springs);
+                break;
+            case ActivityKind.TimerDone:
+                // Time's up deserves the most: the bell rings, a ring bursts out of it and the pill bounces once.
+                IslandMotion.Shake(CompactGlyph, Springs);
+                IslandMotion.Burst(CompactBurst, Springs);
+                _shape.Bounce(Springs);
+                break;
+            case ActivityKind.Copied:
+                IslandMotion.Flip(CompactGlyph, Springs);
+                break;
+            case ActivityKind.Screenshot:
+                IslandMotion.Drop(CompactArtFrame, Springs);
+                IslandMotion.Pop(CompactGlyph, Springs);
+                break;
+            case ActivityKind.DeviceConnected or ActivityKind.DeviceDisconnected or ActivityKind.AudioDevice or ActivityKind.DesktopSwitched:
+                IslandMotion.SlideIn(CompactGlyph, Springs);
+                break;
+            case ActivityKind.LowBattery or ActivityKind.MicMuted or ActivityKind.Offline:
+                IslandMotion.Shake(CompactGlyph, Springs);
+                break;
+            default:
+                IslandMotion.Pop(CompactGlyph, Springs);
+                break;
+        }
     }
 
     /// <summary>
@@ -387,12 +410,14 @@ public sealed partial class IslandPill : UserControl
             visual.Scale = new Vector3(0.4f, 0.4f, 1);
             Spring(visual, "Translation", new Vector3(x, 0, 0));
             Spring(visual, "Scale", Vector3.One);
+            _shape.Bud((float)pill.Width, (float)(TopInset + (CompactHeight / 2)), (float)BubbleGap, splitting: true, Springs);
             return;
         }
 
         Spring(visual, "Translation", new Vector3(x - 24, 0, 0));
         Spring(visual, "Scale", new Vector3(0.4f, 0.4f, 1));
-        IslandMotion.Exit(Bubble, () => !_bubbleShown);
+        _shape.Bud((float)pill.Width, (float)(TopInset + (CompactHeight / 2)), (float)BubbleGap, splitting: false, Springs);
+        IslandMotion.Exit(Bubble, () => !_bubbleShown, shrink: false);
     }
 
     private void Spring(Visual visual, string property, Vector3 to)
@@ -887,6 +912,7 @@ public sealed partial class IslandPill : UserControl
         if (mode == PillMode.Panel)
         {
             _shape.ScaleTo(1, Springs);
+            LeanTo(Vector3.Zero);
         }
         else
         {
@@ -909,12 +935,42 @@ public sealed partial class IslandPill : UserControl
         }
     }
 
+    /// <summary>
+    /// While hovered, the compact pill leans a few pixels toward the pointer, as if drawn to it. The lean is a spring
+    /// on the compositor, started only when it changes by at least half a pixel, so moving the mouse costs almost nothing.
+    /// </summary>
+    private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        if (!Springs || _mode == PillMode.Panel || Surface.ActualWidth <= 0)
+        {
+            return;
+        }
+
+        Point at = e.GetCurrentPoint(Surface).Position;
+        float x = (float)Math.Clamp((at.X / Surface.ActualWidth) - 0.5, -0.5, 0.5) * 2 * MaxLean;
+        float y = (float)Math.Clamp((at.Y / Surface.ActualHeight) - 0.5, -0.5, 0.5) * MaxLean;
+        LeanTo(new Vector3(x, y, 0));
+    }
+
+    private void LeanTo(Vector3 lean)
+    {
+        if (Vector3.Distance(lean, _lean) < 0.5f)
+        {
+            return;
+        }
+
+        _lean = lean;
+        Visual stage = ElementCompositionPreview.GetElementVisual(Stage);
+        stage.StartAnimation("Translation", IslandSprings.Vector3(stage.Compositor, IslandSprings.Smooth, lean));
+    }
+
     private void OnPointerExited(object sender, PointerRoutedEventArgs e)
     {
         _hovering = false;
         _pressed = false;
         _peekTimer.Stop();
         _shape.ScaleTo(1, Springs);
+        LeanTo(Vector3.Zero);
         if (_mode != PillMode.Compact)
         {
             _closeTimer.Start();
