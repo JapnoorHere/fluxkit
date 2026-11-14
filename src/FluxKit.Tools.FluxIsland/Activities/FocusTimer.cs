@@ -45,6 +45,22 @@ internal sealed class FocusTimer(TimeProvider time)
 
     public void Cancel() => _state = FocusTimerSnapshot.Idle;
 
+    /// <summary>Adds time to the running or paused phase, such as "+1 min" when a countdown is about to end.</summary>
+    public void AddTime(TimeSpan extra)
+    {
+        if (!_state.IsActive || extra <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        _state = _state with
+        {
+            Total = _state.Total + extra,
+            Remaining = _state.Remaining + extra,
+            EndsAt = _state.EndsAt + extra,
+        };
+    }
+
     /// <summary>
     /// Moves on if the current phase has ended. Returns the mode that just finished, or null if nothing ended.
     /// A countdown stops; a focus phase starts a break; a break starts the next focus round.

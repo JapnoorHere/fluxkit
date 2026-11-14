@@ -1,6 +1,17 @@
 using FluxKit.Core.Settings;
+using FluxKit.Tools.FluxIsland.Activities;
 
 namespace FluxKit.Tools.FluxIsland;
+
+/// <summary>Which screen the island sits on.</summary>
+public enum IslandMonitor
+{
+    /// <summary>The main display.</summary>
+    Main,
+
+    /// <summary>The display the mouse pointer is on; the island moves there when something new shows.</summary>
+    FollowMouse,
+}
 
 public enum IslandEffects
 {
@@ -67,6 +78,20 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// <summary>Says when battery saver turns on or off.</summary>
     public bool ShowBatterySaver { get; set; } = true;
 
+    /// <summary>Shows Caps Lock and Num Lock turning on or off.</summary>
+    public bool ShowLockKeys { get; set; } = true;
+
+    /// <summary>Says when a paired Bluetooth device, such as earbuds, connects or disconnects.</summary>
+    public bool ShowDevices { get; set; } = true;
+
+    /// <summary>Adds the Glance page to the panel: live CPU, memory, disk and network, and quick actions.</summary>
+    public bool ShowGlance { get; set; } = true;
+
+    /// <summary>The shortcut that opens the panel, such as "Ctrl+Alt+I". Empty turns the shortcut off.</summary>
+    public string Hotkey { get; set; } = HotkeyGesture.Default;
+
+    public IslandMonitor Monitor { get; set; } = IslandMonitor.Main;
+
     public bool HideInFullScreen { get; set; } = true;
 
     public bool ShowClockWhenIdle { get; set; } = true;
@@ -97,6 +122,18 @@ public sealed class FluxIslandSettings : ISettingsSection
         {
             Effects = IslandEffects.Full;
             yield return "effects reset to Full";
+        }
+
+        if (!Enum.IsDefined(Monitor))
+        {
+            Monitor = IslandMonitor.Main;
+            yield return "monitor reset to Main";
+        }
+
+        if (Hotkey is null || (Hotkey.Length > 0 && !HotkeyGesture.TryParse(Hotkey, out _)))
+        {
+            Hotkey = HotkeyGesture.Default;
+            yield return "hotkey reset to the default";
         }
     }
 }

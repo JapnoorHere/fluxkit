@@ -30,5 +30,7 @@ internal sealed class IslandViewAdapter(IslandWindow window) : IIslandView
         }
     }
 
+    public void TogglePanel() => _queue.TryEnqueue(window.TogglePanel);
+
     public void Close() => _queue.TryEnqueue(window.CloseCore);
 }

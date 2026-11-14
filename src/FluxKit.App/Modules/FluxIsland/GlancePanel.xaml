@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The island's Glance page: soft rings for CPU, memory, disk and battery, network speeds, and a row of quick actions.
+    The numbers are read once a second, only while this page is on screen.
+-->
+<UserControl
+    x:Class="FluxKit.App.Modules.FluxIsland.GlancePanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    RequestedTheme="Dark">
+    <UserControl.Resources>
+        <ResourceDictionary Source="ms-appx:///Modules/FluxIsland/IslandStyles.xaml" />
+    </UserControl.Resources>
+    <Grid x:Name="ContentGrid" Padding="18,14,18,14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="Gauges" ColumnSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel x:Name="CpuGauge" Spacing="4">
+                <Grid Width="48" Height="48">
+                    <ProgressRing
+                        x:Name="CpuRing"
+                        Width="48"
+                        Height="48"
+                        IsIndeterminate="False" />
+                    <TextBlock
+                        x:Name="CpuText"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        FontWeight="SemiBold" />
+                </Grid>
+                <TextBlock
+                    x:Name="CpuLabel"
+                    HorizontalAlignment="Center"
+                    FontSize="11"
+                    x:Uid="Island_GlanceCpu" />
+            </StackPanel>
+            <StackPanel
+                x:Name="MemoryGauge"
+                Grid.Column="1"
+                Spacing="4">
+                <Grid Width="48" Height="48">
+                    <ProgressRing
+                        x:Name="MemoryRing"
+                        Width="48"
+                        Height="48"
+                        IsIndeterminate="False" />
+                    <TextBlock
+                        x:Name="MemoryText"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        FontWeight="SemiBold" />
+                </Grid>
+                <TextBlock
+                    x:Name="MemoryLabel"
+                    HorizontalAlignment="Center"
+                    FontSize="11"
+                    x:Uid="Island_GlanceMemory" />
+            </StackPanel>
+            <StackPanel
+                x:Name="DiskGauge"
+                Grid.Column="2"
+                Spacing="4">
+                <Grid Width="48" Height="48">
+                    <ProgressRing
+                        x:Name="DiskRing"
+                        Width="48"
+                        Height="48"
+                        IsIndeterminate="False" />
+                    <TextBlock
+                        x:Name="DiskText"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        FontWeight="SemiBold" />
+                </Grid>
+                <TextBlock
+                    x:Name="DiskLabel"
+                    HorizontalAlignment="Center"
+                    FontSize="11"
+                    x:Uid="Island_GlanceDisk" />
+            </StackPanel>
+            <StackPanel
+                x:Name="BatteryGauge"
+                Grid.Column="3"
+                Spacing="4">
+                <Grid Width="48" Height="48">
+                    <ProgressRing
+                        x:Name="BatteryRing"
+                        Width="48"
+                        Height="48"
+                        IsIndeterminate="False" />
+                    <TextBlock
+                        x:Name="BatteryText"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        FontWeight="SemiBold" />
+                </Grid>
+                <TextBlock
+                    x:Name="BatteryLabel"
+                    HorizontalAlignment="Center"
+                    FontSize="11"
+                    x:Uid="Island_GlanceBattery" />
+            </StackPanel>
+            <StackPanel
+                Grid.Column="4"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Spacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon
+                        x:Name="DownGlyph"
+                        FontSize="12"
+                        Glyph="&#xE74B;" />
+                    <TextBlock x:Name="DownText" FontSize="12" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon
+                        x:Name="UpGlyph"
+                        FontSize="12"
+                        Glyph="&#xE74A;" />
+                    <TextBlock x:Name="UpText" FontSize="12" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <StackPanel
+            x:Name="Actions"
+            Grid.Row="1"
+            VerticalAlignment="Bottom"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                x:Name="ScreenshotButton"
+                Style="{StaticResource IslandChipButtonStyle}"
+                x:Uid="Island_GlanceScreenshot">
+                <FontIcon FontSize="13" Glyph="&#xE722;" />
+            </Button>
+            <Button
+                x:Name="LockButton"
+                Style="{StaticResource IslandChipButtonStyle}"
+                x:Uid="Island_GlanceLock">
+                <FontIcon FontSize="13" Glyph="&#xE72E;" />
+            </Button>
+            <Button
+                x:Name="DisplayOffButton"
+                Style="{StaticResource IslandChipButtonStyle}"
+                x:Uid="Island_GlanceDisplayOff">
+                <FontIcon FontSize="13" Glyph="&#xE708;" />
+            </Button>
+            <Button x:Name="MicButton" Style="{StaticResource IslandChipButtonStyle}">
+                <FontIcon x:Name="MicGlyph" FontSize="13" />
+            </Button>
+            <Button
+                x:Name="SettingsButton"
+                Style="{StaticResource IslandChipButtonStyle}"
+                x:Uid="Island_GlanceSettings">
+                <FontIcon FontSize="13" Glyph="&#xE713;" />
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1125,4 +1125,136 @@
   <data name="FluxIsland_KeepShelf.Description" xml:space="preserve">
     <value>Files stay on the shelf when FluxKit or Windows restarts. Only their locations are saved, on this PC. Right-click a file on the shelf to open, share or remove it.</value>
   </data>
+  <data name="Island_StartStopwatch.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Start a stopwatch</value>
+  </data>
+  <data name="Island_StartStopwatch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Start a stopwatch</value>
+  </data>
+  <data name="Island_AddMinute" xml:space="preserve">
+    <value>+1 min</value>
+  </data>
+  <data name="Island_CancelTimer_Label" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Island_Lap" xml:space="preserve">
+    <value>Lap</value>
+  </data>
+  <data name="Island_ResetStopwatch" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Island_LapFormat" xml:space="preserve">
+    <value>Lap {0}</value>
+  </data>
+  <data name="Island_ShowStopwatch" xml:space="preserve">
+    <value>Show the stopwatch</value>
+  </data>
+  <data name="Island_ShowTimer" xml:space="preserve">
+    <value>Show the timer</value>
+  </data>
+  <data name="Island_LapEntryFormat" xml:space="preserve">
+    <value>Lap {0}  {1}</value>
+  </data>
+  <data name="Island_GlanceTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Glance</value>
+  </data>
+  <data name="Island_GlanceName" xml:space="preserve">
+    <value>Glance: CPU, memory, disk and quick actions</value>
+  </data>
+  <data name="Island_GlanceCpu.Text" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Island_GlanceMemory.Text" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="Island_GlanceDisk.Text" xml:space="preserve">
+    <value>Disk</value>
+  </data>
+  <data name="Island_GlanceBattery.Text" xml:space="preserve">
+    <value>Battery</value>
+  </data>
+  <data name="Island_GlanceGaugeName" xml:space="preserve">
+    <value>{0} {1} percent</value>
+  </data>
+  <data name="Island_GlanceKbFormat" xml:space="preserve">
+    <value>{0:0} KB/s</value>
+  </data>
+  <data name="Island_GlanceMbFormat" xml:space="preserve">
+    <value>{0:0.0} MB/s</value>
+  </data>
+  <data name="Island_GlanceScreenshot.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Take a screenshot</value>
+  </data>
+  <data name="Island_GlanceScreenshot.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Take a screenshot</value>
+  </data>
+  <data name="Island_GlanceLock.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Lock the PC</value>
+  </data>
+  <data name="Island_GlanceLock.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Lock the PC</value>
+  </data>
+  <data name="Island_GlanceDisplayOff.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Turn the screen off</value>
+  </data>
+  <data name="Island_GlanceDisplayOff.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Turn the screen off</value>
+  </data>
+  <data name="Island_GlanceSettings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Flux Island settings</value>
+  </data>
+  <data name="Island_GlanceSettings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Flux Island settings</value>
+  </data>
+  <data name="Island_GlanceMuteMic" xml:space="preserve">
+    <value>Mute the microphone</value>
+  </data>
+  <data name="Island_GlanceUnmuteMic" xml:space="preserve">
+    <value>Unmute the microphone</value>
+  </data>
+  <data name="FluxIsland_ShowLockKeys.Header" xml:space="preserve">
+    <value>Caps Lock and Num Lock</value>
+  </data>
+  <data name="FluxIsland_ShowLockKeys.Description" xml:space="preserve">
+    <value>Show when Caps Lock or Num Lock turns on or off. Only those two keys are noticed.</value>
+  </data>
+  <data name="FluxIsland_ShowDevices.Header" xml:space="preserve">
+    <value>Bluetooth devices</value>
+  </data>
+  <data name="FluxIsland_ShowDevices.Description" xml:space="preserve">
+    <value>Say when paired earbuds, a mouse or another Bluetooth device connects or disconnects</value>
+  </data>
+  <data name="FluxIsland_Glance.Header" xml:space="preserve">
+    <value>Glance page</value>
+  </data>
+  <data name="FluxIsland_Glance.Description" xml:space="preserve">
+    <value>Add a page with live CPU, memory and disk use, network speed and quick actions</value>
+  </data>
+  <data name="FluxIsland_Hotkey.Header" xml:space="preserve">
+    <value>Keyboard shortcut</value>
+  </data>
+  <data name="FluxIsland_HotkeyBox.PlaceholderText" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="FluxIsland_HotkeyHelp" xml:space="preserve">
+    <value>Opens the island from the keyboard. Press Esc to close it. Clear the box to turn it off.</value>
+  </data>
+  <data name="FluxIsland_HotkeyOff" xml:space="preserve">
+    <value>The shortcut is off. Type one, such as Ctrl+Alt+I, to turn it on.</value>
+  </data>
+  <data name="FluxIsland_HotkeyInvalid" xml:space="preserve">
+    <value>That shortcut can't be used. Try Ctrl, Alt or Win with a letter, a number or an F key, such as Ctrl+Alt+I.</value>
+  </data>
+  <data name="FluxIsland_Monitor.Header" xml:space="preserve">
+    <value>Screen</value>
+  </data>
+  <data name="FluxIsland_Monitor.Description" xml:space="preserve">
+    <value>Which screen the island sits on</value>
+  </data>
+  <data name="FluxIsland_MonitorMain.Content" xml:space="preserve">
+    <value>Main screen</value>
+  </data>
+  <data name="FluxIsland_MonitorMouse.Content" xml:space="preserve">
+    <value>Where the mouse is</value>
+  </data>
 </root>

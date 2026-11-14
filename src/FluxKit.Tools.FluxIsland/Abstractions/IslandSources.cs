@@ -27,6 +27,13 @@ public sealed class IslandSources
 
     public Func<IBrightnessSource>? Brightness { get; init; }
 
+    public Func<ILockKeysSource>? LockKeys { get; init; }
+
+    public Func<IDeviceSource>? Devices { get; init; }
+
+    /// <summary>Registers the given shortcut; the source reports each press.</summary>
+    public Func<Activities.HotkeyGesture, IHotkeySource>? Hotkey { get; init; }
+
     /// <summary>Where the shelf is kept between runs; null keeps it in memory only.</summary>
     public IShelfStore? ShelfStore { get; init; }
 }

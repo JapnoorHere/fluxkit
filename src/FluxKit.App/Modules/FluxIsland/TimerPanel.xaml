@@ -43,6 +43,7 @@
             <TextBlock x:Name="Label" FontSize="13" />
             <local:RollingText x:Name="Digits" />
             <Grid
+                x:Name="ProgressTrack"
                 Height="4"
                 Margin="0,8,0,0"
                 SizeChanged="OnTrackSizeChanged">
@@ -53,6 +54,14 @@
                     HorizontalAlignment="Left"
                     CornerRadius="2" />
             </Grid>
+            <!-- The stopwatch's latest laps, newest first. -->
+            <TextBlock
+                x:Name="LapsText"
+                Margin="0,6,0,0"
+                FontSize="12"
+                MaxLines="1"
+                TextTrimming="CharacterEllipsis"
+                Visibility="Collapsed" />
         </StackPanel>
 
         <StackPanel
@@ -80,6 +89,13 @@
                         <TextBlock x:Name="FocusText" />
                     </StackPanel>
                 </Button>
+                <!-- Counts up instead of down; icon only so the row still fits. -->
+                <Button
+                    x:Name="StopwatchButton"
+                    Style="{StaticResource IslandChipButtonStyle}"
+                    x:Uid="Island_StartStopwatch">
+                    <FontIcon FontSize="12" Glyph="&#xE121;" />
+                </Button>
             </StackPanel>
         </StackPanel>
 
@@ -90,16 +106,30 @@
             Orientation="Horizontal"
             Spacing="8"
             Visibility="Collapsed">
+            <!-- Shown while a timer and the stopwatch both run: flips the page between them. -->
+            <Button
+                x:Name="SwitchButton"
+                Style="{StaticResource IslandChipButtonStyle}"
+                Visibility="Collapsed">
+                <FontIcon x:Name="SwitchGlyph" FontSize="12" />
+            </Button>
             <Button x:Name="PauseButton" Style="{StaticResource IslandChipButtonStyle}">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <FontIcon x:Name="PauseGlyph" FontSize="12" />
                     <TextBlock x:Name="PauseText" />
                 </StackPanel>
             </Button>
+            <!-- "+1 min" for a timer, "Lap" for the stopwatch. -->
+            <Button x:Name="ExtraButton" Style="{StaticResource IslandChipButtonStyle}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon x:Name="ExtraGlyph" FontSize="12" />
+                    <TextBlock x:Name="ExtraText" />
+                </StackPanel>
+            </Button>
             <Button x:Name="CancelButton" Style="{StaticResource IslandChipButtonStyle}">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <FontIcon FontSize="12" Glyph="&#xE711;" />
-                    <TextBlock x:Uid="Island_CancelTimer" />
+                    <TextBlock x:Name="CancelText" />
                 </StackPanel>
             </Button>
         </StackPanel>

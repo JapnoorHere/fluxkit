@@ -19,6 +19,17 @@ public interface IIslandCommands
 
     void CancelTimer();
 
+    /// <summary>Adds time to the running timer.</summary>
+    void AddTimerTime(TimeSpan extra);
+
+    void StartStopwatch();
+
+    void PauseOrResumeStopwatch();
+
+    void LapStopwatch();
+
+    void ResetStopwatch();
+
     void AddToShelf(IEnumerable<string> paths);
 
     void RemoveFromShelf(string path);

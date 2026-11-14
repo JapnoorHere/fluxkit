@@ -42,6 +42,12 @@ public sealed partial class FluxIslandPage : Page
         SmartCopyToggle.IsOn = s.SmartCopy;
         BrightnessToggle.IsOn = s.ShowBrightness;
         SaverToggle.IsOn = s.ShowBatterySaver;
+        LockKeysToggle.IsOn = s.ShowLockKeys;
+        DevicesToggle.IsOn = s.ShowDevices;
+        GlanceToggle.IsOn = s.ShowGlance;
+        HotkeyBox.Text = s.Hotkey;
+        HotkeyRow.Description = Strings.Get("FluxIsland_HotkeyHelp");
+        MonitorCombo.SelectedIndex = (int)s.Monitor;
         ClockToggle.IsOn = s.ShowClockWhenIdle;
         ShelfToggle.IsOn = s.ShelfEnabled;
         KeepShelfToggle.IsOn = s.KeepShelf;
@@ -150,6 +156,10 @@ public sealed partial class FluxIslandPage : Page
             s.SmartCopy = SmartCopyToggle.IsOn;
             s.ShowBrightness = BrightnessToggle.IsOn;
             s.ShowBatterySaver = SaverToggle.IsOn;
+            s.ShowLockKeys = LockKeysToggle.IsOn;
+            s.ShowDevices = DevicesToggle.IsOn;
+            s.ShowGlance = GlanceToggle.IsOn;
+            s.Monitor = (IslandMonitor)Math.Max(0, MonitorCombo.SelectedIndex);
             s.ShowClockWhenIdle = ClockToggle.IsOn;
             s.ShelfEnabled = ShelfToggle.IsOn;
             s.KeepShelf = KeepShelfToggle.IsOn;
@@ -157,6 +167,38 @@ public sealed partial class FluxIslandPage : Page
             s.Effects = (IslandEffects)Math.Max(0, EffectsCombo.SelectedIndex);
             s.HideInFullScreen = FullScreenToggle.IsOn;
         });
+    }
+
+    private void OnHotkeyKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+    {
+        if (e.Key == Windows.System.VirtualKey.Enter)
+        {
+            e.Handled = true;
+            OnHotkeyCommitted(sender, e);
+        }
+    }
+
+    /// <summary>Saves the shortcut once typing is done. Empty turns it off; something unreadable is put back as it was.</summary>
+    private void OnHotkeyCommitted(object sender, RoutedEventArgs e)
+    {
+        string text = HotkeyBox.Text.Trim();
+        if (text.Length == 0)
+        {
+            HotkeyRow.Description = Strings.Get("FluxIsland_HotkeyOff");
+            Save(s => s.Hotkey = string.Empty);
+            return;
+        }
+
+        if (!Tools.FluxIsland.Activities.HotkeyGesture.TryParse(text, out Tools.FluxIsland.Activities.HotkeyGesture gesture))
+        {
+            HotkeyRow.Description = Strings.Get("FluxIsland_HotkeyInvalid");
+            HotkeyBox.Text = Current.Hotkey;
+            return;
+        }
+
+        HotkeyBox.Text = gesture.ToString();
+        HotkeyRow.Description = Strings.Get("FluxIsland_HotkeyHelp");
+        Save(s => s.Hotkey = gesture.ToString());
     }
 
     private void UpdateLengthText(FluxIslandSettings s)

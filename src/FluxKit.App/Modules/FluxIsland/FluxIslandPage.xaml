@@ -69,6 +69,12 @@
                         <c:SettingRow x:Uid="FluxIsland_ShowScreenshots" Glyph="&#xE722;">
                             <ToggleSwitch x:Name="ScreenshotsToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowLockKeys" Glyph="&#xE765;">
+                            <ToggleSwitch x:Name="LockKeysToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowDevices" Glyph="&#xE702;">
+                            <ToggleSwitch x:Name="DevicesToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowClock" Glyph="&#xE823;">
                             <ToggleSwitch x:Name="ClockToggle" Toggled="OnChanged" />
                         </c:SettingRow>
@@ -85,6 +91,17 @@
                         </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ScrollVolume" Glyph="&#xE767;">
                             <ToggleSwitch x:Name="VolumeToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_Glance" Glyph="&#xE9D9;">
+                            <ToggleSwitch x:Name="GlanceToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Name="HotkeyRow" x:Uid="FluxIsland_Hotkey" Glyph="&#xE765;">
+                            <TextBox
+                                x:Name="HotkeyBox"
+                                Width="180"
+                                x:Uid="FluxIsland_HotkeyBox"
+                                KeyDown="OnHotkeyKeyDown"
+                                LostFocus="OnHotkeyCommitted" />
                         </c:SettingRow>
                     </StackPanel>
                 </c:SettingsGroup>
@@ -126,6 +143,12 @@
                             <ComboBox x:Name="EffectsCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
                                 <ComboBoxItem x:Uid="FluxIsland_EffectsFull" />
                                 <ComboBoxItem x:Uid="FluxIsland_EffectsLight" />
+                            </ComboBox>
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_Monitor" Glyph="&#xE7F4;">
+                            <ComboBox x:Name="MonitorCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
+                                <ComboBoxItem x:Uid="FluxIsland_MonitorMain" />
+                                <ComboBoxItem x:Uid="FluxIsland_MonitorMouse" />
                             </ComboBox>
                         </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_HideFullScreen" Glyph="&#xE740;">

@@ -35,6 +35,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private readonly Lock _sync = new();
     private readonly ActivityArbiter _arbiter;
     private readonly FocusTimer _timer;
+    private readonly StopwatchModel _stopwatch;
     private readonly ShelfModel _shelf = new();
     private readonly BatteryAlertPolicy _battery = new();
     private readonly List<IIslandSource> _active = [];
@@ -53,6 +54,9 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private IDesktopSource? _desktops;
     private IFileMomentsSource? _files;
     private IBrightnessSource? _brightness;
+    private ILockKeysSource? _lockKeys;
+    private IDeviceSource? _devices;
+    private IHotkeySource? _hotkey;
     private bool _micMuted;
     private bool? _wasOnline;
     private bool? _saverWasOn;
@@ -67,6 +71,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _log = log.ForContext<FluxIslandTool>();
         _arbiter = new ActivityArbiter(time);
         _timer = new FocusTimer(time);
+        _stopwatch = new StopwatchModel(time);
         _settings.SettingsChanged += OnSettingsChanged;
     }
 
@@ -150,6 +155,16 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
 
     public void CancelTimer() => Change(_timer.Cancel);
 
+    public void AddTimerTime(TimeSpan extra) => Change(() => _timer.AddTime(extra));
+
+    public void StartStopwatch() => Change(_stopwatch.Start);
+
+    public void PauseOrResumeStopwatch() => Change(_stopwatch.PauseOrResume);
+
+    public void LapStopwatch() => Change(_stopwatch.Lap);
+
+    public void ResetStopwatch() => Change(_stopwatch.Reset);
+
     public void AddToShelf(IEnumerable<string> paths) => ChangeShelf(() => _shelf.Add(paths));
 
     public void RemoveFromShelf(string path) => ChangeShelf(() => _shelf.Remove(path));
@@ -207,6 +222,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
                 Secondary = _arbiter.Secondary,
                 Media = _options.ShowMedia ? _media?.Current : null,
                 Timer = _timer.Snapshot,
+                Stopwatch = _stopwatch.Snapshot,
                 Shelf = _shelf.Items,
                 Power = _power?.Current ?? default,
                 Privacy = _options.ShowPrivacy ? _privacy?.Current ?? default : default,
@@ -240,6 +256,12 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             ? () => makeFiles(_options.ShowDownloads, _options.ShowScreenshots)
             : null;
         _brightness = Start(_options.ShowBrightness ? _factories.Brightness : null, s => s.Changed += OnBrightnessChanged);
+        _lockKeys = Start(_options.ShowLockKeys ? _factories.LockKeys : null, s => s.Changed += OnLockKeyChanged);
+        _devices = Start(_options.ShowDevices ? _factories.Devices : null, s => s.Changed += OnDeviceChanged);
+        Func<IHotkeySource>? hotkey = _factories.Hotkey is { } makeHotkey && HotkeyGesture.TryParse(_options.Hotkey, out HotkeyGesture gesture)
+            ? () => makeHotkey(gesture)
+            : null;
+        _hotkey = Start(hotkey, s => s.Pressed += OnHotkeyPressed);
         _files = Start(files, s =>
         {
             s.DownloadChanged += OnDownloadChanged;
@@ -304,6 +326,9 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _desktops = null;
         _files = null;
         _brightness = null;
+        _lockKeys = null;
+        _devices = null;
+        _hotkey = null;
         lock (_sync)
         {
             _arbiter.SetLasting(ActivityKind.Media, null);
@@ -363,6 +388,24 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
 
     private void OnBrightnessChanged(object? sender, int level) =>
         Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Brightness) { Value = level }));
+
+    private void OnLockKeyChanged(object? sender, LockKeyChange change)
+    {
+        if (_options.ShowLockKeys)
+        {
+            Change(() => _arbiter.Raise(new IslandActivity(change.IsCapsLock ? ActivityKind.CapsLock : ActivityKind.NumLock) { Flag = change.On }));
+        }
+    }
+
+    private void OnDeviceChanged(object? sender, DeviceChange change)
+    {
+        if (_options.ShowDevices && !string.IsNullOrWhiteSpace(change.Name))
+        {
+            Change(() => _arbiter.Raise(new IslandActivity(change.Connected ? ActivityKind.DeviceConnected : ActivityKind.DeviceDisconnected) { Text = change.Name }));
+        }
+    }
+
+    private void OnHotkeyPressed(object? sender, EventArgs e) => _view?.TogglePanel();
 
     private void OnNetworkChanged(object? sender, EventArgs e)
     {
@@ -526,6 +569,8 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
 
         FocusTimerSnapshot timer = _timer.Snapshot;
         _arbiter.SetLasting(ActivityKind.Timer, timer.IsActive ? new IslandActivity(ActivityKind.Timer) { Timer = timer } : null);
+        StopwatchSnapshot stopwatch = _stopwatch.Snapshot;
+        _arbiter.SetLasting(ActivityKind.Stopwatch, stopwatch.IsActive ? new IslandActivity(ActivityKind.Stopwatch) { Stopwatch = stopwatch } : null);
         _arbiter.SetLasting(ActivityKind.Shelf, _options.ShelfEnabled && _shelf.Count > 0 ? new IslandActivity(ActivityKind.Shelf) { Value = _shelf.Count } : null);
 
         // A muted microphone matters while something is listening, such as a call: keep reminding until it ends.

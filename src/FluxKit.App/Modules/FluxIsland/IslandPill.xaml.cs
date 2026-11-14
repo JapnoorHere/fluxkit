@@ -76,6 +76,7 @@ public sealed partial class IslandPill : UserControl
     private string? _thumbPath;
     private ImageSource? _thumb;
     private bool _held;
+    private bool _keyboard;
 
     public IslandPill()
     {
@@ -115,7 +116,7 @@ public sealed partial class IslandPill : UserControl
         _peekTimer = OneShot(PeekDelay, () => SetMode(PillMode.Peek));
         _closeTimer = OneShot(CloseDelay, () =>
         {
-            if (!_held)
+            if (!_held && !_keyboard)
             {
                 SetMode(PillMode.Compact);
             }
@@ -146,9 +147,14 @@ public sealed partial class IslandPill : UserControl
         MediaTab.Click += (_, _) => ShowPage(PanelPage.Media);
         TimerTab.Click += (_, _) => ShowPage(PanelPage.Timer);
         ShelfTab.Click += (_, _) => ShowPage(PanelPage.Shelf);
+        GlanceTab.Click += (_, _) => ShowPage(PanelPage.Glance);
+        GlanceView.CloseRequested += (_, _) => SetMode(PillMode.Compact);
+        TimerView.SwitchChanged += (_, _) => Update();
+        Surface.KeyDown += OnKeyDown;
         PressFeedback.Attach(MediaTab);
         PressFeedback.Attach(TimerTab);
         PressFeedback.Attach(ShelfTab);
+        PressFeedback.Attach(GlanceTab);
 
         Surface.PointerEntered += OnPointerEntered;
         Surface.PointerExited += OnPointerExited;
@@ -175,6 +181,7 @@ public sealed partial class IslandPill : UserControl
         Media,
         Timer,
         Shelf,
+        Glance,
     }
 
     /// <summary>What buttons on the island call. Unset in previews, where nothing should happen.</summary>
@@ -186,6 +193,7 @@ public sealed partial class IslandPill : UserControl
             MediaView.Commands = value;
             TimerView.Commands = value;
             ShelfView.Commands = value;
+            GlanceView.Commands = value;
         }
     }
 
@@ -203,6 +211,12 @@ public sealed partial class IslandPill : UserControl
     /// <summary>Files the user asked to share; the window opens the share sheet, which needs its handle.</summary>
     public event EventHandler<IReadOnlyList<string>>? ShareRequested;
 
+    /// <summary>The panel that the keyboard opened has closed; the window gives focus back to where it was.</summary>
+    public event EventHandler? KeyboardReleased;
+
+    /// <summary>True while the panel is open from the keyboard shortcut and holds keyboard focus.</summary>
+    public bool IsKeyboardOpen => _keyboard;
+
     public void Render(IslandScene scene)
     {
         if (_previewDrop)
@@ -215,9 +229,10 @@ public sealed partial class IslandPill : UserControl
     }
 
     /// <summary>Shows <paramref name="scene"/>, opened as the panel when <paramref name="open"/> is true. For previews.</summary>
-    public void Preview(IslandScene scene, bool open, bool dropping = false)
+    public void Preview(IslandScene scene, bool open, bool dropping = false, bool glance = false)
     {
-        _mode = open || dropping ? PillMode.Panel : PillMode.Compact;
+        _mode = open || dropping || glance ? PillMode.Panel : PillMode.Compact;
+        _page = glance ? PanelPage.Glance : null;
         _dragging = dropping;
         _previewDrop = dropping;
         Show(scene);
@@ -250,6 +265,8 @@ public sealed partial class IslandPill : UserControl
             _dragLeaveTimer.Stop();
             _lingerTimer.Stop();
             _mode = PillMode.Compact;
+            GlanceView.SetLive(false);
+            ReleaseKeyboard();
             _hovering = false;
             _dragging = false;
             _shape.ScaleTo(1, springs: false);
@@ -289,6 +306,7 @@ public sealed partial class IslandPill : UserControl
         UpdateBubble(view == CompactView && _mode == PillMode.Compact ? _scene.Secondary : null, size, now);
         MorphTo(size);
         ScheduleTimers(now);
+        GlanceView.SetLive(_active && _mode == PillMode.Panel && _page == PanelPage.Glance);
     }
 
     /// <summary>Shows the second activity in a bubble that springs out from the pill's right edge, or tucks it away.</summary>
@@ -601,6 +619,14 @@ public sealed partial class IslandPill : UserControl
             return (MediaView, "panel-media", MediaPanelSize);
         }
 
+        if (page == PanelPage.Glance)
+        {
+            GlanceView.SetInset(inset);
+            GlanceView.Update(_scene);
+            AutomationProperties.SetName(Surface, Strings.Get("Island_GlanceName"));
+            return (GlanceView, "panel-glance", PanelSize);
+        }
+
         if (page == PanelPage.Shelf)
         {
             ShelfView.SetInset(inset);
@@ -636,6 +662,11 @@ public sealed partial class IslandPill : UserControl
             pages.Add(PanelPage.Shelf);
         }
 
+        if (_scene.Settings.ShowGlance)
+        {
+            pages.Add(PanelPage.Glance);
+        }
+
         return pages;
     }
 
@@ -643,7 +674,7 @@ public sealed partial class IslandPill : UserControl
     private PanelPage DefaultPage(List<PanelPage> pages) => _scene.Primary?.Kind switch
     {
         _ when _dragging && pages.Contains(PanelPage.Shelf) => PanelPage.Shelf,
-        ActivityKind.Timer or ActivityKind.TimerDone => PanelPage.Timer,
+        ActivityKind.Timer or ActivityKind.TimerDone or ActivityKind.Stopwatch => PanelPage.Timer,
         ActivityKind.Shelf when pages.Contains(PanelPage.Shelf) => PanelPage.Shelf,
         _ => _scene.Media is not null && pages.Contains(PanelPage.Media) ? PanelPage.Media : PanelPage.Timer,
     };
@@ -660,7 +691,7 @@ public sealed partial class IslandPill : UserControl
     private void ShowRail(List<PanelPage> pages, PanelPage selected)
     {
         PanelRail.Visibility = pages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
-        (Button Tab, PanelPage Page)[] tabs = [(MediaTab, PanelPage.Media), (TimerTab, PanelPage.Timer), (ShelfTab, PanelPage.Shelf)];
+        (Button Tab, PanelPage Page)[] tabs = [(MediaTab, PanelPage.Media), (TimerTab, PanelPage.Timer), (ShelfTab, PanelPage.Shelf), (GlanceTab, PanelPage.Glance)];
         foreach ((Button tab, PanelPage tabPage) in tabs)
         {
             bool isSelected = tabPage == selected;
@@ -686,7 +717,7 @@ public sealed partial class IslandPill : UserControl
             IslandMotion.Exit(previous, () => _shownView != previous);
         }
 
-        UIElement[]? rows = view == MediaView ? MediaView.Rows : view == TimerView ? TimerView.Rows : view == ShelfView ? ShelfView.Rows : null;
+        UIElement[]? rows = view == MediaView ? MediaView.Rows : view == TimerView ? TimerView.Rows : view == ShelfView ? ShelfView.Rows : view == GlanceView ? GlanceView.Rows : null;
         if (rows is not null)
         {
             // Panel rows arrive one after the other.
@@ -738,9 +769,10 @@ public sealed partial class IslandPill : UserControl
 
         // Tick once a second only while something on screen moves: a running timer, or the seek bar of playing music.
         bool timerRunning = _scene.Timer?.State == TimerState.Running;
+        bool stopwatchRunning = _scene.Stopwatch?.State == TimerState.Running;
         bool counting = _mode == PillMode.Panel
-            ? (_page == PanelPage.Timer && timerRunning) || (_page == PanelPage.Media && _scene.Media?.IsPlaying == true)
-            : _scene.Primary?.Kind == ActivityKind.Timer && timerRunning;
+            ? (_page == PanelPage.Timer && (timerRunning || stopwatchRunning)) || (_page == PanelPage.Media && _scene.Media?.IsPlaying == true)
+            : (_scene.Primary?.Kind == ActivityKind.Timer && timerRunning) || (_scene.Primary?.Kind == ActivityKind.Stopwatch && stopwatchRunning);
         if (counting && !_tickTimer.IsRunning)
         {
             _tickTimer.Start();
@@ -748,6 +780,61 @@ public sealed partial class IslandPill : UserControl
         else if (!counting && _tickTimer.IsRunning)
         {
             _tickTimer.Stop();
+        }
+    }
+
+    /// <summary>
+    /// For the keyboard shortcut: opens the panel and puts focus on its first control, or closes it if it is open.
+    /// While opened this way it stays open when the pointer is elsewhere, until Esc, the shortcut or a click away.
+    /// </summary>
+    public void ToggleFromKeyboard()
+    {
+        if (_mode == PillMode.Panel)
+        {
+            SetMode(PillMode.Compact);
+            return;
+        }
+
+        _keyboard = true;
+        _peekTimer.Stop();
+        _closeTimer.Stop();
+        SetMode(PillMode.Panel);
+
+        // Focus the first button once the panel's content is in place.
+        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+        {
+            if (_keyboard && FocusManager.FindFirstFocusableElement(Surface) is DependencyObject first)
+            {
+                _ = FocusManager.TryFocusAsync(first, FocusState.Keyboard);
+            }
+        });
+    }
+
+    /// <summary>Closes a panel the keyboard opened, e.g. when the user clicks into another window.</summary>
+    public void CloseKeyboardPanel()
+    {
+        if (_keyboard)
+        {
+            SetMode(PillMode.Compact);
+        }
+    }
+
+    private void ReleaseKeyboard()
+    {
+        if (_keyboard)
+        {
+            _keyboard = false;
+            KeyboardReleased?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>Esc closes the panel. Arrows and Tab move between buttons (set up in XAML); Enter and Space press them.</summary>
+    private void OnKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == Windows.System.VirtualKey.Escape && _mode == PillMode.Panel)
+        {
+            e.Handled = true;
+            SetMode(PillMode.Compact);
         }
     }
 
@@ -769,6 +856,7 @@ public sealed partial class IslandPill : UserControl
         {
             // The next time the panel opens, it opens on whatever is most relevant then.
             _page = null;
+            ReleaseKeyboard();
         }
 
         Update();

@@ -18,6 +18,8 @@
         <Grid x:Name="ContentLayer">
             <Grid
                 x:Name="Surface"
+                TabFocusNavigation="Cycle"
+                XYFocusKeyboardNavigation="Enabled"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Background="Transparent">
@@ -109,6 +111,7 @@
                 <local:MediaPanel x:Name="MediaView" Visibility="Collapsed" />
                 <local:TimerPanel x:Name="TimerView" Visibility="Collapsed" />
                 <local:ShelfPanel x:Name="ShelfView" Visibility="Collapsed" />
+                <local:GlancePanel x:Name="GlanceView" Visibility="Collapsed" />
 
                 <!-- Switches between the panel's pages when there is more than one, like FluxKit's own side rail. -->
                 <StackPanel
@@ -144,6 +147,15 @@
                         Style="{StaticResource IslandIconButtonStyle}"
                         x:Uid="Island_ShelfTab">
                         <FontIcon FontSize="13" Glyph="&#xE7B8;" />
+                    </Button>
+                    <Button
+                        x:Name="GlanceTab"
+                        Width="28"
+                        Height="28"
+                        CornerRadius="14"
+                        Style="{StaticResource IslandIconButtonStyle}"
+                        x:Uid="Island_GlanceTab">
+                        <FontIcon FontSize="13" Glyph="&#xE9D9;" />
                     </Button>
                 </StackPanel>
             </Grid>

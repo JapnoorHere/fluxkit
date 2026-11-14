@@ -15,13 +15,14 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
     {
         var media = new MediaInfo("Midnight Drive", "The Night Owls", true, TimeSpan.FromSeconds(72), TimeSpan.FromSeconds(214), now, true, true, true);
         var timer = new FocusTimerSnapshot(TimerMode.Focus, TimerState.Running, TimeSpan.FromMinutes(25), TimeSpan.FromMinutes(18), now + TimeSpan.FromMinutes(18) + TimeSpan.FromSeconds(42), 1);
+        var stopwatch = new StopwatchSnapshot(TimerState.Running, TimeSpan.Zero, now - TimeSpan.FromSeconds(83), [TimeSpan.FromSeconds(41), TimeSpan.FromSeconds(38)]);
         var power = new PowerSnapshot(true, 76, true);
         IslandActivity? primary = name switch
         {
@@ -42,9 +43,12 @@ internal static class IslandSamples
             "micmuted" => new IslandActivity(ActivityKind.MicMuted) { Flag = true },
             "brightness" => new IslandActivity(ActivityKind.Brightness) { Value = 70 },
             "caps" => new IslandActivity(ActivityKind.CapsLock) { Flag = true },
+            "numlock" => new IslandActivity(ActivityKind.NumLock) { Flag = false },
+            "disconnected" => new IslandActivity(ActivityKind.DeviceDisconnected) { Text = "Galaxy Buds3 Pro" },
+            "both" => new IslandActivity(ActivityKind.Timer) { Timer = timer },
             "saver" => new IslandActivity(ActivityKind.BatterySaver) { Flag = true, Value = 18 },
             "device" => new IslandActivity(ActivityKind.DeviceConnected) { Text = "Galaxy Buds3 Pro", Value = 80 },
-            "stopwatch" => new IslandActivity(ActivityKind.Stopwatch) { Value = 83_400 },
+            "stopwatch" => new IslandActivity(ActivityKind.Stopwatch) { Stopwatch = stopwatch },
             "link" => new IslandActivity(ActivityKind.Copied) { Clipboard = ClipboardKind.Text, Smart = SmartText.Link, Text = "github.com", Path = "https://github.com/" },
             "colour" => new IslandActivity(ActivityKind.Copied) { Clipboard = ClipboardKind.Text, Smart = SmartText.Color, Text = "#3A7BFF", Value = 0x3A7BFF },
             _ => null,
@@ -52,9 +56,15 @@ internal static class IslandSamples
         return new IslandScene
         {
             Primary = primary,
-            Secondary = name == "split" ? new IslandActivity(ActivityKind.Media) { Media = media } : null,
+            Secondary = name switch
+            {
+                "split" => new IslandActivity(ActivityKind.Media) { Media = media },
+                "both" => new IslandActivity(ActivityKind.Stopwatch) { Stopwatch = stopwatch },
+                _ => null,
+            },
             Media = name is "music" or "split" ? media : null,
-            Timer = name is "timer" or "split" ? timer : FocusTimerSnapshot.Idle,
+            Timer = name is "timer" or "split" or "both" ? timer : FocusTimerSnapshot.Idle,
+            Stopwatch = name is "stopwatch" or "both" ? stopwatch : StopwatchSnapshot.Idle,
             Shelf = name == "shelf" ? [@"C:\Windows\Web\Wallpaper\Windows\img0.jpg", @"C:\Windows\Media\Alarm01.wav", @"C:\Windows\Web\Screen", @"C:\Windows\notepad.exe"] : [],
             Power = power,
             Privacy = new PrivacySnapshot(name == "music", false),

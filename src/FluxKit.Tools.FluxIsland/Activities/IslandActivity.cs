@@ -44,6 +44,8 @@ public sealed record IslandActivity(ActivityKind Kind)
 
     public FocusTimerSnapshot? Timer { get; init; }
 
+    public StopwatchSnapshot? Stopwatch { get; init; }
+
     public ClipboardKind Clipboard { get; init; }
 
     /// <summary>What copied text turned out to be, when smart copy is on.</summary>

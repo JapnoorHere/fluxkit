@@ -39,6 +39,10 @@ public sealed partial class IslandWindow : Window
     private bool _closed;
     private readonly IIslandCommands? _commands;
     private long _previewUntil;
+    private nint _focusReturn;
+    private PixelRect _monitor;
+    private IslandMonitor _monitorSetting;
+    private IslandActivity? _lastPrimary;
 
     public IslandWindow(IIslandCommands commands, IVirtualDesktopService desktops, ILogger log)
     {
@@ -65,6 +69,19 @@ public sealed partial class IslandWindow : Window
         Pill.Commands = commands;
         Pill.TargetChanged += OnTargetChanged;
         Pill.ShareRequested += (_, files) => ShareSheet.Show(_hwnd, files, Strings.Get("Island_ShareTitle"));
+        Pill.KeyboardReleased += (_, _) =>
+        {
+            WindowHelpers.ReleaseFocus(_hwnd, _focusReturn);
+            _focusReturn = 0;
+        };
+        Activated += (_, e) =>
+        {
+            // Clicking into another window closes a panel the keyboard opened, as a menu would.
+            if (e.WindowActivationState == WindowActivationState.Deactivated && Pill.IsKeyboardOpen)
+            {
+                Pill.CloseKeyboardPanel();
+            }
+        };
         _shrinkTimer = DispatcherQueue.CreateTimer();
         _shrinkTimer.Interval = ShrinkDelay;
         _shrinkTimer.IsRepeating = false;
@@ -78,6 +95,21 @@ public sealed partial class IslandWindow : Window
 
     /// <summary>Thread-safe view used by the tool.</summary>
     public IIslandView View { get; }
+
+    /// <summary>The shortcut: opens the panel with keyboard focus, or closes it.</summary>
+    public void TogglePanel()
+    {
+        if (_closed || !_visible || _previewUntil != 0)
+        {
+            return;
+        }
+
+        Pill.ToggleFromKeyboard();
+        if (Pill.IsKeyboardOpen && _focusReturn == 0)
+        {
+            _focusReturn = WindowHelpers.TakeFocus(_hwnd);
+        }
+    }
 
     /// <summary>Pins again after Explorer restarts.</summary>
     public void RePin()
@@ -100,7 +132,7 @@ public sealed partial class IslandWindow : Window
         RenderCore(scene);
         _previewUntil = Environment.TickCount64 + (long)PreviewHold.TotalMilliseconds;
         Pill.Commands = null;
-        Pill.Preview(scene, open, dropping: sample == IslandSamples.Drop);
+        Pill.Preview(scene, open, dropping: sample == IslandSamples.Drop, glance: sample == "glance");
         _log.Information("Island preview {Sample} (open={Open})", sample, open);
     }
 
@@ -129,11 +161,23 @@ public sealed partial class IslandWindow : Window
             return;
         }
 
+        bool settingChanged = _monitorSetting != scene.Settings.Monitor;
+        _monitorSetting = scene.Settings.Monitor;
         Pill.Render(scene);
         if (!_visible)
         {
             ShowCore();
         }
+        else if (settingChanged)
+        {
+            MoveToChosenMonitor();
+        }
+        else if (_monitorSetting == IslandMonitor.FollowMouse && scene.Primary is { } primary && !ReferenceEquals(primary, _lastPrimary) && !Pill.IsKeyboardOpen)
+        {
+            MoveToChosenMonitor();
+        }
+
+        _lastPrimary = scene.Primary;
     }
 
     internal void CloseCore()
@@ -177,10 +221,26 @@ public sealed partial class IslandWindow : Window
         WindowHelpers.Hide(_hwnd);
     }
 
-    /// <summary>Top centre of the primary monitor, over the top edge of whatever is there.</summary>
+    /// <summary>
+    /// Moves the island if it is on the wrong screen: after the setting changes, or (following the mouse) when
+    /// something new shows while the pointer is on another screen.
+    /// </summary>
+    private void MoveToChosenMonitor()
+    {
+        (PixelRect monitor, _) = _monitorSetting == IslandMonitor.FollowMouse ? WindowHelpers.GetPointerMonitor() : WindowHelpers.GetPrimaryMonitor();
+        if (monitor != _monitor)
+        {
+            PixelRect placement = Place();
+            ApplyRegion(Pill.RegionBounds);
+            WindowHelpers.ShowNoActivate(_hwnd, placement);
+        }
+    }
+
+    /// <summary>Top centre of the chosen monitor (main, or where the pointer is), over the top edge of whatever is there.</summary>
     private PixelRect Place()
     {
-        (PixelRect monitor, double scale) = WindowHelpers.GetPrimaryMonitor();
+        (PixelRect monitor, double scale) = _monitorSetting == IslandMonitor.FollowMouse ? WindowHelpers.GetPointerMonitor() : WindowHelpers.GetPrimaryMonitor();
+        _monitor = monitor;
         _scale = scale;
         int width = (int)Math.Ceiling(IslandPill.StageWidth * scale);
         int height = (int)Math.Ceiling(IslandPill.StageHeight * scale);

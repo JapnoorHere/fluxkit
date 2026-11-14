@@ -14,5 +14,9 @@ internal sealed class FakeIslandView : IIslandView
 
     public void Render(IslandScene scene) => Scenes.Add(scene);
 
+    public int PanelToggles { get; private set; }
+
+    public void TogglePanel() => PanelToggles++;
+
     public void Close() => Closed = true;
 }

@@ -18,6 +18,8 @@ public sealed record IslandScene
 
     public FocusTimerSnapshot? Timer { get; init; }
 
+    public StopwatchSnapshot? Stopwatch { get; init; }
+
     public IReadOnlyList<string> Shelf { get; init; } = [];
 
     public PowerSnapshot Power { get; init; }

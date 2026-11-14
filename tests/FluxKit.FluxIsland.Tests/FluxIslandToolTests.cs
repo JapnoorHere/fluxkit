@@ -24,6 +24,10 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
     private readonly FakeFileMoments _files = new();
     private readonly FakeBrightness _brightness = new();
     private readonly FakeShelfStore _store = new();
+    private readonly FakeLockKeys _lockKeys = new();
+    private readonly FakeDevices _devices = new();
+    private readonly FakeHotkey _hotkey = new();
+    private HotkeyGesture? _registered;
     private readonly FluxIslandTool _tool;
 
     public FluxIslandToolTests()
@@ -40,6 +44,13 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
             Desktops = () => _desktops,
             Files = (_, _) => _files,
             Brightness = () => _brightness,
+            LockKeys = () => _lockKeys,
+            Devices = () => _devices,
+            Hotkey = g =>
+            {
+                _registered = g;
+                return _hotkey;
+            },
             ShelfStore = _store,
         };
         _tool = new FluxIslandTool(_settings, _ => _view, sources, _time, new LoggerConfiguration().CreateLogger());
@@ -381,5 +392,69 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
 
         Assert.True(_view.Closed);
         Assert.Equal(ToolStatus.Disabled, _tool.State.Status);
+    }
+
+    [Fact]
+    public void Caps_lock_and_num_lock_show_their_new_state()
+    {
+        _lockKeys.Toggle(capsLock: true, on: true);
+
+        Assert.Equal(ActivityKind.CapsLock, _view.Last.Primary?.Kind);
+        Assert.True(_view.Last.Primary?.Flag);
+
+        _lockKeys.Toggle(capsLock: false, on: false);
+
+        Assert.Equal(ActivityKind.NumLock, _view.Last.Primary?.Kind);
+        Assert.False(_view.Last.Primary?.Flag);
+    }
+
+    [Fact]
+    public async Task Lock_keys_are_ignored_when_the_setting_is_off()
+    {
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.ShowLockKeys = false;
+            return s;
+        });
+
+        _lockKeys.Toggle(capsLock: true, on: true);
+
+        Assert.Null(_view.Last.Primary);
+    }
+
+    [Fact]
+    public void Bluetooth_devices_show_their_name_when_they_connect_and_disconnect()
+    {
+        _devices.Change("Galaxy Buds", connected: true);
+
+        Assert.Equal(ActivityKind.DeviceConnected, _view.Last.Primary?.Kind);
+        Assert.Equal("Galaxy Buds", _view.Last.Primary?.Text);
+
+        _devices.Change("Galaxy Buds", connected: false);
+
+        Assert.Equal(ActivityKind.DeviceDisconnected, _view.Last.Primary?.Kind);
+    }
+
+    [Fact]
+    public void The_shortcut_is_registered_from_settings_and_toggles_the_panel()
+    {
+        Assert.Equal(HotkeyGesture.Default, _registered?.ToString());
+
+        _hotkey.Press();
+
+        Assert.Equal(1, _view.PanelToggles);
+    }
+
+    [Fact]
+    public async Task An_empty_shortcut_registers_nothing()
+    {
+        _registered = null;
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.Hotkey = string.Empty;
+            return s;
+        });
+
+        Assert.Null(_registered);
     }
 }

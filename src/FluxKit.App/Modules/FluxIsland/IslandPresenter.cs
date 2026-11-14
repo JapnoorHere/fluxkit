@@ -75,7 +75,12 @@ internal static class IslandPresenter
         ActivityKind.BatterySaver => new(LeafGlyph, Strings.Get(activity.Flag ? "Island_SaverOn" : "Island_SaverOff"), TimeLeft("Island_LeftFormat", activity.Total), Percent(activity.Value), activity.Flag ? IslandPalette.Green : IslandPalette.TextPrimary),
         ActivityKind.DeviceConnected => new(BluetoothGlyph, activity.Text ?? string.Empty, Strings.Get("Island_DeviceConnected"), activity.Value > 0 ? Percent(activity.Value) : null, IslandPalette.Cyan),
         ActivityKind.DeviceDisconnected => new(BluetoothGlyph, activity.Text ?? string.Empty, Strings.Get("Island_DeviceDisconnected"), null, IslandPalette.TextSecondary),
-        ActivityKind.Stopwatch => new(StopwatchGlyph, FormatPosition(TimeSpan.FromMilliseconds(activity.Value)), null, Strings.Get("Island_Stopwatch"), IslandPalette.Orange),
+        ActivityKind.Stopwatch => new(
+            StopwatchGlyph,
+            FormatPosition(activity.Stopwatch?.ElapsedAt(now) ?? TimeSpan.Zero),
+            activity.Stopwatch is { Laps.Count: > 0 } laps ? Strings.Format("Island_LapFormat", laps.Laps.Count + 1) : null,
+            Strings.Get(activity.Stopwatch?.State == TimerState.Paused ? "Island_Timer_Paused" : "Island_Stopwatch"),
+            IslandPalette.Orange),
         _ => new(string.Empty, string.Empty, null, null, IslandPalette.TextPrimary),
     };
 
