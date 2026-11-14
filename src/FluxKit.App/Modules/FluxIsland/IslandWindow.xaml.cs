@@ -22,8 +22,8 @@ namespace FluxKit.App.Modules.FluxIsland;
 public sealed partial class IslandWindow : Window
 {
     // Room around the pill for its shadow, in DIPs. The shadow falls downwards, so the bottom gets more.
-    private const double ShadowSide = 10;
-    private const double ShadowBottom = 14;
+    private const double ShadowSide = PillShape.Bleed;
+    private const double ShadowBottom = PillShape.Bleed + 4;
     private static readonly TimeSpan ShrinkDelay = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan PreviewHold = TimeSpan.FromSeconds(12);
 

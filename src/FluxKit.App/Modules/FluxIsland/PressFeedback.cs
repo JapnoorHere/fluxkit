@@ -1,4 +1,5 @@
 using System.Numerics;
+using FluxKit.App.Modules.FluxIsland.Design;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
@@ -6,10 +7,10 @@ using Microsoft.UI.Xaml.Input;
 
 namespace FluxKit.App.Modules.FluxIsland;
 
-/// <summary>A soft squish on press for buttons on the island: down to 88 %, then a spring back.</summary>
+/// <summary>A soft squish on press for buttons on the island: down to 94 %, then a quick spring back.</summary>
 internal static class PressFeedback
 {
-    private const float PressedScale = 0.88f;
+    private const float PressedScale = 0.94f;
 
     public static void Attach(UIElement element)
     {
@@ -24,10 +25,6 @@ internal static class PressFeedback
     {
         Visual visual = ElementCompositionPreview.GetElementVisual(element);
         visual.CenterPoint = new Vector3(element.ActualSize / 2, 0);
-        SpringVector3NaturalMotionAnimation spring = visual.Compositor.CreateSpringVector3Animation();
-        spring.DampingRatio = 0.55f;
-        spring.Period = TimeSpan.FromMilliseconds(40);
-        spring.FinalValue = new Vector3(scale, scale, 1);
-        visual.StartAnimation("Scale", spring);
+        visual.StartAnimation("Scale", IslandSprings.Vector3(visual.Compositor, IslandSprings.Snappy, new Vector3(scale, scale, 1)));
     }
 }

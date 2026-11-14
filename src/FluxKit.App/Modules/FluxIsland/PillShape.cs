@@ -1,4 +1,5 @@
 using System.Numerics;
+using FluxKit.App.Modules.FluxIsland.Design;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
@@ -7,26 +8,34 @@ using Windows.UI;
 namespace FluxKit.App.Modules.FluxIsland;
 
 /// <summary>
-/// The island's shape on the compositor: a near-black rounded rectangle with a faint inner edge and a soft shadow.
-/// Size changes run as springs on the GPU. The corner radius and the centring follow the size through expressions,
-/// and the same geometry clips the content, so text never spills outside while the shape morphs.
+/// The island's body on the compositor, from the back: a soft glow in the current moment's colour, a layered shadow,
+/// the black body, and an edge light along its top rim. Size changes are springs on the GPU; the corners, the
+/// centring, the glow and the shadow all follow the size through expressions, and the same geometry clips the
+/// content, so nothing spills outside while the shape morphs. Nothing here runs on the UI thread per frame.
 /// </summary>
 internal sealed class PillShape
 {
-    public const float MaxCornerRadius = 26;
+    /// <summary>The largest corner radius, reached when the panel is open. Compact pills are fully round.</summary>
+    public const float MaxCornerRadius = IslandTokens.PanelRadius;
 
-    private const float SpringDamping = 0.72f;
-    private static readonly TimeSpan SpringPeriod = TimeSpan.FromMilliseconds(45);
-    private static readonly TimeSpan FadeDuration = TimeSpan.FromMilliseconds(120);
+    /// <summary>How far the glow and shadow reach past the body, so the window can leave room for them.</summary>
+    public const float Bleed = 12;
 
     // Shadow layers from the outside in: how far each spreads past the pill, how far it drops, and its opacity.
-    private static readonly (float Spread, float Drop, byte Alpha)[] Shadow = [(9, 4, 0x08), (6, 3, 0x0C), (3, 2, 0x14), (1, 1, 0x1E)];
+    private static readonly (float Spread, float Drop, byte Alpha)[] Shadow = [(10, 5, 0x0A), (7, 4, 0x10), (4, 2, 0x18), (2, 1, 0x24)];
+
+    // Glow layers from the outside in: spread and opacity. Together they read as one soft halo.
+    private static readonly (float Spread, byte Alpha)[] Glow = [(12, 0x07), (9, 0x0C), (6, 0x12), (3.5f, 0x1A), (1.5f, 0x22)];
 
     private readonly Compositor _compositor;
     private readonly CompositionRoundedRectangleGeometry _geometry;
+    private readonly ShapeVisual _glow;
+    private readonly List<(CompositionColorBrush Brush, byte Alpha)> _glowBrushes = [];
     private readonly Visual _stage;
     private readonly float _stageWidth;
     private readonly float _top;
+    private Color _accent = IslandPalette.TextPrimary;
+    private float _intensity;
     private bool _placed;
 
     /// <param name="shapeHost">An empty element covering the stage; the shape is drawn as its child visual.</param>
@@ -40,28 +49,39 @@ internal sealed class PillShape
         _top = top;
         _geometry = _compositor.CreateRoundedRectangleGeometry();
 
-        ShapeVisual shapes = _compositor.CreateShapeVisual();
-        shapes.Size = stageSize;
+        ContainerVisual root = _compositor.CreateContainerVisual();
+        root.Size = stageSize;
 
-        // The soft shadow is a few slightly larger, nearly clear copies of the shape below it, not a live blur.
-        // They follow the shape through expressions, so the shadow morphs with the pill at no extra cost.
+        // The glow sits behind everything and is invisible until a moment asks for it.
+        _glow = _compositor.CreateShapeVisual();
+        _glow.Size = stageSize;
+        _glow.Opacity = 0;
+        foreach ((float spread, byte alpha) in Glow)
+        {
+            CompositionColorBrush brush = _compositor.CreateColorBrush(IslandPalette.WithAlpha(_accent, alpha));
+            _glowBrushes.Add((brush, alpha));
+            _glow.Shapes.Add(Halo(spread, 0, brush));
+        }
+
+        root.Children.InsertAtTop(_glow);
+
+        ShapeVisual body = _compositor.CreateShapeVisual();
+        body.Size = stageSize;
+
+        // The shadow is a few slightly larger, nearly clear copies of the shape below it, not a live blur, so it
+        // morphs with the pill at no extra cost.
         foreach ((float spread, float drop, byte alpha) in Shadow)
         {
-            CompositionRoundedRectangleGeometry halo = _compositor.CreateRoundedRectangleGeometry();
-            Follow(halo, "Size", "g.Size + Vector2(s * 2, s * 2)", spread);
-            Follow(halo, "Offset", "g.Offset - Vector2(s, s) + Vector2(0, d)", spread, drop);
-            Follow(halo, "CornerRadius", "g.CornerRadius + Vector2(s, s)", spread);
-            CompositionSpriteShape layer = _compositor.CreateSpriteShape(halo);
-            layer.FillBrush = _compositor.CreateColorBrush(Color.FromArgb(alpha, 0, 0, 0));
-            shapes.Shapes.Add(layer);
+            body.Shapes.Add(Halo(spread, drop, _compositor.CreateColorBrush(Color.FromArgb(alpha, 0, 0, 0))));
         }
 
         CompositionSpriteShape fill = _compositor.CreateSpriteShape(_geometry);
         fill.FillBrush = _compositor.CreateColorBrush(IslandPalette.Surface);
-        fill.StrokeBrush = _compositor.CreateColorBrush(IslandPalette.Highlight);
+        fill.StrokeBrush = EdgeLight();
         fill.StrokeThickness = 1;
-        shapes.Shapes.Add(fill);
-        ElementCompositionPreview.SetElementChildVisual(shapeHost, shapes);
+        body.Shapes.Add(fill);
+        root.Children.InsertAtTop(body);
+        ElementCompositionPreview.SetElementChildVisual(shapeHost, root);
 
         ExpressionAnimation corner = _compositor.CreateExpressionAnimation("Vector2(Min(g.Size.Y / 2, r), Min(g.Size.Y / 2, r))");
         corner.SetReferenceParameter("g", _geometry);
@@ -99,17 +119,13 @@ internal sealed class PillShape
 
         if (springs)
         {
-            SpringVector2NaturalMotionAnimation spring = _compositor.CreateSpringVector2Animation();
-            spring.DampingRatio = SpringDamping;
-            spring.Period = SpringPeriod;
-            spring.FinalValue = size;
-            _geometry.StartAnimation("Size", spring);
+            _geometry.StartAnimation("Size", IslandSprings.Vector2(_compositor, IslandSprings.Morph, size));
         }
         else
         {
             Vector2KeyFrameAnimation ease = _compositor.CreateVector2KeyFrameAnimation();
-            ease.InsertKeyFrame(1, size, EaseOut());
-            ease.Duration = FadeDuration;
+            ease.InsertKeyFrame(1, size, IslandSprings.EaseOut(_compositor));
+            ease.Duration = IslandSprings.ReducedDuration;
             _geometry.StartAnimation("Size", ease);
         }
     }
@@ -124,6 +140,65 @@ internal sealed class PillShape
         _stage.CenterPoint = new Vector3(_stageWidth / 2, _top + (size.Y / 2), 0);
     }
 
+    /// <summary>
+    /// Tints the glow with the current moment's colour and sets how strongly it shows (0 hides it). The colour
+    /// cross-fades and the strength springs, so moments hand over smoothly.
+    /// </summary>
+    public void SetAccent(Color accent, float intensity, bool springs)
+    {
+        intensity = Math.Clamp(intensity, 0, 1);
+        if (accent != _accent)
+        {
+            _accent = accent;
+            foreach ((CompositionColorBrush brush, byte alpha) in _glowBrushes)
+            {
+                Color to = IslandPalette.WithAlpha(accent, alpha);
+                if (springs)
+                {
+                    ColorKeyFrameAnimation fade = _compositor.CreateColorKeyFrameAnimation();
+                    fade.InsertKeyFrame(1, to);
+                    fade.Duration = TimeSpan.FromMilliseconds(320);
+                    brush.StartAnimation("Color", fade);
+                }
+                else
+                {
+                    brush.Color = to;
+                }
+            }
+        }
+
+        if (Math.Abs(intensity - _intensity) < 0.01f)
+        {
+            return;
+        }
+
+        _intensity = intensity;
+        if (springs)
+        {
+            _glow.StartAnimation("Opacity", IslandSprings.Scalar(_compositor, IslandSprings.Smooth, intensity));
+        }
+        else
+        {
+            _glow.StopAnimation("Opacity");
+            _glow.Opacity = intensity;
+        }
+    }
+
+    /// <summary>A moment arriving: the glow flares, then settles back to its resting strength.</summary>
+    public void Flare(bool springs)
+    {
+        if (!springs || _intensity <= 0)
+        {
+            return;
+        }
+
+        ScalarKeyFrameAnimation flare = _compositor.CreateScalarKeyFrameAnimation();
+        flare.InsertKeyFrame(0.25f, 1, IslandSprings.EaseOut(_compositor));
+        flare.InsertKeyFrame(1, _intensity, IslandSprings.EaseOut(_compositor));
+        flare.Duration = TimeSpan.FromMilliseconds(900);
+        _glow.StartAnimation("Opacity", flare);
+    }
+
     /// <summary>One happy bounce of the whole island: up to 106 % and back, settling on a spring.</summary>
     public void Bounce(bool springs)
     {
@@ -133,9 +208,9 @@ internal sealed class PillShape
         }
 
         Vector3KeyFrameAnimation bounce = _compositor.CreateVector3KeyFrameAnimation();
-        bounce.InsertKeyFrame(0.3f, new Vector3(1.06f, 1.06f, 1), EaseOut());
+        bounce.InsertKeyFrame(0.3f, new Vector3(1.06f, 1.06f, 1), IslandSprings.EaseOut(_compositor));
         bounce.InsertKeyFrame(0.65f, new Vector3(0.98f, 0.98f, 1));
-        bounce.InsertKeyFrame(1, Vector3.One, EaseOut());
+        bounce.InsertKeyFrame(1, Vector3.One, IslandSprings.EaseOut(_compositor));
         bounce.Duration = TimeSpan.FromMilliseconds(520);
         bounce.DelayTime = TimeSpan.FromMilliseconds(120);
         _stage.StartAnimation("Scale", bounce);
@@ -144,20 +219,39 @@ internal sealed class PillShape
     /// <summary>Swells or squishes the whole island around its centre.</summary>
     public void ScaleTo(float scale, bool springs)
     {
-        var final = new Vector3(scale, scale, 1);
         if (springs)
         {
-            SpringVector3NaturalMotionAnimation spring = _compositor.CreateSpringVector3Animation();
-            spring.DampingRatio = 0.6f;
-            spring.Period = SpringPeriod;
-            spring.FinalValue = final;
-            _stage.StartAnimation("Scale", spring);
+            _stage.StartAnimation("Scale", IslandSprings.Vector3(_compositor, IslandSprings.Snappy, new Vector3(scale, scale, 1)));
         }
         else
         {
             _stage.StopAnimation("Scale");
             _stage.Scale = Vector3.One;
         }
+    }
+
+    /// <summary>A copy of the body, <paramref name="spread"/> larger all round and dropped by <paramref name="drop"/>.</summary>
+    private CompositionSpriteShape Halo(float spread, float drop, CompositionBrush fill)
+    {
+        CompositionRoundedRectangleGeometry halo = _compositor.CreateRoundedRectangleGeometry();
+        Follow(halo, "Size", "g.Size + Vector2(s * 2, s * 2)", spread);
+        Follow(halo, "Offset", "g.Offset - Vector2(s, s) + Vector2(0, d)", spread, drop);
+        Follow(halo, "CornerRadius", "g.CornerRadius + Vector2(s, s)", spread);
+        CompositionSpriteShape shape = _compositor.CreateSpriteShape(halo);
+        shape.FillBrush = fill;
+        return shape;
+    }
+
+    /// <summary>Light catching the top rim: bright at the top edge, gone by halfway down.</summary>
+    private CompositionLinearGradientBrush EdgeLight()
+    {
+        CompositionLinearGradientBrush light = _compositor.CreateLinearGradientBrush();
+        light.StartPoint = Vector2.Zero;
+        light.EndPoint = new Vector2(0, 1);
+        light.ColorStops.Add(_compositor.CreateColorGradientStop(0, IslandPalette.EdgeLight));
+        light.ColorStops.Add(_compositor.CreateColorGradientStop(0.45f, IslandPalette.WithAlpha(IslandPalette.EdgeLight, 0x0C)));
+        light.ColorStops.Add(_compositor.CreateColorGradientStop(1, IslandPalette.WithAlpha(IslandPalette.EdgeLight, 0x06)));
+        return light;
     }
 
     private void Follow(CompositionGeometry target, string property, string expression, float spread, float drop = 0)
@@ -168,6 +262,4 @@ internal sealed class PillShape
         animation.SetScalarParameter("d", drop);
         target.StartAnimation(property, animation);
     }
-
-    private CubicBezierEasingFunction EaseOut() => _compositor.CreateCubicBezierEasingFunction(new Vector2(0.1f, 0.9f), new Vector2(0.2f, 1f));
 }

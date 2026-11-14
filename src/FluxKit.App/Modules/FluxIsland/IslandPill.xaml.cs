@@ -283,7 +283,9 @@ public sealed partial class IslandPill : UserControl
     {
         DateTimeOffset now = DateTimeOffset.Now;
         (UIElement view, string key, Size size) = _mode == PillMode.Panel ? BuildPanel(now) : BuildCompact(now);
-        if (ShowView(view, key) && view == CompactView && _scene.Primary is { IsAlert: true } alert)
+        bool changed = ShowView(view, key);
+        UpdateGlow(now, flare: changed && view == CompactView && _scene.Primary is { IsAlert: true });
+        if (changed && view == CompactView && _scene.Primary is { IsAlert: true } alert)
         {
             // An alert arriving gets a little flourish: the charger ring sweeps, any other icon pops.
             if (alert.Kind == ActivityKind.PluggedIn)
@@ -307,6 +309,40 @@ public sealed partial class IslandPill : UserControl
         MorphTo(size);
         ScheduleTimers(now);
         GlanceView.SetLive(_active && _mode == PillMode.Panel && _page == PanelPage.Glance);
+    }
+
+    /// <summary>
+    /// Tints the glow around the pill with the identity colour of what it shows: the album's colour for music,
+    /// a moment's own colour otherwise. Alerts flare as they arrive; quiet status moments and the idle clock don't glow.
+    /// </summary>
+    private void UpdateGlow(DateTimeOffset now, bool flare)
+    {
+        if (_mode == PillMode.Panel)
+        {
+            // The open panel glows softly in the colour of its page: the album for music, orange for timers.
+            (Windows.UI.Color pageAccent, float pageGlow) = _page switch
+            {
+                PanelPage.Media when _scene.Media is not null => (_art.Accent, 0.5f),
+                PanelPage.Timer when _scene.Timer?.IsActive == true || _scene.Stopwatch?.IsActive == true => (IslandPalette.Orange, 0.35f),
+                _ => (IslandPalette.TextPrimary, 0f),
+            };
+            _shape.SetAccent(pageAccent, pageGlow, Springs);
+            return;
+        }
+
+        if (_scene.Primary is not { } shown)
+        {
+            _shape.SetAccent(IslandPalette.TextPrimary, 0, Springs);
+            return;
+        }
+
+        Windows.UI.Color accent = shown.Kind == ActivityKind.Media ? _art.Accent : IslandPresenter.Describe(shown, now).Accent;
+        float intensity = accent == IslandPalette.TextPrimary ? 0 : IslandPalette.GlowFor(shown);
+        _shape.SetAccent(accent, intensity, Springs);
+        if (flare)
+        {
+            _shape.Flare(Springs);
+        }
     }
 
     /// <summary>Shows the second activity in a bubble that springs out from the pill's right edge, or tucks it away.</summary>
