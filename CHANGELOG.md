@@ -12,6 +12,19 @@ All notable changes to FluxKit are documented here. The format follows [Keep a C
 
 ### Added
 - **Flux Island**, a new tool: a live pill at the top of the screen. It shows what is playing (with controls, a seek bar and an album glow), timers and a focus cycle, charger and battery moments, going offline and back online, mic and camera dots, "Copied" moments, a file shelf you drop files on and drag them out of, and scroll-to-change volume. It hides when an app is full screen. It has its own settings page with a live preview.
+- Flux Island v2:
+  - A second bubble beside the pill when two things happen at once (click to swap); right-click or middle-click waves a moment away.
+  - Volume changes from anywhere, the sound device you switch to, and microphone mute, with a reminder while a call listens to a muted mic.
+  - The name of the virtual desktop you switch to.
+  - Downloads while they arrive and when they're done, and new screenshots with a preview.
+  - Opt-in smart copy for links, email addresses, phone numbers and colours. Private copies are skipped.
+  - Brightness changes, battery saver, and the time left or until full.
+  - A shelf menu (open, show in folder, copy path, share), a share button, and keeping the shelf after restart.
+  - A stopwatch with laps, +1 min on a running timer, and a switch between the two when both run.
+  - Caps Lock and Num Lock moments, and Bluetooth devices connecting and disconnecting.
+  - A Glance page with live CPU, memory, disk and battery, network speed, and quick actions (screenshot, lock, screen off, mic, settings).
+  - A keyboard shortcut (Ctrl+Alt+I by default) that opens the panel; Tab, arrows, Enter and Esc work inside it.
+  - A setting to put the island on the screen where the mouse is.
 - `--page <name>` opens FluxKit on a chosen page.
 - `--preview-island <sample>[-open]` shows a sample island state, for screenshots and testing.
 

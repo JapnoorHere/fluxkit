@@ -21,7 +21,11 @@
 
 ## Flux Island
 
-- **Main screen only.** The island sits at the top centre of the primary monitor. It doesn't follow you to other monitors.
+- **One screen at a time.** The island sits at the top centre of the main screen, or (with "Where the mouse is") of the screen the pointer was on when something new showed. It doesn't move while it is open or just because the pointer moves.
+- **Keyboard shortcut** fails quietly if another app already uses the same keys; pick another in settings. When Windows refuses to hand focus to the island (it does that while you're busy in another app), the panel still opens but keys go to the other app until you click the panel; press the shortcut again or right-click to close it.
+- **Caps Lock and Num Lock** moments come from Raw Input, so keys pressed in apps running as administrator, and on the sign-in or lock screen, aren't seen. Keyboards that switch Caps Lock in their own firmware without sending the key aren't seen either.
+- **Bluetooth** moments come from Windows' paired-device list. Devices already connected when FluxKit starts aren't announced. Battery levels aren't shown yet. A headset that appears as both a classic and a Low Energy device gives one moment, not two.
+- **Glance** shows the system drive's use only, and network speed as the total of all active adapters (not loopback or VPN tunnels).
 - **Music** comes from the Windows media controls (GSMTC). Players that don't publish a media session (some games, older players) don't appear. Album art shows only when the player provides it. The seek bar works only when the player allows seeking.
 - **Mic and camera dots** come from the Windows privacy records (the same ones Settings › Privacy uses). They can lag by a moment, and apps that use the device without going through Windows privacy tracking won't show.
 - **Charger** moments need a battery. On a desktop PC without one, nothing appears.
@@ -32,7 +36,7 @@
 
 ## Testing status
 
-- Automated: 136 unit tests (Core, Drag-to-Switch and Flux Island logic).
+- Automated: 206 unit tests (Core, Drag-to-Switch and Flux Island logic).
 - Flux Island: every state was rendered and checked from screenshots with `--preview-island`. The settings page, the transparency and the idle cost (0 ms CPU over 20 s) were checked by running the app. The volume interop was checked with a read-only call. The live checks that need you (music, charger, mic, copy, dropping on the shelf, scrolling, a full-screen game, hover and click) are listed in [ManualTestPlan.md](ManualTestPlan.md) and haven't been run yet.
 - Real-drag E2E through the FluxKit selector, and manual tests with real File Explorer, are tracked in [ManualTestPlan.md](ManualTestPlan.md) and [Feasibility.md](Feasibility.md). Only executed results are marked as passed.
 - Untested: multi-monitor with mixed DPI, Remote Desktop sessions, ARM64 hardware, Windows 10.

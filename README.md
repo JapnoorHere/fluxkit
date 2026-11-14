@@ -61,9 +61,18 @@ A small black pill sits at the top centre of your main screen. It shows the time
 | Microphone or camera | A small orange or green dot while an app uses them. |
 | Copy | A short "Copied" when you copy text, an image or files. |
 | Shelf | Drop files on the island to keep them, then drag them out later into any app. |
-| Volume | Scroll over the island to change the volume. |
+| Volume | Scroll over the island to change the volume. Volume changes from the keyboard or anywhere else show too. |
+| Sound and microphone | The device sound moves to (such as headphones), and microphone mute, with a reminder while a call listens to a muted mic. |
+| Desktops | The name of the virtual desktop you switch to. |
+| Downloads and screenshots | A download while it arrives and when it's done, with a button to find it. A new screenshot shows a small preview and opens on click. |
+| Smart copy (opt-in) | A copied link, email address, phone number or colour, with a button to open it or a swatch. |
+| Brightness and battery saver | The brightness level when it changes, battery saver turning on or off, and the time left or until full. |
+| Caps Lock and Num Lock | A short note when they turn on or off. |
+| Bluetooth | When paired earbuds, a mouse or another device connects or disconnects. |
+| Stopwatch | A stopwatch with laps, beside the timers, and +1 min while a timer runs. |
+| Glance | A page with live CPU, memory, disk and battery rings, network speed, and buttons to take a screenshot, lock the PC, turn the screen off, mute the mic or open settings. |
 
-Hover over the island to peek at more, and click it to open the panel. When an app goes full screen, the island steps out of the way. It runs only on events, so it uses no CPU while nothing changes.
+Hover over the island to peek at more, and click it to open the panel. Press **Ctrl+Alt+I** to open it from the keyboard: arrows and Tab move, Enter presses, Esc closes. When two things happen at once, the second shows in a small bubble beside the pill; click it to swap. Right-click waves a moment away. When an app goes full screen, the island steps out of the way. It runs only on events, so it uses no CPU while nothing changes.
 
 ## Install
 
@@ -110,7 +119,7 @@ For the full design, see [Docs/Architecture.md](Docs/Architecture.md).
 ## Privacy
 
 - No telemetry and no network connections.
-- FluxKit never reads, copies, moves or uploads your files. The Flux Island shelf keeps only the paths of files you drop on it, in memory.
+- FluxKit never reads, copies, moves or uploads your files. The Flux Island shelf keeps only the paths of files you drop on it (saved on this PC if you keep the shelf after restart).
 - Settings and logs stay on your PC. Logs never include file names, file contents or window titles.
 
 Details: [Docs/Privacy.md](Docs/Privacy.md).

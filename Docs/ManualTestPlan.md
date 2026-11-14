@@ -55,6 +55,16 @@ Environment for recorded runs: Windows 11 Home Single Language 26H2, build 26300
 | FI-12 | Full screen | Start a full-screen game or F11 a browser video | Island hides; comes back after | N | Not run | — | |
 | FI-13 | Reduced motion | Windows › Accessibility › Animation effects off | Island uses short fades only | N | Not run | — | |
 | FI-14 | Desktops and Explorer restart | Switch desktops; restart Explorer | Island stays on every desktop | N | Not run | — | |
+| FI-15 | Stopwatch | Panel › Timer › stopwatch; lap twice, pause, reset | Digits count up; "Lap 3" with the two laps listed; reset returns to quick timers | N | Not run | — | Rendered with `--preview-island stopwatch-open` |
+| FI-16 | Timer and stopwatch together | Start the stopwatch, then a 5 min timer; use the switch button | Timer shows first; the switch flips to the stopwatch and back; the stopwatch sits in the bubble | N | Not run | — | Rendered with `--preview-island both-open` |
+| FI-17 | +1 min | Start a 1 min timer; press +1 min | Time left and the bar grow by a minute | N | Not run | — | |
+| FI-18 | Shortcut | Press Ctrl+Alt+I in another app; Tab, arrows, Enter, Esc | Panel opens with a focused button; keys move and press; Esc closes and focus goes back to the app | N | Not run | — | |
+| FI-19 | Shortcut setting | Settings › shortcut: clear it, type "Shift+I", type "Ctrl+Alt+K" | Off; refused with a hint; then Ctrl+Alt+K opens the panel | N | Not run | — | Parsing unit-tested |
+| FI-20 | Caps Lock and Num Lock | Press Caps Lock twice, then Num Lock | "Caps Lock on", "Caps Lock off", Num Lock state | N | Not run | — | Rendered with `--preview-island caps` and `numlock` |
+| FI-21 | Bluetooth | Connect, then disconnect, paired earbuds | Device name with "Connected", then "Disconnected"; one moment each | N | Not run | — | Rendered with `--preview-island device` and `disconnected` |
+| FI-22 | Glance | Open the panel › Glance; start a big download | Rings move once a second; ↓ speed rises; nothing sampled after closing (check CPU) | N | Not run | — | Live numbers checked with `--preview-island glance` |
+| FI-23 | Glance actions | Press screenshot, lock, screen off, mic, settings | Snipping bar; PC locks; screens go dark; mic mutes; settings open on Flux Island | N | Not run | — | |
+| FI-24 | Follow the mouse | Two screens; Screen › Where the mouse is; copy something with the pointer on each screen | The island moves to the pointer's screen | N | Not run | — | |
 
 ## Smoke checks executed during development
 

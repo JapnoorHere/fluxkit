@@ -76,8 +76,23 @@ Section `utilities/flux-island`.
 | `showNetwork` | bool | `true` | "Offline" after 3 s without internet, "Online" when it comes back. |
 | `showPrivacy` | bool | `true` | Orange (mic) and green (camera) dots while an app uses them. |
 | `showClipboard` | bool | `true` | A "Copied" moment. Only the kind (text, image, files) is checked; the content is never read. |
-| `shelfEnabled` | bool | `true` | Drop files on the island to keep them (paths only, at most 12, in memory). |
+| `smartCopy` | bool | `false` | Reads copied text once to spot a link, email address, phone number or colour and offer an action. Never kept or logged. |
+| `showVolumeChanges` | bool | `true` | Show the volume whenever it changes, from the keys or anywhere else. |
+| `showAudioDevices` | bool | `true` | Name the device sound moved to. |
+| `showMicMute` | bool | `true` | Microphone mute changes, and a reminder while an app listens to a muted mic. |
+| `showDesktopSwitches` | bool | `true` | Name the virtual desktop you switch to. |
+| `showDownloads` | bool | `true` | Downloads arriving and finished, from the Downloads folder. |
+| `showScreenshots` | bool | `true` | New screenshots in Pictures\Screenshots, with a preview. |
+| `showBrightness` | bool | `true` | Brightness changes, on PCs with a built-in screen. |
+| `showBatterySaver` | bool | `true` | Battery saver turning on or off. |
+| `showLockKeys` | bool | `true` | Caps Lock and Num Lock turning on or off. |
+| `showDevices` | bool | `true` | Paired Bluetooth devices connecting and disconnecting. |
+| `shelfEnabled` | bool | `true` | Drop files on the island to keep them (paths only, at most 12). |
+| `keepShelf` | bool | `true` | Keep the shelf after a restart. Paths are saved in `%LOCALAPPDATA%\FluxKit\shelf.json`; turning this off deletes the file. |
 | `scrollForVolume` | bool | `true` | The mouse wheel over the island changes the master volume in steps of 2 %. |
+| `showGlance` | bool | `true` | The Glance page in the panel. Its numbers are read once a second, only while it's on screen. |
+| `hotkey` | text | `Ctrl+Alt+I` | Opens the panel from the keyboard. Ctrl, Alt or Win (plus Shift if you like) with a letter, digit, F1–F24 or Space; an F-key can be used alone. Empty turns it off; anything unreadable goes back to the default. |
+| `monitor` | `Main`, `FollowMouse` | `Main` | The screen the island sits on. `FollowMouse` moves it to the screen with the pointer when something new shows. |
 | `hideInFullScreen` | bool | `true` | Hide while a full-screen app covers the main screen. |
 | `showClockWhenIdle` | bool | `true` | The time on the idle pill. Off leaves a small empty pill. |
 | `effects` | `Full`, `Light` | `Full` | Springs, glow and playing bars, or short fades only. Light is also used whenever Windows animations are off. |
