@@ -51,9 +51,9 @@ internal static class IslandPresenter
             TimerMode.Break => "Island_TimerDone_Break",
             _ => "Island_TimerDone_Countdown",
         }), null, null, IslandPalette.Orange),
-        ActivityKind.PluggedIn => new(BoltGlyph, Strings.Get("Island_Charging"), TimeLeft("Island_FullInFormat", activity.Total), Percent(activity.Value), IslandPalette.Green),
+        ActivityKind.PluggedIn => new(BoltGlyph, Strings.Get("Island_Charging"), TimeLeft("Island_FullInFormat", activity.Total), Percent(activity.Value), IslandPalette.Green, activity.Value / 100.0),
         ActivityKind.Unplugged => new(BatteryGlyph(activity.Value), Strings.Get("Island_OnBattery"), TimeLeft("Island_LeftFormat", activity.Total), Percent(activity.Value), IslandPalette.TextPrimary),
-        ActivityKind.LowBattery => new(BatteryGlyph(activity.Value), Strings.Get("Island_BatteryLow"), TimeLeft("Island_LeftFormat", activity.Total), Percent(activity.Value), IslandPalette.Red),
+        ActivityKind.LowBattery => new(BatteryGlyph(activity.Value), Strings.Get("Island_BatteryLow"), TimeLeft("Island_LeftFormat", activity.Total), Percent(activity.Value), IslandPalette.Red, activity.Value / 100.0),
         ActivityKind.Offline => new(OfflineGlyph, Strings.Get("Island_Offline"), null, null, IslandPalette.Orange),
         ActivityKind.Online => new(OnlineGlyph, Strings.Get("Island_Online"), null, null, IslandPalette.Green),
         ActivityKind.Copied => DescribeCopied(activity),
@@ -72,7 +72,7 @@ internal static class IslandPresenter
         ActivityKind.MicMuted => new(activity.Flag ? MicOffGlyph : MicGlyph, Strings.Get(activity.Flag ? "Island_MicMuted" : "Island_MicOn"), null, null, activity.Flag ? IslandPalette.Red : IslandPalette.Green),
         ActivityKind.CapsLock => new(KeyboardGlyph, Strings.Get(activity.Flag ? "Island_CapsOn" : "Island_CapsOff"), null, null, activity.Flag ? IslandPalette.Orange : IslandPalette.TextPrimary),
         ActivityKind.NumLock => new(KeyboardGlyph, Strings.Get(activity.Flag ? "Island_NumOn" : "Island_NumOff"), null, null, IslandPalette.TextPrimary),
-        ActivityKind.BatterySaver => new(LeafGlyph, Strings.Get(activity.Flag ? "Island_SaverOn" : "Island_SaverOff"), TimeLeft("Island_LeftFormat", activity.Total), Percent(activity.Value), activity.Flag ? IslandPalette.Green : IslandPalette.TextPrimary),
+        ActivityKind.BatterySaver => new(LeafGlyph, Strings.Get(activity.Flag ? "Island_SaverOn" : "Island_SaverOff"), TimeLeft("Island_LeftFormat", activity.Total), Percent(activity.Value), activity.Flag ? IslandPalette.Green : IslandPalette.TextPrimary, activity.Value / 100.0),
         ActivityKind.DeviceConnected => new(BluetoothGlyph, activity.Text ?? string.Empty, Strings.Get("Island_DeviceConnected"), activity.Value > 0 ? Percent(activity.Value) : null, IslandPalette.Cyan),
         ActivityKind.DeviceDisconnected => new(BluetoothGlyph, activity.Text ?? string.Empty, Strings.Get("Island_DeviceDisconnected"), null, IslandPalette.TextSecondary),
         ActivityKind.Stopwatch => new(
@@ -80,7 +80,8 @@ internal static class IslandPresenter
             FormatPosition(activity.Stopwatch?.ElapsedAt(now) ?? TimeSpan.Zero),
             activity.Stopwatch is { Laps.Count: > 0 } laps ? Strings.Format("Island_LapFormat", laps.Laps.Count + 1) : null,
             Strings.Get(activity.Stopwatch?.State == TimerState.Paused ? "Island_Timer_Paused" : "Island_Stopwatch"),
-            IslandPalette.Orange),
+            IslandPalette.Orange,
+            SecondHand(activity.Stopwatch?.ElapsedAt(now) ?? TimeSpan.Zero)),
         _ => new(string.Empty, string.Empty, null, null, IslandPalette.TextPrimary),
     };
 
@@ -164,6 +165,9 @@ internal static class IslandPresenter
         };
     }
 
+    /// <summary>A stopwatch's seconds hand: how far round the current minute it is.</summary>
+    private static double SecondHand(TimeSpan elapsed) => elapsed.TotalSeconds % 60 / 60;
+
     private static CompactContent DescribeTimer(FocusTimerSnapshot timer, DateTimeOffset now)
     {
         string? label = timer.State == TimerState.Paused
@@ -174,7 +178,8 @@ internal static class IslandPresenter
                 TimerMode.Break => Strings.Get("Island_Timer_Break"),
                 _ => null,
             };
-        return new(TimerGlyph, FormatRemaining(timer.RemainingAt(now)), null, label, IslandPalette.Orange);
+        // The ring empties as time runs out, like a kitchen timer.
+        return new(TimerGlyph, FormatRemaining(timer.RemainingAt(now)), null, label, IslandPalette.Orange, 1 - timer.ProgressAt(now));
     }
 
     /// <summary>The Segoe Fluent battery glyph for a level (Battery0 to Battery10).</summary>

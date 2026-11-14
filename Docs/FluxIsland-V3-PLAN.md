@@ -165,6 +165,8 @@ Every phase ends the same way:
 - Commit: "Give Flux Island smoother morphs, blur transitions and a liquid split for the second bubble"
 
 ### Phase 3: Compact and minimal layouts (Apple leading/trailing)
+
+> **As built:** the progress ring (`ProgressGlyph`, generalised from the charge ring) now shows on timers, the stopwatch (as a seconds hand), charging, low battery and battery saver. The second bubble already plays the "minimal" role, and the idle accent dot was left out because the bubble covers that case.
 - Restructure `CompactView` in `IslandPill.xaml` into **leading** (glyph, art or ring, 24 px), **centre** (title over subtitle, only when there's room) and **trailing** (value, progress ring or bars).
 - `CompactContent` gains `Progress` (0–1 or null) and `TrailingKind` (text, ring or bars).
 - **Progress rings around the leading glyph** for timer, stopwatch lap progress, downloads and charge. Generalise `ChargeRing.xaml(.cs)` into `ProgressRingGlyph` (arc, glyph and colour).

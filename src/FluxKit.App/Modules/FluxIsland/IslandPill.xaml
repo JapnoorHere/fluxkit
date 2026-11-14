@@ -54,7 +54,7 @@
                             StrokeThickness="2"
                             Opacity="0" />
                         <FontIcon x:Name="CompactGlyph" FontSize="16" />
-                        <local:ChargeRing x:Name="CompactRing" Visibility="Collapsed" />
+                        <local:ProgressGlyph x:Name="CompactRing" Visibility="Collapsed" />
                         <Border
                             x:Name="CompactArtFrame"
                             Width="22"

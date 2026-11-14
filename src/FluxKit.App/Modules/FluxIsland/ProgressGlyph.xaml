@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A bolt inside a ring that sweeps round to the battery level when the charger is plugged in. -->
+<!-- An icon inside a thin ring that fills with progress: a timer running down, a battery charging, a lap ticking by. -->
 <UserControl
-    x:Class="FluxKit.App.Modules.FluxIsland.ChargeRing"
+    x:Class="FluxKit.App.Modules.FluxIsland.ProgressGlyph"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Width="22"
-    Height="22"
+    Width="24"
+    Height="24"
     IsHitTestVisible="False">
     <Grid>
         <Grid x:Name="RingHost" />
         <FontIcon
-            x:Name="Bolt"
+            x:Name="Icon"
             FontSize="11"
             Glyph="&#xE945;" />
     </Grid>

@@ -538,9 +538,10 @@ public sealed partial class IslandPill : UserControl
 
     private (UIElement View, string Key, Size Size) FillCompact(CompactContent content, string key, bool twoLines, IslandActivity? activity)
     {
-        // Music shows its art instead of the note glyph, and the bouncing bars on the right; the charger shows its ring.
+        // Music shows its art instead of the note glyph, and the bouncing bars on the trailing edge.
         MediaInfo? media = activity?.Kind == ActivityKind.Media ? activity.Media : null;
-        bool charging = activity?.Kind == ActivityKind.PluggedIn;
+        // Moments with a level show their icon inside a progress ring.
+        bool ring = content.Progress is not null;
         string? thumbPath = activity?.Kind == ActivityKind.Screenshot ? activity.Path : null;
         if (thumbPath != _thumbPath)
         {
@@ -555,7 +556,15 @@ public sealed partial class IslandPill : UserControl
         // A screenshot shows itself, small, where music shows its art.
         bool art = media is not null ? _art.Image is not null : _thumb is not null;
         CompactArt.Source = media is not null ? _art.Image : _thumb;
-        CompactRing.Visibility = charging ? Visibility.Visible : Visibility.Collapsed;
+        ring &= !art;
+        CompactRing.Visibility = ring ? Visibility.Visible : Visibility.Collapsed;
+        if (ring)
+        {
+            CompactRing.SetGlyph(content.Glyph);
+            CompactRing.SetColor(content.Accent);
+            CompactRing.SetProgress(content.Progress!.Value, Springs);
+        }
+
         CompactDots.Update(_scene.Privacy, Springs);
         CompactArtFrame.Visibility = art ? Visibility.Visible : Visibility.Collapsed;
         CompactBars.Visibility = media is null ? Visibility.Collapsed : Visibility.Visible;
@@ -567,7 +576,7 @@ public sealed partial class IslandPill : UserControl
         }
 
         CompactGlyph.Glyph = content.Glyph;
-        CompactGlyph.Visibility = content.Glyph.Length > 0 && !art && !charging ? Visibility.Visible : Visibility.Collapsed;
+        CompactGlyph.Visibility = content.Glyph.Length > 0 && !art && !ring ? Visibility.Visible : Visibility.Collapsed;
         CompactGlyph.Foreground = new SolidColorBrush(content.Accent);
         bool level = activity?.Kind is ActivityKind.Volume or ActivityKind.Brightness;
         CompactLevel.Visibility = level ? Visibility.Visible : Visibility.Collapsed;
