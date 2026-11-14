@@ -113,49 +113,25 @@
                 <local:ShelfPanel x:Name="ShelfView" Visibility="Collapsed" />
                 <local:GlancePanel x:Name="GlanceView" Visibility="Collapsed" />
 
-                <!-- Switches between the panel's pages when there is more than one, like FluxKit's own side rail. -->
+                <!-- Page dots under the open panel, as on a phone's home screen. Click one, or swipe sideways. -->
                 <StackPanel
                     x:Name="PanelRail"
-                    Margin="10,0,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Spacing="4"
+                    Margin="0,0,0,4"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Orientation="Horizontal"
                     Visibility="Collapsed">
-                    <Button
-                        x:Name="MediaTab"
-                        Width="28"
-                        Height="28"
-                        CornerRadius="14"
-                        Style="{StaticResource IslandIconButtonStyle}"
-                        x:Uid="Island_MediaTab">
-                        <FontIcon FontSize="13" Glyph="&#xE8D6;" />
+                    <Button x:Name="MediaTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_MediaTab">
+                        <Border x:Name="MediaDot" Height="6" CornerRadius="3" />
                     </Button>
-                    <Button
-                        x:Name="TimerTab"
-                        Width="28"
-                        Height="28"
-                        CornerRadius="14"
-                        Style="{StaticResource IslandIconButtonStyle}"
-                        x:Uid="Island_TimerTab">
-                        <FontIcon FontSize="13" Glyph="&#xE916;" />
+                    <Button x:Name="TimerTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_TimerTab">
+                        <Border x:Name="TimerDot" Height="6" CornerRadius="3" />
                     </Button>
-                    <Button
-                        x:Name="ShelfTab"
-                        Width="28"
-                        Height="28"
-                        CornerRadius="14"
-                        Style="{StaticResource IslandIconButtonStyle}"
-                        x:Uid="Island_ShelfTab">
-                        <FontIcon FontSize="13" Glyph="&#xE7B8;" />
+                    <Button x:Name="ShelfTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_ShelfTab">
+                        <Border x:Name="ShelfDot" Height="6" CornerRadius="3" />
                     </Button>
-                    <Button
-                        x:Name="GlanceTab"
-                        Width="28"
-                        Height="28"
-                        CornerRadius="14"
-                        Style="{StaticResource IslandIconButtonStyle}"
-                        x:Uid="Island_GlanceTab">
-                        <FontIcon FontSize="13" Glyph="&#xE9D9;" />
+                    <Button x:Name="GlanceTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_GlanceTab">
+                        <Border x:Name="GlanceDot" Height="6" CornerRadius="3" />
                     </Button>
                 </StackPanel>
             </Grid>

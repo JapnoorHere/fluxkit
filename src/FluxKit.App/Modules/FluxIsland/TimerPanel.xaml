@@ -39,30 +39,30 @@
             </StackPanel>
         </Grid>
 
-        <StackPanel x:Name="ActiveHeader" Spacing="2" Visibility="Collapsed">
-            <TextBlock x:Name="Label" FontSize="13" />
-            <local:RollingText x:Name="Digits" />
-            <Grid
-                x:Name="ProgressTrack"
-                Height="4"
-                Margin="0,8,0,0"
-                SizeChanged="OnTrackSizeChanged">
-                <Border Background="#33FFFFFF" CornerRadius="2" />
-                <Border
-                    x:Name="ProgressFill"
-                    Width="0"
-                    HorizontalAlignment="Left"
-                    CornerRadius="2" />
-            </Grid>
-            <!-- The stopwatch's latest laps, newest first. -->
-            <TextBlock
-                x:Name="LapsText"
-                Margin="0,6,0,0"
-                FontSize="12"
-                MaxLines="1"
-                TextTrimming="CharacterEllipsis"
-                Visibility="Collapsed" />
-        </StackPanel>
+        <!-- A running timer or stopwatch: a dial that empties (or a seconds hand that sweeps) beside big digits. -->
+        <Grid x:Name="ActiveHeader" ColumnSpacing="16" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <local:ProgressGlyph
+                x:Name="Dial"
+                Width="64"
+                Height="64"
+                VerticalAlignment="Center" />
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="0">
+                <TextBlock x:Name="Label" FontSize="13" FontWeight="SemiBold" />
+                <local:RollingText x:Name="Digits" />
+                <!-- The stopwatch's latest laps, newest first. -->
+                <TextBlock
+                    x:Name="LapsText"
+                    Margin="0,2,0,0"
+                    FontSize="12"
+                    MaxLines="1"
+                    TextTrimming="CharacterEllipsis"
+                    Visibility="Collapsed" />
+            </StackPanel>
+        </Grid>
 
         <StackPanel
             x:Name="QuickRow"

@@ -1,10 +1,13 @@
+using FluxKit.App.Modules.FluxIsland.Design;
 using FluxKit.Tools.FluxIsland.Abstractions;
+using FluxKit.Tools.FluxIsland.Activities;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
 using Windows.UI;
 
 namespace FluxKit.App.Modules.FluxIsland;
@@ -12,8 +15,10 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// <summary>
 /// The shelf page. Tiles are kept between updates, so each file's icon is looked up once and only new files pop in.
 /// </summary>
-public sealed partial class ShelfPanel : UserControl
+public sealed partial class ShelfPanel : UserControl, IIslandPage
 {
+    private static readonly Size PageSize = new(420, 148);
+
     private readonly Dictionary<string, ShelfTile> _tiles = new(StringComparer.OrdinalIgnoreCase);
     private bool _dropping;
     private bool _breathing;
@@ -46,11 +51,18 @@ public sealed partial class ShelfPanel : UserControl
     /// <summary>True while a tile's right-click menu is open.</summary>
     public event EventHandler<bool>? MenuShown;
 
-    /// <summary>The rows, in the order they should appear when the page opens.</summary>
-    internal UIElement[] Rows => [Header, ItemsHost];
+    UIElement[] IIslandPage.Rows => [Header, ItemsHost];
 
-    /// <summary>Moves the content right to make room for the page rail.</summary>
-    internal void SetInset(double left) => ContentGrid.Margin = new Thickness(left, 0, 0, 0);
+    Size IIslandPage.PreferredSize => PageSize;
+
+    string IIslandPage.State => "shelf";
+
+    string IIslandPage.Update(IslandScene scene, DateTimeOffset now, bool springs)
+    {
+        Animate = springs;
+        Update(scene.Shelf);
+        return Strings.Format("Island_Shelf_CountFormat", scene.Shelf.Count);
+    }
 
     public void Update(IReadOnlyList<string> paths)
     {

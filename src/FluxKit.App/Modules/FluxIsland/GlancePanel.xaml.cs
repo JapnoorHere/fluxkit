@@ -1,3 +1,4 @@
+using FluxKit.App.Modules.FluxIsland.Design;
 using FluxKit.Platform.Shell;
 using FluxKit.Platform.Stats;
 using FluxKit.Tools.FluxIsland;
@@ -8,6 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
 using Windows.UI;
 
 namespace FluxKit.App.Modules.FluxIsland;
@@ -16,8 +18,10 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// The Glance page. While it is on screen (<see cref="SetLive"/>), it reads the PC's load once a second; otherwise
 /// nothing runs. Quick actions act at once; lock and screen-off close the panel first so it isn't left open.
 /// </summary>
-public sealed partial class GlancePanel : UserControl
+public sealed partial class GlancePanel : UserControl, IIslandPage
 {
+    private static readonly Size PageSize = new(420, 152);
+
     private const string MicOnGlyph = "\xE720";
     private const string MicOffGlyph = "\xEC54";
 
@@ -67,9 +71,17 @@ public sealed partial class GlancePanel : UserControl
     /// <summary>Unset in previews, where the buttons do nothing.</summary>
     public IIslandCommands? Commands { get; set; }
 
-    internal UIElement[] Rows => [Gauges, Actions];
+    UIElement[] IIslandPage.Rows => [Gauges, Actions];
 
-    internal void SetInset(double left) => ContentGrid.Margin = new Thickness(left, 0, 0, 0);
+    Size IIslandPage.PreferredSize => PageSize;
+
+    string IIslandPage.State => "glance";
+
+    string IIslandPage.Update(IslandScene scene, DateTimeOffset now, bool springs)
+    {
+        Update(scene);
+        return Strings.Get("Island_GlanceName");
+    }
 
     /// <summary>Starts reading once a second while the page shows, and stops when it doesn't.</summary>
     public void SetLive(bool live)

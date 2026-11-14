@@ -1,14 +1,17 @@
+using FluxKit.App.Modules.FluxIsland.Design;
 using FluxKit.Tools.FluxIsland.Abstractions;
 using FluxKit.Tools.FluxIsland.Activities;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
 
 namespace FluxKit.App.Modules.FluxIsland;
 
-/// <summary>The timer page. It shows what <see cref="Update"/> gives it and sends button presses to <see cref="Commands"/>.</summary>
-public sealed partial class TimerPanel : UserControl
+/// <summary>The timers page: quick timers and a focus cycle, a running timer on a dial, or the stopwatch with laps.</summary>
+public sealed partial class TimerPanel : UserControl, IIslandPage
 {
     private const string PauseIcon = "\xE769";
     private const string PlayIcon = "\xE768";
@@ -18,8 +21,8 @@ public sealed partial class TimerPanel : UserControl
     private const string TimerIcon = "\xE916";
     private const int MaxLapsShown = 3;
     private static readonly TimeSpan OneMinuteMore = TimeSpan.FromMinutes(1);
+    private static readonly Size PageSize = new(420, 176);
 
-    private double _progress;
     private bool _wasActive;
     private Showing _showing;
     private bool _preferStopwatch;
@@ -40,7 +43,7 @@ public sealed partial class TimerPanel : UserControl
         QuickLabel.Foreground = secondary;
         LapsText.Foreground = secondary;
         Label.Foreground = new SolidColorBrush(IslandPalette.Orange);
-        ProgressFill.Background = new SolidColorBrush(IslandPalette.Orange);
+        Dial.SetColor(IslandPalette.Orange);
         Digits.TextBrush = new SolidColorBrush(IslandPalette.TextPrimary);
 
         OneMinute.Click += (_, _) => Commands?.StartTimer(TimeSpan.FromMinutes(1));
@@ -98,10 +101,22 @@ public sealed partial class TimerPanel : UserControl
     public event EventHandler? SwitchChanged;
 
     /// <summary>The rows, in the order they should appear when the page opens.</summary>
-    internal UIElement[] Rows => _wasActive ? [ActiveHeader, ActiveRow] : [IdleHeader, QuickRow];
+    UIElement[] IIslandPage.Rows => _wasActive ? [ActiveHeader, ActiveRow] : [IdleHeader, QuickRow];
 
-    /// <summary>Moves the content right to make room for the page rail.</summary>
-    internal void SetInset(double left) => ContentGrid.Margin = new Thickness(left, 0, 0, 0);
+    Size IIslandPage.PreferredSize => PageSize;
+
+    string IIslandPage.State => _showing.ToString();
+
+    string IIslandPage.Update(IslandScene scene, DateTimeOffset now, bool springs)
+    {
+        Update(scene, now, springs);
+        return _showing switch
+        {
+            Showing.Timer => IslandPresenter.FormatRemaining(scene.Timer!.RemainingAt(now)),
+            Showing.Stopwatch => IslandPresenter.FormatPosition(scene.Stopwatch!.ElapsedAt(now)),
+            _ => IslandPresenter.FormatClock(now),
+        };
+    }
 
     public void Update(IslandScene scene, DateTimeOffset now, bool springs)
     {
@@ -134,7 +149,6 @@ public sealed partial class TimerPanel : UserControl
         QuickRow.Visibility = active ? Visibility.Collapsed : Visibility.Visible;
         ActiveHeader.Visibility = active ? Visibility.Visible : Visibility.Collapsed;
         ActiveRow.Visibility = active ? Visibility.Visible : Visibility.Collapsed;
-        ProgressTrack.Visibility = showing == Showing.Timer ? Visibility.Visible : Visibility.Collapsed;
 
         if (showing == Showing.Timer)
         {
@@ -151,8 +165,8 @@ public sealed partial class TimerPanel : UserControl
 
             // The first show after starting swaps straight in; after that, only the digits that change roll.
             Digits.SetText(IslandPresenter.FormatRemaining(timer.RemainingAt(now)), springs && _showing == showing);
-            _progress = timer.ProgressAt(now);
-            ApplyProgress();
+            Dial.SetGlyph(TimerIcon);
+            Dial.SetProgress(1 - timer.ProgressAt(now), springs);
             SetButtons(timer.State == TimerState.Paused, AddIcon, Strings.Get("Island_AddMinute"), Strings.Get("Island_CancelTimer_Label"));
             ExtraButton.IsEnabled = true;
         }
@@ -162,15 +176,15 @@ public sealed partial class TimerPanel : UserControl
                 ? Strings.Format("Island_LapFormat", stopwatch.Laps.Count + 1)
                 : Strings.Get("Island_Stopwatch");
 
-            // The newest laps, numbered from the first: "Lap 3 0:41   Lap 2 0:38   Lap 1 0:44".
-            LapsText.Text = string.Join("   ", stopwatch.Laps.Take(MaxLapsShown).Select((lap, i) =>
-                Strings.Format("Island_LapEntryFormat", stopwatch.Laps.Count - i, IslandPresenter.FormatPosition(lap))));
+            ShowLaps(stopwatch.Laps);
             if (stopwatch.State == TimerState.Paused)
             {
                 Label.Text = Strings.Format("Island_PausedLabelFormat", Label.Text);
             }
 
             Digits.SetText(IslandPresenter.FormatPosition(stopwatch.ElapsedAt(now)), springs && _showing == showing);
+            Dial.SetGlyph(StopwatchIcon);
+            Dial.SetProgress(stopwatch.ElapsedAt(now).TotalSeconds % 60 / 60, springs);
             SetButtons(stopwatch.State == TimerState.Paused, LapIcon, Strings.Get("Island_Lap"), Strings.Get("Island_ResetStopwatch"));
             ExtraButton.IsEnabled = stopwatch.State == TimerState.Running;
         }
@@ -204,13 +218,33 @@ public sealed partial class TimerPanel : UserControl
         CancelText.Text = cancelText;
     }
 
-    private void OnTrackSizeChanged(object sender, SizeChangedEventArgs e) => ApplyProgress();
-
-    private void ApplyProgress()
+    /// <summary>
+    /// The newest laps, numbered from the first ("Lap 3 0:41   Lap 2 0:38"), with the fastest lap so far in green and
+    /// the slowest in orange once there are enough to compare.
+    /// </summary>
+    private void ShowLaps(IReadOnlyList<TimeSpan> laps)
     {
-        if (ProgressFill.Parent is FrameworkElement track)
+        LapsText.Inlines.Clear();
+        TimeSpan best = laps.Count > 1 ? laps.Min() : TimeSpan.MinValue;
+        TimeSpan worst = laps.Count > 2 ? laps.Max() : TimeSpan.MaxValue;
+        for (int i = 0; i < Math.Min(laps.Count, MaxLapsShown); i++)
         {
-            ProgressFill.Width = Math.Clamp(_progress, 0, 1) * track.ActualWidth;
+            if (i > 0)
+            {
+                LapsText.Inlines.Add(new Run { Text = "   " });
+            }
+
+            var run = new Run { Text = Strings.Format("Island_LapEntryFormat", laps.Count - i, IslandPresenter.FormatPosition(laps[i])) };
+            if (laps[i] == best)
+            {
+                run.Foreground = new SolidColorBrush(IslandPalette.Green);
+            }
+            else if (laps[i] == worst)
+            {
+                run.Foreground = new SolidColorBrush(IslandPalette.Orange);
+            }
+
+            LapsText.Inlines.Add(run);
         }
     }
 }

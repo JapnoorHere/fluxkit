@@ -14,13 +14,15 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// </summary>
 public sealed partial class ProgressGlyph : UserControl
 {
-    private const float Size = 24;
-    private const float Stroke = 2.25f;
+    private const float DefaultSize = 24;
     private static readonly TimeSpan SweepDuration = TimeSpan.FromMilliseconds(700);
 
     private readonly CompositionEllipseGeometry _arc;
     private readonly CompositionSpriteShape _arcShape;
     private readonly CompositionColorBrush _arcBrush;
+    private readonly CompositionEllipseGeometry _track;
+    private readonly CompositionSpriteShape _trackShape;
+    private readonly ShapeVisual _shapes;
     private readonly Compositor _compositor;
     private float _value = -1;
 
@@ -28,36 +30,51 @@ public sealed partial class ProgressGlyph : UserControl
     {
         InitializeComponent();
         _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
-        float radius = (Size - Stroke) / 2;
-        var center = new Vector2(Size / 2);
-
-        CompositionEllipseGeometry track = _compositor.CreateEllipseGeometry();
-        track.Center = center;
-        track.Radius = new Vector2(radius);
-        CompositionSpriteShape trackShape = _compositor.CreateSpriteShape(track);
-        trackShape.StrokeBrush = _compositor.CreateColorBrush(IslandPalette.Hairline);
-        trackShape.StrokeThickness = Stroke;
+        _track = _compositor.CreateEllipseGeometry();
+        _trackShape = _compositor.CreateSpriteShape(_track);
+        _trackShape.StrokeBrush = _compositor.CreateColorBrush(IslandPalette.Hairline);
 
         _arc = _compositor.CreateEllipseGeometry();
-        _arc.Center = center;
-        _arc.Radius = new Vector2(radius);
         _arc.TrimEnd = 0;
         _arcBrush = _compositor.CreateColorBrush(IslandPalette.Green);
         _arcShape = _compositor.CreateSpriteShape(_arc);
         _arcShape.StrokeBrush = _arcBrush;
-        _arcShape.StrokeThickness = Stroke;
         _arcShape.StrokeStartCap = CompositionStrokeCap.Round;
         _arcShape.StrokeEndCap = CompositionStrokeCap.Round;
 
         // Fill from twelve o'clock rather than three.
-        _arcShape.CenterPoint = center;
         _arcShape.RotationAngleInDegrees = -90;
 
-        ShapeVisual shapes = _compositor.CreateShapeVisual();
-        shapes.Size = new Vector2(Size);
-        shapes.Shapes.Add(trackShape);
-        shapes.Shapes.Add(_arcShape);
-        ElementCompositionPreview.SetElementChildVisual(RingHost, shapes);
+        _shapes = _compositor.CreateShapeVisual();
+        _shapes.Shapes.Add(_trackShape);
+        _shapes.Shapes.Add(_arcShape);
+        ElementCompositionPreview.SetElementChildVisual(RingHost, _shapes);
+        Layout(DefaultSize);
+        SizeChanged += (_, e) => Layout((float)Math.Min(e.NewSize.Width, e.NewSize.Height));
+    }
+
+    /// <summary>Fits the ring to the control: a thin ring round a small icon, a bolder one when used as a big dial.</summary>
+    private void Layout(float size)
+    {
+        if (size <= 0)
+        {
+            return;
+        }
+
+        float stroke = size <= 28 ? 2.25f : size * 0.07f;
+        float radius = (size - stroke) / 2;
+        var center = new Vector2(size / 2);
+        foreach (CompositionEllipseGeometry ellipse in new[] { _track, _arc })
+        {
+            ellipse.Center = center;
+            ellipse.Radius = new Vector2(radius);
+        }
+
+        _trackShape.StrokeThickness = stroke;
+        _arcShape.StrokeThickness = stroke;
+        _arcShape.CenterPoint = center;
+        _shapes.Size = new Vector2(size);
+        Icon.FontSize = size <= 28 ? 11 : size * 0.34;
     }
 
     /// <summary>Colours the ring and the icon.</summary>

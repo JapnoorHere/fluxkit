@@ -176,6 +176,8 @@ Every phase ends the same way:
 - Commit: "Rebuild the compact island with Apple-style leading and trailing parts and progress rings"
 
 ### Phase 4: Panel redesign with swipeable pages
+
+> **As built:** the rail became page dots. Pages turn with a sideways swipe, Shift+wheel or PageUp/PageDown, and slide in the direction of travel. Every page implements `IIslandPage`, and `IslandPill` was split into partial files (Pages, Input, Drag, Bubble). Media got 64 px art, a two-tone glow, a white play button and a scrubber that thickens on hover. Timer got a 64 px dial and coloured laps. Glance was tightened. Deferred: art colour clustering (the single accent is kept), Glance sparklines, and shelf multi-select.
 - Replace the left rail with **horizontal pages and a dot indicator** under the content (the iOS look):
   - Two-finger trackpad swipe or Shift+wheel moves between pages, through `PointerWheelChanged` horizontal deltas with snap springs.
   - Left and right arrows move between pages on the keyboard.

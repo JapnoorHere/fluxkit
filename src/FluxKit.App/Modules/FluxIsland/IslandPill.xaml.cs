@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Runtime.InteropServices;
 using FluxKit.App.Common;
 using FluxKit.App.Modules.FluxIsland.Design;
 using FluxKit.Platform.Shell;
@@ -7,16 +6,12 @@ using FluxKit.Tools.FluxIsland.Abstractions;
 using FluxKit.Tools.FluxIsland.Activities;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Storage;
 
 namespace FluxKit.App.Modules.FluxIsland;
 
@@ -27,15 +22,16 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// </summary>
 public sealed partial class IslandPill : UserControl
 {
-    public const double StageWidth = 440;
-    public const double StageHeight = 212;
+    public const double StageWidth = 460;
+    public const double StageHeight = 240;
     public const double TopInset = 6;
 
     private const double CompactHeight = 36;
     private const double MinCompactWidth = 220;
     private const double MaxCompactWidth = 300;
     private const double DotsRoom = 20;
-    private const double RailRoom = 34;
+    private const double PageDotsRoom = 18;
+    private const float PageSlide = 28;
     private const float HoverScale = 1.04f;
     private const float PressScale = 0.94f;
     private const float MaxLean = 3;
@@ -45,10 +41,6 @@ public sealed partial class IslandPill : UserControl
     private static readonly Size IdleSize = new(120, 32);
     private static readonly Size BareSize = new(88, 28);
     private static readonly Size PeekSize = new(320, 52);
-    private static readonly Size PanelSize = new(400, 172);
-    private static readonly Size EmptyMediaSize = new(400, 140);
-    private static readonly Size MediaPanelSize = new(400, 172);
-    private static readonly Size ShelfPanelSize = new(400, 132);
     private static readonly TimeSpan PeekDelay = TimeSpan.FromMilliseconds(350);
     private static readonly TimeSpan CloseDelay = TimeSpan.FromMilliseconds(600);
     private static readonly TimeSpan DragLeaveDelay = TimeSpan.FromMilliseconds(80);
@@ -79,6 +71,7 @@ public sealed partial class IslandPill : UserControl
     private ImageSource? _thumb;
     private bool _held;
     private Vector3 _lean;
+    private int _pageSlide;
     private bool _keyboard;
 
     public IslandPill()
@@ -368,82 +361,6 @@ public sealed partial class IslandPill : UserControl
         }
     }
 
-    /// <summary>Shows the second activity in a bubble that springs out from the pill's right edge, or tucks it away.</summary>
-    private void UpdateBubble(IslandActivity? secondary, Size pill, DateTimeOffset now)
-    {
-        Visual visual = ElementCompositionPreview.GetElementVisual(Bubble);
-        visual.CenterPoint = new Vector3((float)BubbleSize / 2, (float)BubbleSize / 2, 0);
-        bool show = secondary is not null;
-        float x = (float)((pill.Width / 2) + BubbleGap + (BubbleSize / 2));
-        if (show)
-        {
-            CompactContent content = IslandPresenter.Describe(secondary!, now);
-            bool art = secondary!.Kind == ActivityKind.Media && _art.Image is not null;
-            BubbleArtBrush.ImageSource = art ? _art.Image : null;
-            BubbleArt.Visibility = art ? Visibility.Visible : Visibility.Collapsed;
-            BubbleGlyph.Visibility = art ? Visibility.Collapsed : Visibility.Visible;
-            BubbleGlyph.Glyph = content.Glyph;
-            BubbleGlyph.Foreground = new SolidColorBrush(secondary.Kind == ActivityKind.Media ? _art.Accent : content.Accent);
-            AutomationProperties.SetName(Bubble, string.Join(", ", new[] { content.Title, content.Trail }.Where(t => !string.IsNullOrEmpty(t))));
-            ToolTipService.SetToolTip(Bubble, content.Title);
-        }
-
-        if (show == _bubbleShown)
-        {
-            // Already out: just follow the pill's width.
-            if (show)
-            {
-                Spring(visual, "Translation", new Vector3(x, 0, 0));
-            }
-
-            return;
-        }
-
-        _bubbleShown = show;
-        if (show)
-        {
-            // It buds off the pill's edge: starts small and tucked in, then springs out to its place.
-            Bubble.Visibility = Visibility.Visible;
-            visual.StopAnimation("Opacity");
-            visual.Opacity = 1;
-            visual.Properties.InsertVector3("Translation", new Vector3(x - 24, 0, 0));
-            visual.Scale = new Vector3(0.4f, 0.4f, 1);
-            Spring(visual, "Translation", new Vector3(x, 0, 0));
-            Spring(visual, "Scale", Vector3.One);
-            _shape.Bud((float)pill.Width, (float)(TopInset + (CompactHeight / 2)), (float)BubbleGap, splitting: true, Springs);
-            return;
-        }
-
-        Spring(visual, "Translation", new Vector3(x - 24, 0, 0));
-        Spring(visual, "Scale", new Vector3(0.4f, 0.4f, 1));
-        _shape.Bud((float)pill.Width, (float)(TopInset + (CompactHeight / 2)), (float)BubbleGap, splitting: false, Springs);
-        IslandMotion.Exit(Bubble, () => !_bubbleShown, shrink: false);
-    }
-
-    private void Spring(Visual visual, string property, Vector3 to)
-    {
-        if (!Springs)
-        {
-            visual.StopAnimation(property);
-            if (property == "Scale")
-            {
-                visual.Scale = to;
-            }
-            else
-            {
-                visual.Properties.InsertVector3(property, to);
-            }
-
-            return;
-        }
-
-        SpringVector3NaturalMotionAnimation spring = visual.Compositor.CreateSpringVector3Animation();
-        spring.DampingRatio = 0.62f;
-        spring.Period = TimeSpan.FromMilliseconds(50);
-        spring.FinalValue = to;
-        visual.StartAnimation(property, spring);
-    }
-
     /// <summary>Runs the peek chip's action for <paramref name="activity"/> (see <see cref="IslandPresenter.ActionLabel"/>).</summary>
     private void RunAction(IslandActivity? activity)
     {
@@ -476,38 +393,6 @@ public sealed partial class IslandPill : UserControl
             _thumb = image;
             _shownKey = null;
             Update();
-        }
-    }
-
-    private static bool IsOnShelfTile(DependencyObject? element)
-    {
-        for (DependencyObject? at = element; at is not null; at = VisualTreeHelper.GetParent(at))
-        {
-            if (at is ShelfTile)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>Right-click waves away the alert on screen, or closes the open panel.</summary>
-    private void OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-    {
-        if (IsOnShelfTile(e.OriginalSource as DependencyObject))
-        {
-            return; // The tile's own menu handles it.
-        }
-
-        e.Handled = true;
-        if (_mode == PillMode.Panel)
-        {
-            SetMode(PillMode.Compact);
-        }
-        else if (_scene.Primary is { IsAlert: true })
-        {
-            Commands?.DismissAlert();
         }
     }
 
@@ -631,180 +516,6 @@ public sealed partial class IslandPill : UserControl
         fill.StartAnimation("Scale", spring);
     }
 
-    /// <summary>The mouse wheel over the island changes the volume (the tool ignores it when that setting is off).</summary>
-    private void OnWheel(object sender, PointerRoutedEventArgs e)
-    {
-        PointerPointProperties properties = e.GetCurrentPoint(Surface).Properties;
-        bool sideways = properties.IsHorizontalMouseWheel || e.KeyModifiers.HasFlag(Windows.System.VirtualKeyModifiers.Shift);
-        if (sideways)
-        {
-            // Tilt the wheel (or Shift+scroll) to swap the pill and the bubble.
-            // A tilt sends a stream of events; one swap per gesture.
-            long tick = Environment.TickCount64;
-            if (_mode == PillMode.Compact && _scene.Secondary is not null && tick - _lastSwap > 450)
-            {
-                _lastSwap = tick;
-                Commands?.SwapActivities();
-            }
-
-            e.Handled = true;
-            return;
-        }
-
-        _wheel += properties.MouseWheelDelta;
-        int notches = _wheel / WheelNotch;
-        if (notches != 0)
-        {
-            _wheel -= notches * WheelNotch;
-            Commands?.StepVolume(notches);
-        }
-
-        e.Handled = true;
-    }
-
-    private (UIElement View, string Key, Size Size) BuildPanel(DateTimeOffset now)
-    {
-        List<PanelPage> pages = AvailablePages();
-        if (_page is not { } page || !pages.Contains(page))
-        {
-            page = DefaultPage(pages);
-            _page = page;
-        }
-
-        ShowRail(pages, page);
-        double inset = pages.Count > 1 ? RailRoom : 0;
-        if (page == PanelPage.Media)
-        {
-            MediaView.SetInset(inset);
-            MediaView.Animate = Springs;
-            if (_scene.Media is not { } media)
-            {
-                MediaView.ShowEmpty();
-                AutomationProperties.SetName(Surface, Strings.Get("Island_NothingPlayingName"));
-                return (MediaView, "panel-media-empty", EmptyMediaSize);
-            }
-
-            MediaView.Update(media, now);
-            AutomationProperties.SetName(Surface, string.Join(", ", new[] { media.Title, media.Artist }.Where(t => !string.IsNullOrEmpty(t))));
-            return (MediaView, "panel-media", MediaPanelSize);
-        }
-
-        if (page == PanelPage.Glance)
-        {
-            GlanceView.SetInset(inset);
-            GlanceView.Update(_scene);
-            AutomationProperties.SetName(Surface, Strings.Get("Island_GlanceName"));
-            return (GlanceView, "panel-glance", PanelSize);
-        }
-
-        if (page == PanelPage.Shelf)
-        {
-            ShelfView.SetInset(inset);
-            ShelfView.Animate = Springs;
-            ShelfView.Update(_scene.Shelf);
-            ShelfView.SetDropping(_dragging);
-            AutomationProperties.SetName(Surface, Strings.Format("Island_Shelf_CountFormat", _scene.Shelf.Count));
-            return (ShelfView, "panel-shelf", ShelfPanelSize);
-        }
-
-        TimerView.SetInset(inset);
-        TimerView.Update(_scene, now, Springs);
-        bool timing = _scene.Timer?.IsActive == true;
-        AutomationProperties.SetName(Surface, timing ? IslandPresenter.FormatRemaining(_scene.Timer!.RemainingAt(now)) : IslandPresenter.FormatClock(now));
-        return (TimerView, $"panel-timer-{timing}", PanelSize);
-    }
-
-    /// <summary>
-    /// Every page that is turned on, so each can always be reached from the rail. Music and the shelf show an empty
-    /// state when there is nothing in them.
-    /// </summary>
-    private List<PanelPage> AvailablePages()
-    {
-        List<PanelPage> pages = [];
-        if (_scene.Settings.ShowMedia || _scene.Media is not null)
-        {
-            pages.Add(PanelPage.Media);
-        }
-
-        pages.Add(PanelPage.Timer);
-        if (_scene.Settings.ShelfEnabled)
-        {
-            pages.Add(PanelPage.Shelf);
-        }
-
-        if (_scene.Settings.ShowGlance)
-        {
-            pages.Add(PanelPage.Glance);
-        }
-
-        return pages;
-    }
-
-    /// <summary>Opens on what the pill was showing: a running timer, the shelf, the music, else the clock and timers.</summary>
-    private PanelPage DefaultPage(List<PanelPage> pages) => _scene.Primary?.Kind switch
-    {
-        _ when _dragging && pages.Contains(PanelPage.Shelf) => PanelPage.Shelf,
-        ActivityKind.Timer or ActivityKind.TimerDone or ActivityKind.Stopwatch => PanelPage.Timer,
-        ActivityKind.Shelf when pages.Contains(PanelPage.Shelf) => PanelPage.Shelf,
-        _ => _scene.Media is not null && pages.Contains(PanelPage.Media) ? PanelPage.Media : PanelPage.Timer,
-    };
-
-    private void ShowPage(PanelPage page)
-    {
-        if (page != _page)
-        {
-            _page = page;
-            Update();
-        }
-    }
-
-    private void ShowRail(List<PanelPage> pages, PanelPage selected)
-    {
-        PanelRail.Visibility = pages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
-        (Button Tab, PanelPage Page)[] tabs = [(MediaTab, PanelPage.Media), (TimerTab, PanelPage.Timer), (ShelfTab, PanelPage.Shelf), (GlanceTab, PanelPage.Glance)];
-        foreach ((Button tab, PanelPage tabPage) in tabs)
-        {
-            bool isSelected = tabPage == selected;
-            tab.Visibility = pages.Contains(tabPage) ? Visibility.Visible : Visibility.Collapsed;
-            tab.Background = isSelected ? new SolidColorBrush(Windows.UI.Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF)) : new SolidColorBrush(Microsoft.UI.Colors.Transparent);
-            tab.Foreground = new SolidColorBrush(isSelected ? IslandPalette.TextPrimary : IslandPalette.TextSecondary);
-        }
-    }
-
-    /// <summary>Plays the entrance when the content changes; returns true when it did.</summary>
-    private bool ShowView(UIElement view, string key)
-    {
-        if (key == _shownKey)
-        {
-            return false;
-        }
-
-        UIElement? previous = _shownView;
-        _shownView = view;
-        _shownKey = key;
-        if (previous is not null && previous != view)
-        {
-            IslandMotion.Exit(previous, () => _shownView != previous);
-        }
-
-        UIElement[]? rows = view == MediaView ? MediaView.Rows : view == TimerView ? TimerView.Rows : view == ShelfView ? ShelfView.Rows : view == GlanceView ? GlanceView.Rows : null;
-        if (rows is not null)
-        {
-            // Panel rows arrive one after the other.
-            IslandMotion.Enter(view, TimeSpan.Zero, Springs);
-            for (int i = 0; i < rows.Length; i++)
-            {
-                IslandMotion.Enter(rows[i], IslandMotion.Stagger * (i + 1), Springs);
-            }
-        }
-        else
-        {
-            IslandMotion.Enter(view, previous is null ? TimeSpan.Zero : IslandMotion.Stagger, Springs);
-        }
-
-        return true;
-    }
-
     private void MorphTo(Size size)
     {
         Surface.Width = size.Width;
@@ -853,61 +564,6 @@ public sealed partial class IslandPill : UserControl
         }
     }
 
-    /// <summary>
-    /// For the keyboard shortcut: opens the panel and puts focus on its first control, or closes it if it is open.
-    /// While opened this way it stays open when the pointer is elsewhere, until Esc, the shortcut or a click away.
-    /// </summary>
-    public void ToggleFromKeyboard()
-    {
-        if (_mode == PillMode.Panel)
-        {
-            SetMode(PillMode.Compact);
-            return;
-        }
-
-        _keyboard = true;
-        _peekTimer.Stop();
-        _closeTimer.Stop();
-        SetMode(PillMode.Panel);
-
-        // Focus the first button once the panel's content is in place.
-        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
-        {
-            if (_keyboard && FocusManager.FindFirstFocusableElement(Surface) is DependencyObject first)
-            {
-                _ = FocusManager.TryFocusAsync(first, FocusState.Keyboard);
-            }
-        });
-    }
-
-    /// <summary>Closes a panel the keyboard opened, e.g. when the user clicks into another window.</summary>
-    public void CloseKeyboardPanel()
-    {
-        if (_keyboard)
-        {
-            SetMode(PillMode.Compact);
-        }
-    }
-
-    private void ReleaseKeyboard()
-    {
-        if (_keyboard)
-        {
-            _keyboard = false;
-            KeyboardReleased?.Invoke(this, EventArgs.Empty);
-        }
-    }
-
-    /// <summary>Esc closes the panel. Arrows and Tab move between buttons (set up in XAML); Enter and Space press them.</summary>
-    private void OnKeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Key == Windows.System.VirtualKey.Escape && _mode == PillMode.Panel)
-        {
-            e.Handled = true;
-            SetMode(PillMode.Compact);
-        }
-    }
-
     private void OnClockTick() => Update();
 
     private void SetMode(PillMode mode)
@@ -931,196 +587,6 @@ public sealed partial class IslandPill : UserControl
         }
 
         Update();
-    }
-
-    private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
-    {
-        _hovering = true;
-        _closeTimer.Stop();
-        if (_mode != PillMode.Panel)
-        {
-            _shape.ScaleTo(HoverScale, Springs);
-            _peekTimer.Start();
-        }
-    }
-
-    /// <summary>
-    /// While hovered, the compact pill leans a few pixels toward the pointer, as if drawn to it. The lean is a spring
-    /// on the compositor, started only when it changes by at least half a pixel, so moving the mouse costs almost nothing.
-    /// </summary>
-    private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
-    {
-        if (!Springs || _mode == PillMode.Panel || Surface.ActualWidth <= 0)
-        {
-            return;
-        }
-
-        Point at = e.GetCurrentPoint(Surface).Position;
-        float x = (float)Math.Clamp((at.X / Surface.ActualWidth) - 0.5, -0.5, 0.5) * 2 * MaxLean;
-        float y = (float)Math.Clamp((at.Y / Surface.ActualHeight) - 0.5, -0.5, 0.5) * MaxLean;
-        LeanTo(new Vector3(x, y, 0));
-    }
-
-    private void LeanTo(Vector3 lean)
-    {
-        if (Vector3.Distance(lean, _lean) < 0.5f)
-        {
-            return;
-        }
-
-        _lean = lean;
-        Visual stage = ElementCompositionPreview.GetElementVisual(Stage);
-        stage.StartAnimation("Translation", IslandSprings.Vector3(stage.Compositor, IslandSprings.Smooth, lean));
-    }
-
-    private void OnPointerExited(object sender, PointerRoutedEventArgs e)
-    {
-        _hovering = false;
-        _pressed = false;
-        _peekTimer.Stop();
-        _shape.ScaleTo(1, Springs);
-        LeanTo(Vector3.Zero);
-        if (_mode != PillMode.Compact)
-        {
-            _closeTimer.Start();
-        }
-    }
-
-    private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
-    {
-        if (e.GetCurrentPoint(Surface).Properties.IsMiddleButtonPressed)
-        {
-            // Middle-click waves an alert away, like closing a tab.
-            if (_scene.Primary is { IsAlert: true })
-            {
-                Commands?.DismissAlert();
-            }
-
-            e.Handled = true;
-            return;
-        }
-
-        if (_mode == PillMode.Panel)
-        {
-            return;
-        }
-
-        _pressed = true;
-        _shape.ScaleTo(PressScale, Springs);
-    }
-
-    private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-    {
-        if (!_pressed)
-        {
-            return;
-        }
-
-        _pressed = false;
-        _peekTimer.Stop();
-        SetMode(PillMode.Panel);
-    }
-
-    /// <summary>A file dragged onto the island opens the shelf with its drop zone glowing.</summary>
-    private void OnDragEnter(object sender, DragEventArgs e)
-    {
-        _dragLeaveTimer.Stop();
-        if (_dragging || ShelfView.IsDraggingOut || !_scene.Settings.ShelfEnabled || !e.DataView.Contains(StandardDataFormats.StorageItems))
-        {
-            return;
-        }
-
-        _dragging = true;
-        _peekTimer.Stop();
-        _closeTimer.Stop();
-        _lingerTimer.Stop();
-        _page = PanelPage.Shelf;
-        if (_mode == PillMode.Panel)
-        {
-            Update();
-        }
-        else
-        {
-            SetMode(PillMode.Panel);
-        }
-    }
-
-    private void OnDragOver(object sender, DragEventArgs e)
-    {
-        if (!_dragging)
-        {
-            return;
-        }
-
-        // The shelf keeps a reference to the file and never moves it, so it asks for a link (or a copy, which the
-        // source treats the same way: the original stays where it is).
-        e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Link) ? DataPackageOperation.Link : e.AllowedOperations & DataPackageOperation.Copy;
-        e.DragUIOverride.Caption = Strings.Get("Island_ShelfDropCaption");
-        e.Handled = true;
-    }
-
-    /// <summary>Moving between the island's own parts raises leave then enter, so the drag ends only after a short pause.</summary>
-    private void OnDragLeave(object sender, DragEventArgs e)
-    {
-        if (_dragging)
-        {
-            _dragLeaveTimer.Start();
-        }
-    }
-
-    private void EndDrag()
-    {
-        if (!_dragging)
-        {
-            return;
-        }
-
-        _dragging = false;
-        Update();
-        if (!_hovering)
-        {
-            _closeTimer.Start();
-        }
-    }
-
-    private async void OnDrop(object sender, DragEventArgs e)
-    {
-        if (!_dragging)
-        {
-            return;
-        }
-
-        _dragLeaveTimer.Stop();
-        _dragging = false;
-        DragOperationDeferral deferral = e.GetDeferral();
-        try
-        {
-            IReadOnlyList<IStorageItem> items = await e.DataView.GetStorageItemsAsync();
-            Commands?.AddToShelf(items.Select(i => i.Path).Where(p => !string.IsNullOrEmpty(p)));
-        }
-        catch (Exception ex) when (ex is COMException or InvalidOperationException or UnauthorizedAccessException)
-        {
-            // The source took the data back (or never had real files); nothing lands on the shelf.
-            e.AcceptedOperation = DataPackageOperation.None;
-        }
-        finally
-        {
-            deferral.Complete();
-        }
-
-        // The tool's update brings the new tiles; meanwhile the zone settles. The shelf stays open a moment to show them.
-        Update();
-        _shape.Bounce(Springs);
-        _lingerTimer.Start();
-    }
-
-    private void Unpress()
-    {
-        if (_pressed)
-        {
-            _pressed = false;
-            _shape.ScaleTo(_hovering ? HoverScale : 1, Springs);
-        }
     }
 
     private DispatcherQueueTimer OneShot(TimeSpan interval, Action action)

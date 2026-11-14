@@ -23,7 +23,8 @@ internal static class IslandMotion
     private static readonly TimeSpan ExitDuration = TimeSpan.FromMilliseconds(110);
 
     /// <summary>Shows <paramref name="element"/> and plays its entrance after <paramref name="delay"/>.</summary>
-    public static void Enter(UIElement element, TimeSpan delay, bool springs)
+    /// <param name="from">Where it slides in from; by default a few pixels below. Pages slide in from the side.</param>
+    public static void Enter(UIElement element, TimeSpan delay, bool springs, Vector3? from = null)
     {
         element.Visibility = Visibility.Visible;
         Visual visual = Prepare(element);
@@ -49,7 +50,7 @@ internal static class IslandMotion
         visual.StartAnimation("Scale", grow);
 
         Vector3KeyFrameAnimation slide = compositor.CreateVector3KeyFrameAnimation();
-        slide.InsertKeyFrame(0, new Vector3(0, Slide, 0));
+        slide.InsertKeyFrame(0, from ?? new Vector3(0, Slide, 0));
         slide.InsertKeyFrame(1, Vector3.Zero, ease);
         slide.Duration = EnterDuration;
         slide.DelayTime = delay;
@@ -59,7 +60,8 @@ internal static class IslandMotion
 
     /// <summary>Shrinks and fades <paramref name="element"/> out, then collapses it unless <paramref name="stillHidden"/> says it came back.</summary>
     /// <param name="shrink">False to only fade, when the caller animates the scale itself.</param>
-    public static void Exit(UIElement element, Func<bool> stillHidden, bool shrink = true)
+    /// <param name="to">Where it slides out to, if anywhere (pages slide out to the side).</param>
+    public static void Exit(UIElement element, Func<bool> stillHidden, bool shrink = true, Vector3? to = null)
     {
         Visual visual = Prepare(element);
         Compositor compositor = visual.Compositor;
@@ -72,6 +74,14 @@ internal static class IslandMotion
             smaller.InsertKeyFrame(1, new Vector3(ExitScale, ExitScale, 1), ease);
             smaller.Duration = ExitDuration;
             visual.StartAnimation("Scale", smaller);
+        }
+
+        if (to is { } away)
+        {
+            Vector3KeyFrameAnimation slide = compositor.CreateVector3KeyFrameAnimation();
+            slide.InsertKeyFrame(1, away, ease);
+            slide.Duration = ExitDuration;
+            visual.StartAnimation("Translation", slide);
         }
         batch.End();
         batch.Completed += (_, _) =>

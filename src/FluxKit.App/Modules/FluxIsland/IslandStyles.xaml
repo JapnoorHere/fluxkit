@@ -59,6 +59,24 @@
         <Setter Property="Foreground" Value="#000000" />
     </Style>
 
+    <!-- A page dot under the open panel: a small target around the dot it holds, with the standard focus ring. -->
+    <Style x:Key="IslandDotStyle" TargetType="Button">
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="IsTabStop" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid
+                        Padding="5,6"
+                        Background="Transparent"
+                        CornerRadius="8">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Text styles from the type ramp. Numbers use tabular figures so they don't shift as they change. -->
     <Style x:Key="IslandCaptionText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="11" />
