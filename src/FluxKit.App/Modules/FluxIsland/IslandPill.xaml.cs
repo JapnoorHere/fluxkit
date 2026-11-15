@@ -144,6 +144,8 @@ public sealed partial class IslandPill : UserControl
         TimerTab.Click += (_, _) => ShowPage(PanelPage.Timer);
         ShelfTab.Click += (_, _) => ShowPage(PanelPage.Shelf);
         GlanceTab.Click += (_, _) => ShowPage(PanelPage.Glance);
+        NotesTab.Click += (_, _) => ShowPage(PanelPage.Notes);
+        WireCommandBar();
         GlanceView.CloseRequested += (_, _) => SetMode(PillMode.Compact);
         TimerView.SwitchChanged += (_, _) => Update();
         Surface.KeyDown += OnKeyDown;
@@ -172,7 +174,13 @@ public sealed partial class IslandPill : UserControl
         Compact,
         Peek,
         Panel,
+
+        /// <summary>The command bar, opened by the shortcut.</summary>
+        Command,
     }
+
+    /// <summary>True while the island is open: the panel or the command bar.</summary>
+    private bool IsOpen => _mode is PillMode.Panel or PillMode.Command;
 
     private enum PanelPage
     {
@@ -180,6 +188,7 @@ public sealed partial class IslandPill : UserControl
         Timer,
         Shelf,
         Glance,
+        Notes,
     }
 
     /// <summary>What buttons on the island call. Unset in previews, where nothing should happen.</summary>
@@ -192,6 +201,7 @@ public sealed partial class IslandPill : UserControl
             TimerView.Commands = value;
             ShelfView.Commands = value;
             GlanceView.Commands = value;
+            NotesView.Commands = value;
         }
     }
 
@@ -227,10 +237,23 @@ public sealed partial class IslandPill : UserControl
     }
 
     /// <summary>Shows <paramref name="scene"/>, opened as the panel when <paramref name="open"/> is true. For previews.</summary>
-    public void Preview(IslandScene scene, bool open, bool dropping = false, bool glance = false)
+    /// <param name="sample">The sample's name; "glance", "notes" and "command" open on that page or on the command bar.</param>
+    public void Preview(IslandScene scene, bool open, bool dropping = false, string? sample = null)
     {
-        _mode = open || dropping || glance ? PillMode.Panel : PillMode.Compact;
-        _page = glance ? PanelPage.Glance : null;
+        _mode = sample == "command" ? PillMode.Command
+            : open || dropping || sample is "glance" or "notes" ? PillMode.Panel
+            : PillMode.Compact;
+        _page = sample switch
+        {
+            "glance" => PanelPage.Glance,
+            "notes" => PanelPage.Notes,
+            _ => null,
+        };
+        if (sample == "command")
+        {
+            CommandView.ShowText("= 12*8+3");
+        }
+
         _dragging = dropping;
         _previewDrop = dropping;
         Show(scene);
@@ -280,7 +303,12 @@ public sealed partial class IslandPill : UserControl
     private void Update()
     {
         DateTimeOffset now = DateTimeOffset.Now;
-        (UIElement view, string key, Size size) = _mode == PillMode.Panel ? BuildPanel(now) : BuildCompact(now);
+        (UIElement view, string key, Size size) = _mode switch
+        {
+            PillMode.Panel => BuildPanel(now),
+            PillMode.Command => BuildCommand(),
+            _ => BuildCompact(now),
+        };
         bool changed = ShowView(view, key);
         UpdateGlow(now, flare: changed && view == CompactView && _scene.Primary is { IsAlert: true });
         if (changed && view == CompactView && _scene.Primary is { IsAlert: true } alert)
@@ -333,6 +361,12 @@ public sealed partial class IslandPill : UserControl
     /// </summary>
     private void UpdateGlow(DateTimeOffset now, bool flare)
     {
+        if (_mode == PillMode.Command)
+        {
+            _shape.SetAccent(IslandPalette.Blue, 0.4f, Springs);
+            return;
+        }
+
         if (_mode == PillMode.Panel)
         {
             // The open panel glows softly in the colour of its page: the album for music, orange for timers.
@@ -574,7 +608,7 @@ public sealed partial class IslandPill : UserControl
         }
 
         _mode = mode;
-        if (mode == PillMode.Panel)
+        if (IsOpen)
         {
             _shape.ScaleTo(1, Springs);
             LeanTo(Vector3.Zero);

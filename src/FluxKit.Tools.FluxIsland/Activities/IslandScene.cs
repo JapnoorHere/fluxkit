@@ -22,6 +22,9 @@ public sealed record IslandScene
 
     public IReadOnlyList<string> Shelf { get; init; } = [];
 
+    /// <summary>Quick notes from the command bar, newest first.</summary>
+    public IReadOnlyList<IslandNote> Notes { get; init; } = [];
+
     public PowerSnapshot Power { get; init; }
 
     public PrivacySnapshot Privacy { get; init; }

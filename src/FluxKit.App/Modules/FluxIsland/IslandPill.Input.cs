@@ -56,12 +56,12 @@ public sealed partial class IslandPill
     }
 
     /// <summary>
-    /// For the keyboard shortcut: opens the panel and puts focus on its first control, or closes it if it is open.
+    /// For the keyboard shortcut: opens the command bar with the caret in it, or closes the island if it is open.
     /// While opened this way it stays open when the pointer is elsewhere, until Esc, the shortcut or a click away.
     /// </summary>
     public void ToggleFromKeyboard()
     {
-        if (_mode == PillMode.Panel)
+        if (IsOpen)
         {
             SetMode(PillMode.Compact);
             return;
@@ -70,9 +70,15 @@ public sealed partial class IslandPill
         _keyboard = true;
         _peekTimer.Stop();
         _closeTimer.Stop();
-        SetMode(PillMode.Panel);
+        CommandView.Reset();
+        SetMode(PillMode.Command);
+        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, CommandView.FocusInput);
+    }
 
-        // Focus the first button once the panel's content is in place.
+    /// <summary>Opens the full panel from the keyboard (Down in an empty command bar) and focuses its first button.</summary>
+    private void OpenPanelFromKeyboard()
+    {
+        SetMode(PillMode.Panel);
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {
             if (_keyboard && FocusManager.FindFirstFocusableElement(Surface) is DependencyObject first)
@@ -134,7 +140,7 @@ public sealed partial class IslandPill
         }
 
         e.Handled = true;
-        if (_mode == PillMode.Panel)
+        if (IsOpen)
         {
             SetMode(PillMode.Compact);
         }
@@ -161,7 +167,7 @@ public sealed partial class IslandPill
     {
         _hovering = true;
         _closeTimer.Stop();
-        if (_mode != PillMode.Panel)
+        if (!IsOpen)
         {
             _shape.ScaleTo(HoverScale, Springs);
             _peekTimer.Start();
@@ -174,7 +180,7 @@ public sealed partial class IslandPill
     /// </summary>
     private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
     {
-        if (!Springs || _mode == PillMode.Panel || Surface.ActualWidth <= 0)
+        if (!Springs || IsOpen || Surface.ActualWidth <= 0)
         {
             return;
         }
@@ -224,7 +230,7 @@ public sealed partial class IslandPill
             return;
         }
 
-        if (_mode == PillMode.Panel)
+        if (IsOpen)
         {
             return;
         }

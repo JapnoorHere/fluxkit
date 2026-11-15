@@ -37,6 +37,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private readonly FocusTimer _timer;
     private readonly StopwatchModel _stopwatch;
     private readonly ShelfModel _shelf = new();
+    private readonly NotesModel _notes = new();
     private readonly BatteryAlertPolicy _battery = new();
     private readonly List<IIslandSource> _active = [];
     private readonly Dictionary<string, (DownloadUpdate Update, DateTimeOffset At)> _downloads = [];
@@ -107,6 +108,14 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
                 }
             }
 
+            if (_options.KeepNotes && _factories.NotesStore is { } notes)
+            {
+                lock (_sync)
+                {
+                    _notes.Restore(notes.Load());
+                }
+            }
+
             _view = _viewFactory(this);
             StartSources();
             Publish();
@@ -171,6 +180,12 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
 
     public void ClearShelf() => ChangeShelf(() => _shelf.Clear());
 
+    public void AddNote(string text) => ChangeNotes(() => _notes.Add(text, _time.GetUtcNow()));
+
+    public void RemoveNote(string text) => ChangeNotes(() => _notes.Remove(text));
+
+    public void ClearNotes() => ChangeNotes(_notes.Clear);
+
     public void StepVolume(int notches)
     {
         if (_volume is null || !_options.ScrollForVolume || notches == 0)
@@ -224,6 +239,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
                 Timer = _timer.Snapshot,
                 Stopwatch = _stopwatch.Snapshot,
                 Shelf = _shelf.Items,
+                Notes = _notes.Items,
                 Power = _power?.Current ?? default,
                 Privacy = _options.ShowPrivacy ? _privacy?.Current ?? default : default,
                 MicMuted = _micMuted,
@@ -343,6 +359,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         }
 
         bool keptBefore = _options.KeepShelf;
+        bool notesBefore = _options.KeepNotes;
         _options = _settings.Read<FluxIslandSettings>(FluxIslandSettings.Section);
         if (keptBefore != _options.KeepShelf && _factories.ShelfStore is { } store)
         {
@@ -354,6 +371,18 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             else
             {
                 store.Delete();
+            }
+        }
+
+        if (notesBefore != _options.KeepNotes && _factories.NotesStore is { } notesStore)
+        {
+            if (_options.KeepNotes)
+            {
+                notesStore.Save(_notes.Items);
+            }
+            else
+            {
+                notesStore.Delete();
             }
         }
 
@@ -520,6 +549,23 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         if (changed && _options.KeepShelf)
         {
             _factories.ShelfStore?.Save(items);
+        }
+    }
+
+    /// <summary>Changes the notes, then saves them if the user keeps notes between runs.</summary>
+    private void ChangeNotes(Func<bool> change)
+    {
+        bool changed = false;
+        IReadOnlyList<IslandNote> items = [];
+        Change(() =>
+        {
+            changed = change();
+            items = _notes.Items;
+        });
+
+        if (changed && _options.KeepNotes)
+        {
+            _factories.NotesStore?.Save(items);
         }
     }
 

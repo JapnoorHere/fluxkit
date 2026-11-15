@@ -46,6 +46,9 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// <summary>Keeps the files on the shelf after FluxKit or Windows restarts. Only their paths are saved, on this PC.</summary>
     public bool KeepShelf { get; set; } = true;
 
+    /// <summary>Keeps quick notes after a restart, in a file on this PC. Turning it off deletes the file.</summary>
+    public bool KeepNotes { get; set; } = true;
+
     public bool ScrollForVolume { get; set; } = true;
 
     /// <summary>Shows the volume on the island whenever it changes, from the keyboard keys or anywhere else.</summary>

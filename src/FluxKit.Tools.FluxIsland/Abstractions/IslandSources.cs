@@ -36,4 +36,7 @@ public sealed class IslandSources
 
     /// <summary>Where the shelf is kept between runs; null keeps it in memory only.</summary>
     public IShelfStore? ShelfStore { get; init; }
+
+    /// <summary>Where quick notes are kept between runs; null keeps them in memory only.</summary>
+    public INotesStore? NotesStore { get; init; }
 }

@@ -132,7 +132,7 @@ public sealed partial class IslandWindow : Window
         RenderCore(scene);
         _previewUntil = Environment.TickCount64 + (long)PreviewHold.TotalMilliseconds;
         Pill.Commands = null;
-        Pill.Preview(scene, open, dropping: sample == IslandSamples.Drop, glance: sample == "glance");
+        Pill.Preview(scene, open, dropping: sample == IslandSamples.Drop, sample: sample);
         _log.Information("Island preview {Sample} (open={Open})", sample, open);
     }
 

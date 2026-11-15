@@ -37,6 +37,10 @@ public static partial class WindowHelpers
         _ = SetWindowLongPtr(hwnd, GwlExStyle, (nint)style);
         int round = 2; // DWMWCP_ROUND
         _ = DwmSetWindowAttribute(hwnd, 33, ref round, sizeof(int));
+
+        // No window border: Windows 11 draws a 1 px outline round rounded windows, which shows at the overlay's edges.
+        int noBorder = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
+        _ = DwmSetWindowAttribute(hwnd, 34, ref noBorder, sizeof(int)); // DWMWA_BORDER_COLOR
     }
 
     /// <summary>Shows and positions a window without activating it.</summary>

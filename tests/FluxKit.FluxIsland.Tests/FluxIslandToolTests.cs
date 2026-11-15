@@ -24,6 +24,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
     private readonly FakeFileMoments _files = new();
     private readonly FakeBrightness _brightness = new();
     private readonly FakeShelfStore _store = new();
+    private readonly FakeNotesStore _notesStore = new();
     private readonly FakeLockKeys _lockKeys = new();
     private readonly FakeDevices _devices = new();
     private readonly FakeHotkey _hotkey = new();
@@ -52,6 +53,7 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
                 return _hotkey;
             },
             ShelfStore = _store,
+            NotesStore = _notesStore,
         };
         _tool = new FluxIslandTool(_settings, _ => _view, sources, _time, new LoggerConfiguration().CreateLogger());
     }
@@ -456,5 +458,35 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
         });
 
         Assert.Null(_registered);
+    }
+
+    [Fact]
+    public void Notes_from_the_command_bar_show_in_the_scene_and_are_saved()
+    {
+        _tool.AddNote("buy milk");
+        _tool.AddNote("call Sam");
+
+        Assert.Equal(["call Sam", "buy milk"], _view.Last.Notes.Select(n => n.Text));
+        Assert.Equal(2, _notesStore.Saved.Count);
+
+        _tool.RemoveNote("buy milk");
+
+        Assert.Single(_view.Last.Notes);
+        Assert.Single(_notesStore.Saved);
+    }
+
+    [Fact]
+    public async Task Turning_keep_notes_off_deletes_the_saved_notes()
+    {
+        _tool.AddNote("secret");
+
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.KeepNotes = false;
+            return s;
+        });
+
+        Assert.True(_notesStore.Deleted);
+        Assert.Single(_view.Last.Notes);
     }
 }

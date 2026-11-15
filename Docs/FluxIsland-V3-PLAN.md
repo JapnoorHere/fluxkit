@@ -203,6 +203,8 @@ Every phase ends the same way:
 - Commit: "Redesign the Flux Island panel with swipeable pages and new Media, Timer, Shelf and Glance layouts"
 
 ### Phase 5: Island Command bar (the unique headline)
+
+> **As built:** the shortcut now opens the command bar, which previews what Enter will do. Sums and colours are copied and the bar stays open; Down in an empty bar opens the panel. Notes have their own page and are kept in `notes.json` (setting `keepNotes`). Shelf and notes share one `JsonFile<T>` helper with source-generated JSON. Also fixed: the Windows 11 window border showed at the overlay's edges.
 - **`Activities/CommandParser.cs`** (pure, unit-tested) turns text into an `IslandCommand` such as:
   - `StartTimer(TimeSpan)`, `StartStopwatch`, `Calculate(double)`, `ShowColor(int rgb)`, `AddNote(string)`
   - `Lock`, `Screenshot`, `ToggleMic`, `OpenPage(page)`, `ClearShelf`

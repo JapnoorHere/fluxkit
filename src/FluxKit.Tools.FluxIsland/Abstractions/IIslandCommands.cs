@@ -36,6 +36,13 @@ public interface IIslandCommands
 
     void ClearShelf();
 
+    /// <summary>Adds a quick note (from the command bar).</summary>
+    void AddNote(string text);
+
+    void RemoveNote(string text);
+
+    void ClearNotes();
+
     void StepVolume(int notches);
 
     /// <summary>Mutes the microphone, or unmutes it if it is muted.</summary>

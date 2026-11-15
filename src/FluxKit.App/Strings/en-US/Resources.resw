@@ -1257,4 +1257,118 @@
   <data name="FluxIsland_MonitorMouse.Content" xml:space="preserve">
     <value>Where the mouse is</value>
   </data>
+  <data name="Island_CommandInput.PlaceholderText" xml:space="preserve">
+    <value>Type a timer, a sum, a colour or a note</value>
+  </data>
+  <data name="Island_CommandInput.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Island command</value>
+  </data>
+  <data name="Island_CommandName" xml:space="preserve">
+    <value>Island command bar</value>
+  </data>
+  <data name="Island_Cmd_TimerFormat" xml:space="preserve">
+    <value>Start a {0} timer</value>
+  </data>
+  <data name="Island_Cmd_TimerDetail" xml:space="preserve">
+    <value>Counts down on the island</value>
+  </data>
+  <data name="Island_Cmd_Focus" xml:space="preserve">
+    <value>Start a focus round</value>
+  </data>
+  <data name="Island_Cmd_Stopwatch" xml:space="preserve">
+    <value>Start the stopwatch</value>
+  </data>
+  <data name="Island_Cmd_Stop" xml:space="preserve">
+    <value>Stop the timer</value>
+  </data>
+  <data name="Island_Cmd_CalcDetailFormat" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="Island_Cmd_ColorDetailFormat" xml:space="preserve">
+    <value>RGB {0}, {1}, {2}</value>
+  </data>
+  <data name="Island_Cmd_NoteDetail" xml:space="preserve">
+    <value>Save as a note</value>
+  </data>
+  <data name="Island_Cmd_PlayPause" xml:space="preserve">
+    <value>Play or pause music</value>
+  </data>
+  <data name="Island_Cmd_Next" xml:space="preserve">
+    <value>Next track</value>
+  </data>
+  <data name="Island_Cmd_Previous" xml:space="preserve">
+    <value>Previous track</value>
+  </data>
+  <data name="Island_Cmd_Mic" xml:space="preserve">
+    <value>Mute or unmute the microphone</value>
+  </data>
+  <data name="Island_Cmd_Lock" xml:space="preserve">
+    <value>Lock the PC</value>
+  </data>
+  <data name="Island_Cmd_Screenshot" xml:space="preserve">
+    <value>Take a screenshot</value>
+  </data>
+  <data name="Island_Cmd_ScreenOff" xml:space="preserve">
+    <value>Turn the screen off</value>
+  </data>
+  <data name="Island_Cmd_ClearShelf" xml:space="preserve">
+    <value>Clear the shelf</value>
+  </data>
+  <data name="Island_Cmd_OpenFormat" xml:space="preserve">
+    <value>Open {0}</value>
+  </data>
+  <data name="Island_Cmd_Examples" xml:space="preserve">
+    <value>Try 5m, = 12*8, #3a7bff or note call Sam</value>
+  </data>
+  <data name="Island_Cmd_ExamplesDetail" xml:space="preserve">
+    <value>Also: stopwatch, focus, pause, next, mute, lock, screenshot, glance. Down opens the panel.</value>
+  </data>
+  <data name="Island_Cmd_NoMatch" xml:space="preserve">
+    <value>Nothing matches yet</value>
+  </data>
+  <data name="Island_Cmd_NoMatchDetail" xml:space="preserve">
+    <value>A time (10m), a sum, a colour, "note …" or a word like lock</value>
+  </data>
+  <data name="Island_Cmd_EnterRun" xml:space="preserve">
+    <value>Enter</value>
+  </data>
+  <data name="Island_Cmd_EnterCopy" xml:space="preserve">
+    <value>Enter to copy</value>
+  </data>
+  <data name="Island_Cmd_CopiedFormat" xml:space="preserve">
+    <value>Copied {0}</value>
+  </data>
+  <data name="Island_Cmd_KeepTyping" xml:space="preserve">
+    <value>Type another, or press Esc</value>
+  </data>
+  <data name="Island_NotesTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="Island_NotesTitle.Text" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="Island_NotesNameFormat" xml:space="preserve">
+    <value>{0} notes</value>
+  </data>
+  <data name="Island_ClearNotes.Content" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Island_CopyNote" xml:space="preserve">
+    <value>Copy this note</value>
+  </data>
+  <data name="Island_RemoveNote" xml:space="preserve">
+    <value>Remove note</value>
+  </data>
+  <data name="Island_AgeNow" xml:space="preserve">
+    <value>now</value>
+  </data>
+  <data name="Island_AgeHoursFormat" xml:space="preserve">
+    <value>{0} h</value>
+  </data>
+  <data name="FluxIsland_KeepNotes.Header" xml:space="preserve">
+    <value>Keep notes</value>
+  </data>
+  <data name="FluxIsland_KeepNotes.Description" xml:space="preserve">
+    <value>Keep notes from the command bar after a restart. They're saved only on this PC.</value>
+  </data>
 </root>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The Island Command bar: the shortcut opens it, you type, and the island shows what will happen before you press
+    Enter: "Timer · 5:00", "= 99", a colour swatch, a note. Esc closes it; Down opens the full panel instead.
+-->
+<UserControl
+    x:Class="FluxKit.App.Modules.FluxIsland.CommandBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    RequestedTheme="Dark">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Modules/FluxIsland/IslandStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <!-- The field sits straight on the black pill: no box, no underline, in every state. -->
+            <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlForeground" Color="#F5F5F7" />
+            <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#F5F5F7" />
+            <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#6B6B74" />
+            <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#6B6B74" />
+            <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#6B6B74" />
+            <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#5A0A84FF" />
+            <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid x:Name="ContentGrid" Padding="18,10,14,10" RowSpacing="6">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="InputRow" ColumnSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <FontIcon
+                x:Name="PromptGlyph"
+                VerticalAlignment="Center"
+                FontSize="15"
+                Glyph="&#xE721;" />
+            <TextBox
+                x:Name="Input"
+                Grid.Column="1"
+                Padding="0,6"
+                VerticalAlignment="Center"
+                FontSize="16"
+                IsSpellCheckEnabled="False"
+                IsTextPredictionEnabled="False"
+                x:Uid="Island_CommandInput" />
+            <Border
+                x:Name="EscHint"
+                Grid.Column="2"
+                Padding="7,2"
+                VerticalAlignment="Center"
+                Background="#1CFFFFFF"
+                CornerRadius="6">
+                <TextBlock x:Name="EscHintText" FontSize="11" Text="Esc" />
+            </Border>
+        </Grid>
+
+        <!-- What Enter will do, or a few examples while the field is empty. -->
+        <Grid
+            x:Name="ResultRow"
+            Grid.Row="1"
+            Padding="0,2,0,4"
+            ColumnSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid Width="26" Height="26">
+                <Border
+                    x:Name="ResultBadge"
+                    Background="#1CFFFFFF"
+                    CornerRadius="8">
+                    <FontIcon x:Name="ResultGlyph" FontSize="13" />
+                </Border>
+                <Border
+                    x:Name="Swatch"
+                    CornerRadius="8"
+                    Visibility="Collapsed" />
+            </Grid>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock
+                    x:Name="ResultTitle"
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    MaxLines="1"
+                    TextTrimming="CharacterEllipsis" />
+                <TextBlock
+                    x:Name="ResultDetail"
+                    FontSize="12"
+                    MaxLines="1"
+                    TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <Border
+                x:Name="EnterHint"
+                Grid.Column="2"
+                Padding="8,3"
+                VerticalAlignment="Center"
+                Background="#F5F5F7"
+                CornerRadius="6">
+                <TextBlock
+                    x:Name="EnterHintText"
+                    FontSize="11"
+                    FontWeight="SemiBold"
+                    Foreground="#000000" />
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

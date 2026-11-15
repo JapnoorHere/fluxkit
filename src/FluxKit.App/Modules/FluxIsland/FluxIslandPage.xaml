@@ -89,6 +89,9 @@
                         <c:SettingRow x:Uid="FluxIsland_KeepShelf" Glyph="&#xE74E;">
                             <ToggleSwitch x:Name="KeepShelfToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_KeepNotes" Glyph="&#xE70B;">
+                            <ToggleSwitch x:Name="KeepNotesToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ScrollVolume" Glyph="&#xE767;">
                             <ToggleSwitch x:Name="VolumeToggle" Toggled="OnChanged" />
                         </c:SettingRow>

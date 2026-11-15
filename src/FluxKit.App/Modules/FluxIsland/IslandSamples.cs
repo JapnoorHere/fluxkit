@@ -15,7 +15,7 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
@@ -65,6 +65,9 @@ internal static class IslandSamples
             Media = name is "music" or "split" ? media : null,
             Timer = name is "timer" or "split" or "both" ? timer : FocusTimerSnapshot.Idle,
             Stopwatch = name is "stopwatch" or "both" ? stopwatch : StopwatchSnapshot.Idle,
+            Notes = name == "notes"
+                ? [new IslandNote("Call Sam about the launch", now - TimeSpan.FromMinutes(5)), new IslandNote("Buy milk", now - TimeSpan.FromHours(2)), new IslandNote("#3A7BFF for the new icon", now - TimeSpan.FromDays(1))]
+                : [],
             Shelf = name == "shelf" ? [@"C:\Windows\Web\Wallpaper\Windows\img0.jpg", @"C:\Windows\Media\Alarm01.wav", @"C:\Windows\Web\Screen", @"C:\Windows\notepad.exe"] : [],
             Power = power,
             Privacy = new PrivacySnapshot(name == "music", false),
