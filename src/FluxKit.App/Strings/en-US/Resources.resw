@@ -1467,4 +1467,19 @@
   <data name="FluxIsland_ClipboardHistory.Description" xml:space="preserve">
     <value>Keep the last 25 pieces of copied text on a Clipboard page, to copy again or pin. Kept in memory only; private copies are skipped.</value>
   </data>
+  <data name="FluxIsland_LabsGroup.Header" xml:space="preserve">
+    <value>Labs</value>
+  </data>
+  <data name="FluxIsland_Look.Header" xml:space="preserve">
+    <value>Look</value>
+  </data>
+  <data name="FluxIsland_Look.Description" xml:space="preserve">
+    <value>Onyx is true black, like a phone. Glass (experimental) is dark smoked glass with a brighter rim.</value>
+  </data>
+  <data name="FluxIsland_LookOnyx.Content" xml:space="preserve">
+    <value>Onyx</value>
+  </data>
+  <data name="FluxIsland_LookGlass.Content" xml:space="preserve">
+    <value>Glass (labs)</value>
+  </data>
 </root>

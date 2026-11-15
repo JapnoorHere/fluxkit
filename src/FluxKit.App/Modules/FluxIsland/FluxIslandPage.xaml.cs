@@ -50,6 +50,7 @@ public sealed partial class FluxIslandPage : Page
         HotkeyBox.Text = s.Hotkey;
         HotkeyRow.Description = Strings.Get("FluxIsland_HotkeyHelp");
         MonitorCombo.SelectedIndex = (int)s.Monitor;
+        LookCombo.SelectedIndex = (int)s.Look;
         ClockToggle.IsOn = s.ShowClockWhenIdle;
         ShelfToggle.IsOn = s.ShelfEnabled;
         KeepShelfToggle.IsOn = s.KeepShelf;
@@ -138,7 +139,7 @@ public sealed partial class FluxIslandPage : Page
 
     private void OnChanged(object sender, object e)
     {
-        if (FullScreenToggle is null)
+        if (LookCombo is null)
         {
             return; // raised during InitializeComponent
         }
@@ -165,6 +166,7 @@ public sealed partial class FluxIslandPage : Page
             s.ShowDevices = DevicesToggle.IsOn;
             s.ShowGlance = GlanceToggle.IsOn;
             s.Monitor = (IslandMonitor)Math.Max(0, MonitorCombo.SelectedIndex);
+            s.Look = (IslandLook)Math.Max(0, LookCombo.SelectedIndex);
             s.ShowClockWhenIdle = ClockToggle.IsOn;
             s.ShelfEnabled = ShelfToggle.IsOn;
             s.KeepShelf = KeepShelfToggle.IsOn;

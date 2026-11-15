@@ -30,6 +30,8 @@ internal sealed class PillShape
     private readonly Compositor _compositor;
     private readonly CompositionRoundedRectangleGeometry _geometry;
     private readonly CompositionRoundedRectangleGeometry _neck;
+    private readonly CompositionColorBrush _body;
+    private CompositionColorGradientStop? _rim;
     private readonly ShapeVisual _glow;
     private readonly List<(CompositionColorBrush Brush, byte Alpha)> _glowBrushes = [];
     private readonly Visual _stage;
@@ -82,11 +84,12 @@ internal sealed class PillShape
         neckRound.SetReferenceParameter("n", _neck);
         _neck.StartAnimation("CornerRadius", neckRound);
         CompositionSpriteShape neck = _compositor.CreateSpriteShape(_neck);
-        neck.FillBrush = _compositor.CreateColorBrush(IslandPalette.Surface);
+        _body = _compositor.CreateColorBrush(IslandPalette.Surface);
+        neck.FillBrush = _body;
         body.Shapes.Add(neck);
 
         CompositionSpriteShape fill = _compositor.CreateSpriteShape(_geometry);
-        fill.FillBrush = _compositor.CreateColorBrush(IslandPalette.Surface);
+        fill.FillBrush = _body;
         fill.StrokeBrush = EdgeLight();
         fill.StrokeThickness = 1;
         body.Shapes.Add(fill);
@@ -194,6 +197,22 @@ internal sealed class PillShape
         }
     }
 
+    /// <summary>
+    /// Switches the body between Onyx (true black) and Glass (dark smoked glass with a brighter rim). Content keeps
+    /// its contrast either way; the change cross-fades.
+    /// </summary>
+    public void SetGlass(bool glass)
+    {
+        ColorKeyFrameAnimation fade = _compositor.CreateColorKeyFrameAnimation();
+        fade.InsertKeyFrame(1, glass ? IslandPalette.GlassSurface : IslandPalette.Surface);
+        fade.Duration = TimeSpan.FromMilliseconds(300);
+        _body.StartAnimation("Color", fade);
+        if (_rim is not null)
+        {
+            _rim.Color = glass ? IslandPalette.GlassRim : IslandPalette.EdgeLight;
+        }
+    }
+
     /// <summary>A moment arriving: the glow flares, then settles back to its resting strength.</summary>
     public void Flare(bool springs)
     {
@@ -298,7 +317,8 @@ internal sealed class PillShape
         CompositionLinearGradientBrush light = _compositor.CreateLinearGradientBrush();
         light.StartPoint = Vector2.Zero;
         light.EndPoint = new Vector2(0, 1);
-        light.ColorStops.Add(_compositor.CreateColorGradientStop(0, IslandPalette.EdgeLight));
+        _rim = _compositor.CreateColorGradientStop(0, IslandPalette.EdgeLight);
+        light.ColorStops.Add(_rim);
         light.ColorStops.Add(_compositor.CreateColorGradientStop(0.45f, IslandPalette.WithAlpha(IslandPalette.EdgeLight, 0x0C)));
         light.ColorStops.Add(_compositor.CreateColorGradientStop(1, IslandPalette.WithAlpha(IslandPalette.EdgeLight, 0x06)));
         return light;

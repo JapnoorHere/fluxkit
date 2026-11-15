@@ -13,6 +13,16 @@ public enum IslandMonitor
     FollowMouse,
 }
 
+/// <summary>The island's material.</summary>
+public enum IslandLook
+{
+    /// <summary>True black, like a phone's island blending into the screen edge.</summary>
+    Onyx,
+
+    /// <summary>Labs: dark smoked glass that lets a hint of the desktop through, with a brighter rim.</summary>
+    Glass,
+}
+
 public enum IslandEffects
 {
     /// <summary>Springs, glow and the playing indicator.</summary>
@@ -110,6 +120,8 @@ public sealed class FluxIslandSettings : ISettingsSection
 
     public IslandEffects Effects { get; set; } = IslandEffects.Full;
 
+    public IslandLook Look { get; set; } = IslandLook.Onyx;
+
     public int FocusMinutes { get; set; } = 25;
 
     public int BreakMinutes { get; set; } = 5;
@@ -134,6 +146,12 @@ public sealed class FluxIslandSettings : ISettingsSection
         {
             Effects = IslandEffects.Full;
             yield return "effects reset to Full";
+        }
+
+        if (!Enum.IsDefined(Look))
+        {
+            Look = IslandLook.Onyx;
+            yield return "look reset to Onyx";
         }
 
         if (!Enum.IsDefined(Monitor))

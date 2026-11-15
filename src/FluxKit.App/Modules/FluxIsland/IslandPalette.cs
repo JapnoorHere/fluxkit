@@ -13,6 +13,12 @@ internal static class IslandPalette
     /// <summary>The body: true black, so it reads as part of the screen's edge.</summary>
     public static readonly Color Surface = Color.FromArgb(0xFF, 0x00, 0x00, 0x00);
 
+    /// <summary>The Glass look's body: dark smoked glass, about 90 % opaque, so text keeps its contrast.</summary>
+    public static readonly Color GlassSurface = Color.FromArgb(0xE8, 0x16, 0x16, 0x1C);
+
+    /// <summary>The Glass look's brighter rim.</summary>
+    public static readonly Color GlassRim = Color.FromArgb(0x7A, 0xFF, 0xFF, 0xFF);
+
     /// <summary>Raised areas inside the panel (art frames, tiles).</summary>
     public static readonly Color Raised = Color.FromArgb(0xFF, 0x1A, 0x1A, 0x1F);
 

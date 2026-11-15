@@ -65,6 +65,20 @@ public sealed partial class IslandPill
         IslandMotion.Exit(Bubble, () => !_bubbleShown, shrink: false);
     }
 
+    /// <summary>Switches the pill and the bubble between Onyx and Glass when the setting changes.</summary>
+    private void ApplyLook(bool glass)
+    {
+        if (glass == _glass)
+        {
+            return;
+        }
+
+        _glass = glass;
+        _shape.SetGlass(glass);
+        BubbleFill.Fill = new SolidColorBrush(glass ? IslandPalette.GlassSurface : IslandPalette.Surface);
+        BubbleEdge.Stroke = new SolidColorBrush(glass ? IslandPalette.GlassRim : IslandPalette.Highlight);
+    }
+
     private void Spring(Visual visual, string property, Vector3 to)
     {
         if (!Springs)

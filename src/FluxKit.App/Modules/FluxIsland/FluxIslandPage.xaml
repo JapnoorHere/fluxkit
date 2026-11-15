@@ -165,6 +165,17 @@
                         </c:SettingRow>
                     </StackPanel>
                 </c:SettingsGroup>
+
+                <c:SettingsGroup x:Uid="FluxIsland_LabsGroup">
+                    <StackPanel>
+                        <c:SettingRow x:Uid="FluxIsland_Look" Glyph="&#xE790;">
+                            <ComboBox x:Name="LookCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
+                                <ComboBoxItem x:Uid="FluxIsland_LookOnyx" />
+                                <ComboBoxItem x:Uid="FluxIsland_LookGlass" />
+                            </ComboBox>
+                        </c:SettingRow>
+                    </StackPanel>
+                </c:SettingsGroup>
             </StackPanel>
         </c:ToolPageLayout>
     </Grid>

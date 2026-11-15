@@ -15,7 +15,7 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
@@ -35,6 +35,7 @@ internal static class IslandSamples
             "volume" => new IslandActivity(ActivityKind.Volume) { Value = 64 },
             "shelf" => new IslandActivity(ActivityKind.Shelf) { Value = 4 },
             "split" => new IslandActivity(ActivityKind.Timer) { Timer = timer },
+            "glass" => new IslandActivity(ActivityKind.Media) { Media = media },
             "download" => new IslandActivity(ActivityKind.Download) { Text = "Holiday photos.zip", Value = 148 },
             "downloaded" => new IslandActivity(ActivityKind.DownloadDone) { Text = "Holiday photos.zip", Path = @"C:\Windows\Web\Wallpaper\Windows\img0.jpg" },
             "screenshot" => new IslandActivity(ActivityKind.Screenshot) { Text = "Screenshot 2026-10-30 101500.png", Path = @"C:\Windows\Web\Wallpaper\Windows\img0.jpg" },
@@ -64,7 +65,7 @@ internal static class IslandSamples
                 "both" => new IslandActivity(ActivityKind.Stopwatch) { Stopwatch = stopwatch },
                 _ => null,
             },
-            Media = name is "music" or "split" ? media : null,
+            Media = name is "music" or "split" or "glass" ? media : null,
             Timer = name is "timer" or "split" or "both" ? timer : FocusTimerSnapshot.Idle,
             Stopwatch = name is "stopwatch" or "both" ? stopwatch : StopwatchSnapshot.Idle,
             Rewind = name == "rewind"
@@ -78,7 +79,11 @@ internal static class IslandSamples
             Clips = name == "clips"
                 ? [new ClipEntry("Meet at 6 at the usual place", now - TimeSpan.FromMinutes(1), true), new ClipEntry("https://github.com/fluxkit", now - TimeSpan.FromMinutes(9), false), new ClipEntry("#3A7BFF", now - TimeSpan.FromHours(3), false)]
                 : [],
-            Settings = new FluxKit.Tools.FluxIsland.FluxIslandSettings { ClipboardHistory = name == "clips" },
+            Settings = new FluxKit.Tools.FluxIsland.FluxIslandSettings
+            {
+                ClipboardHistory = name == "clips",
+                Look = name == "glass" ? FluxKit.Tools.FluxIsland.IslandLook.Glass : FluxKit.Tools.FluxIsland.IslandLook.Onyx,
+            },
             Notes = name == "notes"
                 ? [new IslandNote("Call Sam about the launch", now - TimeSpan.FromMinutes(5)), new IslandNote("Buy milk", now - TimeSpan.FromHours(2)), new IslandNote("#3A7BFF for the new icon", now - TimeSpan.FromDays(1))]
                 : [],

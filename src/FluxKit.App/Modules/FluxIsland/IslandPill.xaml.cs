@@ -72,6 +72,7 @@ public sealed partial class IslandPill : UserControl
     private ImageSource? _thumb;
     private bool _held;
     private Vector3 _lean;
+    private bool _glass;
     private int _pageSlide;
     private bool _keyboard;
 
@@ -272,6 +273,7 @@ public sealed partial class IslandPill : UserControl
     {
         _scene = scene;
         Surface.AllowDrop = scene.Settings.ShelfEnabled;
+        ApplyLook(scene.Settings.Look == FluxKit.Tools.FluxIsland.IslandLook.Glass);
         _art.Set(scene.Media?.Thumbnail ?? ReadOnlyMemory<byte>.Empty);
         Update();
     }

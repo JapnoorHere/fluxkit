@@ -261,6 +261,8 @@ Every phase ends the same way:
 - Commit: "Add a Rewind page of recent moments and an opt-in clipboard history to Flux Island"
 
 ### Phase 9: Glass style (labs)
+
+> **As built:** the fallback shipped. A real desktop blur is clipped by the window region, which lags the morph spring, so acrylic rectangles would show around the pill while it moves. Glass is dark smoked glass instead (`GlassSurface`, about 90 % opaque) with a brighter rim. It is picked under Settings › Labs › Look, and switching cross-fades. It costs nothing extra at run time.
 - Setting `Style`: `Onyx` (default) or `Glass`, under a "Labs" settings group.
 - **Glass:**
   - `IslandWindow` sets `SystemBackdrop = new DesktopAcrylicBackdrop()` (or a `DesktopAcrylicController` with a custom tint and luminosity) instead of `TransparentBackdrop`.
