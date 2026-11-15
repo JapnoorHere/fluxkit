@@ -1344,14 +1344,11 @@
   <data name="Island_NotesTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Notes</value>
   </data>
-  <data name="Island_NotesTitle.Text" xml:space="preserve">
+  <data name="Island_NotesTitle" xml:space="preserve">
     <value>Notes</value>
   </data>
   <data name="Island_NotesNameFormat" xml:space="preserve">
     <value>{0} notes</value>
-  </data>
-  <data name="Island_ClearNotes.Content" xml:space="preserve">
-    <value>Clear</value>
   </data>
   <data name="Island_CopyNote" xml:space="preserve">
     <value>Copy this note</value>
@@ -1430,5 +1427,44 @@
   </data>
   <data name="Island_FileActionFailedDetail" xml:space="preserve">
     <value>The files couldn't be read or saved</value>
+  </data>
+  <data name="Island_ClearList.Content" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Island_RewindTitle" xml:space="preserve">
+    <value>Recent</value>
+  </data>
+  <data name="Island_RewindNameFormat" xml:space="preserve">
+    <value>{0} recent moments</value>
+  </data>
+  <data name="Island_ClipsTitle" xml:space="preserve">
+    <value>Clipboard</value>
+  </data>
+  <data name="Island_ClipsNameFormat" xml:space="preserve">
+    <value>{0} copied items</value>
+  </data>
+  <data name="Island_CopyClip" xml:space="preserve">
+    <value>Copy again</value>
+  </data>
+  <data name="Island_PinClip" xml:space="preserve">
+    <value>Pin</value>
+  </data>
+  <data name="Island_UnpinClip" xml:space="preserve">
+    <value>Unpin</value>
+  </data>
+  <data name="Island_RemoveClip" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Island_RewindTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Recent</value>
+  </data>
+  <data name="Island_ClipsTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Clipboard</value>
+  </data>
+  <data name="FluxIsland_ClipboardHistory.Header" xml:space="preserve">
+    <value>Clipboard history</value>
+  </data>
+  <data name="FluxIsland_ClipboardHistory.Description" xml:space="preserve">
+    <value>Keep the last 25 pieces of copied text on a Clipboard page, to copy again or pin. Kept in memory only; private copies are skipped.</value>
   </data>
 </root>

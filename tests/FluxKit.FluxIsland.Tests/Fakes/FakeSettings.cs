@@ -1,8 +1,12 @@
+using System.Text.Json;
 using FluxKit.Core.Settings;
 
 namespace FluxKit.FluxIsland.Tests.Fakes;
 
-/// <summary>An in-memory settings store; sections start at their defaults.</summary>
+/// <summary>
+/// An in-memory settings store; sections start at their defaults. Like the real service, every read returns a fresh
+/// copy, so a tool can compare its old settings with the new ones.
+/// </summary>
 internal sealed class FakeSettings : ISettingsService
 {
     private readonly Dictionary<string, object> _sections = [];
@@ -16,7 +20,7 @@ internal sealed class FakeSettings : ISettingsService
     public event EventHandler<string>? SettingsChanged;
 
     public T Read<T>(string section) where T : class, new() =>
-        _sections.TryGetValue(section, out object? value) ? (T)value : new T();
+        _sections.TryGetValue(section, out object? value) ? JsonSerializer.Deserialize<T>(JsonSerializer.Serialize((T)value))! : new T();
 
     public Task UpdateAsync<T>(string section, Func<T, T> mutate) where T : class, new()
     {

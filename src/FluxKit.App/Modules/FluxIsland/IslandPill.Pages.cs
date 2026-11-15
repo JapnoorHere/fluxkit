@@ -52,6 +52,8 @@ public sealed partial class IslandPill
         PanelPage.Shelf => ShelfView,
         PanelPage.Glance => GlanceView,
         PanelPage.Notes => NotesView,
+        PanelPage.Rewind => RewindView,
+        PanelPage.Clips => ClipsView,
         _ => TimerView,
     };
 
@@ -83,6 +85,16 @@ public sealed partial class IslandPill
             pages.Add(PanelPage.Notes);
         }
 
+        if (_scene.Rewind.Count > 0)
+        {
+            pages.Add(PanelPage.Rewind);
+        }
+
+        if (_scene.Settings.ClipboardHistory)
+        {
+            pages.Add(PanelPage.Clips);
+        }
+
         return pages;
     }
 
@@ -110,7 +122,7 @@ public sealed partial class IslandPill
     private void ShowRail(List<PanelPage> pages, PanelPage selected)
     {
         PanelRail.Visibility = pages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
-        (Button Tab, Border Dot, PanelPage Page)[] tabs = [(MediaTab, MediaDot, PanelPage.Media), (TimerTab, TimerDot, PanelPage.Timer), (ShelfTab, ShelfDot, PanelPage.Shelf), (GlanceTab, GlanceDot, PanelPage.Glance), (NotesTab, NotesDot, PanelPage.Notes)];
+        (Button Tab, Border Dot, PanelPage Page)[] tabs = [(MediaTab, MediaDot, PanelPage.Media), (TimerTab, TimerDot, PanelPage.Timer), (ShelfTab, ShelfDot, PanelPage.Shelf), (GlanceTab, GlanceDot, PanelPage.Glance), (NotesTab, NotesDot, PanelPage.Notes), (RewindTab, RewindDot, PanelPage.Rewind), (ClipsTab, ClipsDot, PanelPage.Clips)];
         foreach ((Button tab, Border dot, PanelPage tabPage) in tabs)
         {
             bool isSelected = tabPage == selected;

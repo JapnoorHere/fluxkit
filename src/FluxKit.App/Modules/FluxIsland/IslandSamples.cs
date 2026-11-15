@@ -15,7 +15,7 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
@@ -67,6 +67,18 @@ internal static class IslandSamples
             Media = name is "music" or "split" ? media : null,
             Timer = name is "timer" or "split" or "both" ? timer : FocusTimerSnapshot.Idle,
             Stopwatch = name is "stopwatch" or "both" ? stopwatch : StopwatchSnapshot.Idle,
+            Rewind = name == "rewind"
+                ?
+                [
+                    new RewindEntry(new IslandActivity(ActivityKind.Screenshot) { Text = "Screenshot 2026-11-14.png", Path = @"C:\Windows\Web\Wallpaper\Windows\img0.jpg" }, now - TimeSpan.FromMinutes(2)),
+                    new RewindEntry(new IslandActivity(ActivityKind.Copied) { Clipboard = ClipboardKind.Text, Smart = SmartText.Link, Text = "github.com", Path = "https://github.com/" }, now - TimeSpan.FromMinutes(18)),
+                    new RewindEntry(new IslandActivity(ActivityKind.DownloadDone) { Text = "Holiday photos.zip", Path = @"C:\Windows\notepad.exe" }, now - TimeSpan.FromHours(1)),
+                ]
+                : [],
+            Clips = name == "clips"
+                ? [new ClipEntry("Meet at 6 at the usual place", now - TimeSpan.FromMinutes(1), true), new ClipEntry("https://github.com/fluxkit", now - TimeSpan.FromMinutes(9), false), new ClipEntry("#3A7BFF", now - TimeSpan.FromHours(3), false)]
+                : [],
+            Settings = new FluxKit.Tools.FluxIsland.FluxIslandSettings { ClipboardHistory = name == "clips" },
             Notes = name == "notes"
                 ? [new IslandNote("Call Sam about the launch", now - TimeSpan.FromMinutes(5)), new IslandNote("Buy milk", now - TimeSpan.FromHours(2)), new IslandNote("#3A7BFF for the new icon", now - TimeSpan.FromDays(1))]
                 : [],

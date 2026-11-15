@@ -148,6 +148,9 @@ public sealed partial class IslandPill : UserControl
         ShelfTab.Click += (_, _) => ShowPage(PanelPage.Shelf);
         GlanceTab.Click += (_, _) => ShowPage(PanelPage.Glance);
         NotesTab.Click += (_, _) => ShowPage(PanelPage.Notes);
+        RewindTab.Click += (_, _) => ShowPage(PanelPage.Rewind);
+        ClipsTab.Click += (_, _) => ShowPage(PanelPage.Clips);
+        ConfigureLists();
         WireCommandBar();
         GlanceView.CloseRequested += (_, _) => SetMode(PillMode.Compact);
         TimerView.SwitchChanged += (_, _) => Update();
@@ -192,6 +195,8 @@ public sealed partial class IslandPill : UserControl
         Shelf,
         Glance,
         Notes,
+        Rewind,
+        Clips,
     }
 
     /// <summary>What buttons on the island call. Unset in previews, where nothing should happen.</summary>
@@ -204,7 +209,6 @@ public sealed partial class IslandPill : UserControl
             TimerView.Commands = value;
             ShelfView.Commands = value;
             GlanceView.Commands = value;
-            NotesView.Commands = value;
         }
     }
 
@@ -244,12 +248,14 @@ public sealed partial class IslandPill : UserControl
     public void Preview(IslandScene scene, bool open, bool dropping = false, string? sample = null)
     {
         _mode = sample == "command" ? PillMode.Command
-            : open || dropping || sample is "glance" or "notes" ? PillMode.Panel
+            : open || dropping || sample is "glance" or "notes" or "rewind" or "clips" ? PillMode.Panel
             : PillMode.Compact;
         _page = sample switch
         {
             "glance" => PanelPage.Glance,
             "notes" => PanelPage.Notes,
+            "rewind" => PanelPage.Rewind,
+            "clips" => PanelPage.Clips,
             _ => null,
         };
         if (sample == "command")

@@ -249,6 +249,8 @@ Every phase ends the same way:
 - Commit: "Let files dropped on Flux Island be zipped, converted or resized, or have their path copied"
 
 ### Phase 8: Rewind and clipboard history
+
+> **As built:** `MomentHistory` (30) and `ClipboardHistoryModel` (25 plus pins) are plain models fed by the tool. Every moment goes through one `RaiseMoment` helper. Notes, Recent and Clipboard share one `ListPanel`, set up per page by `ListPageSpec`. Clipboard history is opt-in and memory-only, and turning it off forgets everything, pins included. The fake settings service now returns copies like the real one.
 - **`Activities/MomentHistory.cs`:** a ring buffer of 30 `IslandActivity` items with timestamps, fed by `ActivityArbiter.Raise`. Smart-copy text is kept only when clipboard history is on.
 - **Rewind page:** a time-grouped list ("Just now", "Earlier") with each moment's action chip; hover shows details.
 - **Clipboard history** (opt-in setting `ClipboardHistory`, off by default):

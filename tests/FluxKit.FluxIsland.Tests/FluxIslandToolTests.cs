@@ -547,4 +547,43 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
         _tool.NotifySpeakingWhileMuted();
         Assert.Equal(ActivityKind.MicMuted, _view.Last.Primary?.Kind);
     }
+
+    [Fact]
+    public void Finished_downloads_and_screenshots_are_kept_for_rewind()
+    {
+        _files.Screenshot(@"C:shots.png");
+
+        Assert.Equal(ActivityKind.Screenshot, Assert.Single(_view.Last.Rewind).Activity.Kind);
+
+        _tool.ClearRewind();
+
+        Assert.Empty(_view.Last.Rewind);
+    }
+
+    [Fact]
+    public async Task Clipboard_history_keeps_copied_text_only_while_it_is_on_and_forgets_it_when_turned_off()
+    {
+        _clipboard.Copy(ClipboardKind.Text, "not kept");
+        Assert.Empty(_view.Last.Clips);
+
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.ClipboardHistory = true;
+            return s;
+        });
+        _clipboard.Copy(ClipboardKind.Text, "kept");
+        Assert.Equal("kept", Assert.Single(_view.Last.Clips).Text);
+
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.ClipboardHistory = false;
+            return s;
+        });
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.ClipboardHistory = true;
+            return s;
+        });
+        Assert.Empty(_view.Last.Clips);
+    }
 }

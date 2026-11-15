@@ -51,6 +51,9 @@
                         <c:SettingRow x:Uid="FluxIsland_SmartCopy" Glyph="&#xE71B;">
                             <ToggleSwitch x:Name="SmartCopyToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ClipboardHistory" Glyph="&#xE77F;">
+                            <ToggleSwitch x:Name="ClipboardHistoryToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowVolume" Glyph="&#xE995;">
                             <ToggleSwitch x:Name="VolumeChangesToggle" Toggled="OnChanged" />
                         </c:SettingRow>

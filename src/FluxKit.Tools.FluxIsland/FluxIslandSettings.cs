@@ -78,6 +78,12 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// </summary>
     public bool SmartCopy { get; set; }
 
+    /// <summary>
+    /// Off unless the user turns it on: keeps the last 25 pieces of copied text, in memory only, for the Clipboard page.
+    /// Copies that apps mark as private are skipped.
+    /// </summary>
+    public bool ClipboardHistory { get; set; }
+
     /// <summary>Shows the screen brightness when it changes, on PCs with a built-in screen.</summary>
     public bool ShowBrightness { get; set; } = true;
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Quick notes written in the command bar ("note …"): newest first; click one to copy it, or remove it. -->
+<!-- A list page (notes, recent moments, clipboard history): a header with a count and Clear, then rows. -->
 <UserControl
-    x:Class="FluxKit.App.Modules.FluxIsland.NotesPanel"
+    x:Class="FluxKit.App.Modules.FluxIsland.ListPanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     RequestedTheme="Dark">
@@ -31,7 +31,7 @@
                 VerticalAlignment="Center"
                 FontSize="13"
                 FontWeight="SemiBold"
-                x:Uid="Island_NotesTitle" />
+                x:Name="Title" />
             <TextBlock
                 x:Name="Count"
                 Grid.Column="2"
@@ -42,7 +42,7 @@
                 Grid.Column="3"
                 Height="28"
                 Style="{StaticResource IslandChipButtonStyle}"
-                x:Uid="Island_ClearNotes" />
+                x:Uid="Island_ClearList" />
         </Grid>
 
         <ScrollViewer

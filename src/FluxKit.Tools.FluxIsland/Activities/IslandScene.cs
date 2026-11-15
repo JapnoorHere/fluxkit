@@ -25,6 +25,12 @@ public sealed record IslandScene
     /// <summary>Quick notes from the command bar, newest first.</summary>
     public IReadOnlyList<IslandNote> Notes { get; init; } = [];
 
+    /// <summary>Recent moments worth looking back at, newest first.</summary>
+    public IReadOnlyList<RewindEntry> Rewind { get; init; } = [];
+
+    /// <summary>Recently copied text, when clipboard history is on; pinned items first.</summary>
+    public IReadOnlyList<ClipEntry> Clips { get; init; } = [];
+
     public PowerSnapshot Power { get; init; }
 
     public PrivacySnapshot Privacy { get; init; }

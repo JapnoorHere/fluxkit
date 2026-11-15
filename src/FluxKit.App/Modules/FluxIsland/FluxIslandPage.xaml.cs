@@ -41,6 +41,7 @@ public sealed partial class FluxIslandPage : Page
         DownloadsToggle.IsOn = s.ShowDownloads;
         ScreenshotsToggle.IsOn = s.ShowScreenshots;
         SmartCopyToggle.IsOn = s.SmartCopy;
+        ClipboardHistoryToggle.IsOn = s.ClipboardHistory;
         BrightnessToggle.IsOn = s.ShowBrightness;
         SaverToggle.IsOn = s.ShowBatterySaver;
         LockKeysToggle.IsOn = s.ShowLockKeys;
@@ -157,6 +158,7 @@ public sealed partial class FluxIslandPage : Page
             s.ShowDownloads = DownloadsToggle.IsOn;
             s.ShowScreenshots = ScreenshotsToggle.IsOn;
             s.SmartCopy = SmartCopyToggle.IsOn;
+            s.ClipboardHistory = ClipboardHistoryToggle.IsOn;
             s.ShowBrightness = BrightnessToggle.IsOn;
             s.ShowBatterySaver = SaverToggle.IsOn;
             s.ShowLockKeys = LockKeysToggle.IsOn;

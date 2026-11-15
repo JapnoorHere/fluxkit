@@ -41,6 +41,8 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private readonly StopwatchModel _stopwatch;
     private readonly ShelfModel _shelf = new();
     private readonly NotesModel _notes = new();
+    private readonly MomentHistory _rewind = new();
+    private readonly ClipboardHistoryModel _clips = new();
     private readonly BatteryAlertPolicy _battery = new();
     private readonly List<IIslandSource> _active = [];
     private readonly Dictionary<string, (DownloadUpdate Update, DateTimeOffset At)> _downloads = [];
@@ -191,6 +193,14 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
 
     public void ClearNotes() => ChangeNotes(_notes.Clear);
 
+    public void ClearRewind() => Change(() => _rewind.Clear());
+
+    public void PinClip(string text) => Change(() => _clips.TogglePin(text));
+
+    public void RemoveClip(string text) => Change(() => _clips.Remove(text));
+
+    public void ClearClips() => Change(() => _clips.Clear());
+
     public void StepVolume(int notches)
     {
         if (_volume is null || !_options.ScrollForVolume || notches == 0)
@@ -201,7 +211,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         try
         {
             _volume.ChangeBy(notches);
-            Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Volume) { Value = _volume.IsMuted ? 0 : _volume.Level }));
+            Change(() => RaiseMoment(new IslandActivity(ActivityKind.Volume) { Value = _volume.IsMuted ? 0 : _volume.Level }));
         }
         catch (Exception ex)
         {
@@ -227,7 +237,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     }
 
     public void ShowFileResult(FileResult result, string? path, int count) =>
-        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.FileReady)
+        Change(() => RaiseMoment(new IslandActivity(ActivityKind.FileReady)
         {
             Value = (int)result,
             Total = count,
@@ -244,7 +254,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         }
 
         _lastNudge = now;
-        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.MicMuted) { Flag = true, Value = 1 }, MicToggleDuration * 2));
+        Change(() => RaiseMoment(new IslandActivity(ActivityKind.MicMuted) { Flag = true, Value = 1 }, MicToggleDuration * 2));
     }
 
     public void DismissAlert() => Change(() => _arbiter.Dismiss());
@@ -266,6 +276,8 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
                 Stopwatch = _stopwatch.Snapshot,
                 Shelf = _shelf.Items,
                 Notes = _notes.Items,
+                Rewind = _rewind.Items,
+                Clips = _options.ClipboardHistory ? _clips.Items : [],
                 Power = _power?.Current ?? default,
                 Privacy = _options.ShowPrivacy ? _privacy?.Current ?? default : default,
                 MicMuted = _micMuted,
@@ -281,7 +293,10 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _power = Start(_options.ShowPower ? _factories.Power : null, s => s.Changed += OnPowerChanged);
         _network = Start(_options.ShowNetwork ? _factories.Network : null, s => s.Changed += OnNetworkChanged);
         _privacy = Start(_options.ShowPrivacy || _options.ShowCalls ? _factories.Privacy : null, s => s.Changed += OnAnyChanged);
-        Func<IClipboardSource>? clipboard = _options.ShowClipboard && _factories.Clipboard is { } makeClipboard ? () => makeClipboard(_options.SmartCopy) : null;
+        // Copied text is read only when smart copy or clipboard history asks for it.
+        bool watchClipboard = _options.ShowClipboard || _options.ClipboardHistory;
+        bool readText = _options.SmartCopy || _options.ClipboardHistory;
+        Func<IClipboardSource>? clipboard = watchClipboard && _factories.Clipboard is { } makeClipboard ? () => makeClipboard(readText) : null;
         _clipboard = Start(clipboard, s => s.Copied += OnCopied);
         _fullScreen = Start(_options.HideInFullScreen ? _factories.FullScreen : null, s => s.Changed += OnAnyChanged);
         _volume = Start(_options.ScrollForVolume ? _factories.Volume : null, _ => { });
@@ -386,6 +401,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
 
         bool keptBefore = _options.KeepShelf;
         bool notesBefore = _options.KeepNotes;
+        bool clipsBefore = _options.ClipboardHistory;
         _options = _settings.Read<FluxIslandSettings>(FluxIslandSettings.Section);
         if (keptBefore != _options.KeepShelf && _factories.ShelfStore is { } store)
         {
@@ -397,6 +413,14 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             else
             {
                 store.Delete();
+            }
+        }
+
+        if (clipsBefore && !_options.ClipboardHistory)
+        {
+            lock (_sync)
+            {
+                _clips.ForgetAll();
             }
         }
 
@@ -429,12 +453,12 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         {
             if (_battery.Evaluate(power) is { } alert)
             {
-                _arbiter.Raise(new IslandActivity(alert) { Value = power.Percent, Total = minutesLeft });
+                RaiseMoment(new IslandActivity(alert) { Value = power.Percent, Total = minutesLeft });
             }
 
             if (_options.ShowBatterySaver && power.HasBattery && _saverWasOn is { } was && was != power.SaverOn)
             {
-                _arbiter.Raise(new IslandActivity(ActivityKind.BatterySaver) { Flag = power.SaverOn, Value = power.Percent, Total = minutesLeft });
+                RaiseMoment(new IslandActivity(ActivityKind.BatterySaver) { Flag = power.SaverOn, Value = power.Percent, Total = minutesLeft });
             }
 
             _saverWasOn = power.SaverOn;
@@ -442,13 +466,13 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     }
 
     private void OnBrightnessChanged(object? sender, int level) =>
-        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Brightness) { Value = level }));
+        Change(() => RaiseMoment(new IslandActivity(ActivityKind.Brightness) { Value = level }));
 
     private void OnLockKeyChanged(object? sender, LockKeyChange change)
     {
         if (_options.ShowLockKeys)
         {
-            Change(() => _arbiter.Raise(new IslandActivity(change.IsCapsLock ? ActivityKind.CapsLock : ActivityKind.NumLock) { Flag = change.On }));
+            Change(() => RaiseMoment(new IslandActivity(change.IsCapsLock ? ActivityKind.CapsLock : ActivityKind.NumLock) { Flag = change.On }));
         }
     }
 
@@ -456,7 +480,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     {
         if (_options.ShowDevices && !string.IsNullOrWhiteSpace(change.Name))
         {
-            Change(() => _arbiter.Raise(new IslandActivity(change.Connected ? ActivityKind.DeviceConnected : ActivityKind.DeviceDisconnected) { Text = change.Name }));
+            Change(() => RaiseMoment(new IslandActivity(change.Connected ? ActivityKind.DeviceConnected : ActivityKind.DeviceDisconnected) { Text = change.Name }));
         }
     }
 
@@ -469,7 +493,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         {
             if (_wasOnline is { } was && was != online)
             {
-                _arbiter.Raise(new IslandActivity(online ? ActivityKind.Online : ActivityKind.Offline));
+                RaiseMoment(new IslandActivity(online ? ActivityKind.Online : ActivityKind.Offline));
             }
 
             _wasOnline = online;
@@ -480,7 +504,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     {
         if (_options.ShowVolumeChanges)
         {
-            Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Volume) { Value = level.Muted ? 0 : level.Level }));
+            Change(() => RaiseMoment(new IslandActivity(ActivityKind.Volume) { Value = level.Muted ? 0 : level.Level }));
         }
     }
 
@@ -488,7 +512,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     {
         if (_options.ShowAudioDevices && !string.IsNullOrWhiteSpace(name))
         {
-            Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.AudioDevice) { Text = name }));
+            Change(() => RaiseMoment(new IslandActivity(ActivityKind.AudioDevice) { Text = name }));
         }
     }
 
@@ -499,13 +523,13 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             _micMuted = muted;
             if (_options.ShowMicMute)
             {
-                _arbiter.Raise(new IslandActivity(ActivityKind.MicMuted) { Flag = muted }, MicToggleDuration);
+                RaiseMoment(new IslandActivity(ActivityKind.MicMuted) { Flag = muted }, MicToggleDuration);
             }
         });
     }
 
     private void OnDesktopSwitched(object? sender, DesktopLanding landing) =>
-        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.DesktopSwitched) { Value = landing.Number, Total = landing.Count, Text = landing.Name }));
+        Change(() => RaiseMoment(new IslandActivity(ActivityKind.DesktopSwitched) { Value = landing.Number, Total = landing.Count, Text = landing.Name }));
 
     private void OnDownloadChanged(object? sender, DownloadUpdate update)
     {
@@ -523,7 +547,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
                     break;
                 case DownloadStage.Finished:
                     _downloads.Remove(update.Key);
-                    _arbiter.Raise(new IslandActivity(ActivityKind.DownloadDone) { Text = update.Name, Path = update.Path });
+                    RaiseMoment(new IslandActivity(ActivityKind.DownloadDone) { Text = update.Name, Path = update.Path });
                     break;
                 default:
                     _downloads.Remove(update.Key);
@@ -533,10 +557,20 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     }
 
     private void OnScreenshotSaved(object? sender, string path) =>
-        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.Screenshot) { Text = Path.GetFileName(path), Path = path }));
+        Change(() => RaiseMoment(new IslandActivity(ActivityKind.Screenshot) { Text = Path.GetFileName(path), Path = path }));
 
     private void OnCopied(object? sender, ClipboardCopied copy)
     {
+        if (_options.ClipboardHistory && copy.Text is { } copied)
+        {
+            Change(() => _clips.Add(copied, _time.GetUtcNow()));
+        }
+
+        if (!_options.ShowClipboard)
+        {
+            return;
+        }
+
         var moment = new IslandActivity(ActivityKind.Copied) { Clipboard = copy.Kind };
         if (_options.SmartCopy && copy.Text is { } text)
         {
@@ -545,7 +579,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             moment = moment with { Smart = kind, Text = display.Length > 0 ? display : null, Path = target, Value = kind == SmartText.Color ? rgb : text.Trim().Length };
         }
 
-        Change(() => _arbiter.Raise(moment, moment.Smart is SmartText.Link or SmartText.Email or SmartText.Color or SmartText.Phone ? SmartCopyDuration : ActivityArbiter.DurationOf(ActivityKind.Copied)));
+        Change(() => RaiseMoment(moment, moment.Smart is SmartText.Link or SmartText.Email or SmartText.Color or SmartText.Phone ? SmartCopyDuration : ActivityArbiter.DurationOf(ActivityKind.Copied)));
     }
 
     private void OnWake()
@@ -554,7 +588,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         {
             if (_timer.Advance() is { } finished)
             {
-                _arbiter.Raise(new IslandActivity(ActivityKind.TimerDone) { Timer = _timer.Snapshot with { Mode = finished } });
+                RaiseMoment(new IslandActivity(ActivityKind.TimerDone) { Timer = _timer.Snapshot with { Mode = finished } });
             }
 
             _arbiter.Expire();
@@ -576,6 +610,13 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         {
             _factories.ShelfStore?.Save(items);
         }
+    }
+
+    /// <summary>Shows a moment, and keeps it for Rewind if it is worth looking back at. Call under the lock.</summary>
+    private void RaiseMoment(IslandActivity moment, TimeSpan? duration = null)
+    {
+        _arbiter.Raise(moment, duration ?? ActivityArbiter.DurationOf(moment.Kind));
+        _rewind.Record(moment, _time.GetUtcNow());
     }
 
     /// <summary>Changes the notes, then saves them if the user keeps notes between runs.</summary>

@@ -54,6 +54,15 @@ public interface IIslandCommands
 
     void ClearNotes();
 
+    void ClearRewind();
+
+    /// <summary>Pins (or unpins) an item in the clipboard history, so clearing keeps it.</summary>
+    void PinClip(string text);
+
+    void RemoveClip(string text);
+
+    void ClearClips();
+
     void StepVolume(int notches);
 
     /// <summary>Mutes the microphone, or unmutes it if it is muted.</summary>

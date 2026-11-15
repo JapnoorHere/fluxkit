@@ -112,7 +112,9 @@
                 <local:TimerPanel x:Name="TimerView" Visibility="Collapsed" />
                 <local:ShelfPanel x:Name="ShelfView" Visibility="Collapsed" />
                 <local:GlancePanel x:Name="GlanceView" Visibility="Collapsed" />
-                <local:NotesPanel x:Name="NotesView" Visibility="Collapsed" />
+                <local:ListPanel x:Name="NotesView" Visibility="Collapsed" />
+                <local:ListPanel x:Name="RewindView" Visibility="Collapsed" />
+                <local:ListPanel x:Name="ClipsView" Visibility="Collapsed" />
                 <local:CommandBar x:Name="CommandView" Visibility="Collapsed" />
                 <local:DropZones x:Name="DropView" Visibility="Collapsed" />
 
@@ -138,6 +140,12 @@
                     </Button>
                     <Button x:Name="NotesTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_NotesTab">
                         <Border x:Name="NotesDot" Height="6" CornerRadius="3" />
+                    </Button>
+                    <Button x:Name="RewindTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_RewindTab">
+                        <Border x:Name="RewindDot" Height="6" CornerRadius="3" />
+                    </Button>
+                    <Button x:Name="ClipsTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_ClipsTab">
+                        <Border x:Name="ClipsDot" Height="6" CornerRadius="3" />
                     </Button>
                 </StackPanel>
             </Grid>
