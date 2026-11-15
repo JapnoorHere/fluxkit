@@ -34,6 +34,10 @@ internal static class IslandPresenter
     private const string MailGlyph = "\xE715";
     private const string PhoneGlyph = "\xE717";
     private const string SwatchGlyph = "\xE790";
+    private const string ZipGlyph = "\xF012";
+    private const string ConvertGlyph = "\xE8AB";
+    private const string ResizeGlyph = "\xE740";
+    private const string ErrorGlyph = "\xE783";
 
     public static CompactContent Describe(IslandActivity activity, DateTimeOffset now) => activity.Kind switch
     {
@@ -71,6 +75,7 @@ internal static class IslandPresenter
         ActivityKind.AudioDevice => new(HeadphoneGlyph, activity.Text ?? string.Empty, Strings.Get("Island_AudioDeviceNow"), null, IslandPalette.Cyan),
         ActivityKind.MicMuted when activity.Value == 1 => new(MicOffGlyph, Strings.Get("Island_SpeakingMuted"), Strings.Get("Island_SpeakingMutedDetail"), null, IslandPalette.Red),
         ActivityKind.MicMuted => new(activity.Flag ? MicOffGlyph : MicGlyph, Strings.Get(activity.Flag ? "Island_MicMuted" : "Island_MicOn"), null, null, activity.Flag ? IslandPalette.Red : IslandPalette.Green),
+        ActivityKind.FileReady => DescribeFile(activity),
         ActivityKind.Call => new(
             PhoneGlyph,
             FormatPosition(activity.Since is { } since && now > since ? now - since : TimeSpan.Zero),
@@ -98,6 +103,7 @@ internal static class IslandPresenter
         ActivityKind.MicMuted or ActivityKind.Call => Strings.Get(activity.Flag ? "Island_Action_Unmute" : "Island_Action_Mute"),
         ActivityKind.DownloadDone when activity.Path is not null => Strings.Get("Island_Action_ShowInFolder"),
         ActivityKind.Screenshot when activity.Path is not null => Strings.Get("Island_Action_Open"),
+        ActivityKind.FileReady when activity.Path is not null && activity.Value != (int)FileResult.PathCopied => Strings.Get("Island_Action_ShowInFolder"),
         ActivityKind.Copied when activity.Path is not null => Strings.Get(activity.Smart == SmartText.Email ? "Island_Action_Write" : "Island_Action_Open"),
         _ => null,
     };
@@ -171,6 +177,16 @@ internal static class IslandPresenter
             }, IslandPalette.Cyan),
         };
     }
+
+    /// <summary>What a drop zone did: "Zipped 3 files", "Converted to PNG", "Path copied", or that it failed.</summary>
+    private static CompactContent DescribeFile(IslandActivity activity) => (FileResult)activity.Value switch
+    {
+        FileResult.PathCopied => new(CopyGlyph, Strings.Get(activity.Total > 1 ? "Island_PathsCopied" : "Island_PathCopied"), activity.Text, activity.Total > 1 ? activity.Total.ToString(CultureInfo.CurrentCulture) : null, IslandPalette.Cyan),
+        FileResult.Zipped => new(ZipGlyph, Strings.Format("Island_ZippedFormat", activity.Total), activity.Text, null, IslandPalette.Yellow),
+        FileResult.Converted => new(ConvertGlyph, Strings.Format("Island_ConvertedFormat", activity.Total), activity.Text, null, IslandPalette.Green),
+        FileResult.Resized => new(ResizeGlyph, Strings.Format("Island_ResizedFormat", activity.Total), activity.Text, null, IslandPalette.Orange),
+        _ => new(ErrorGlyph, Strings.Get("Island_FileActionFailed"), Strings.Get("Island_FileActionFailedDetail"), null, IslandPalette.Red),
+    };
 
     /// <summary>A stopwatch's seconds hand: how far round the current minute it is.</summary>
     private static double SecondHand(TimeSpan elapsed) => elapsed.TotalSeconds % 60 / 60;

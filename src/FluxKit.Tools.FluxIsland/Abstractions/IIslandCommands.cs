@@ -1,3 +1,5 @@
+using FluxKit.Tools.FluxIsland.Activities;
+
 namespace FluxKit.Tools.FluxIsland.Abstractions;
 
 /// <summary>What the user can do from the island. Safe to call from the UI thread; nothing here blocks.</summary>
@@ -35,6 +37,12 @@ public interface IIslandCommands
     void RemoveFromShelf(string path);
 
     void ClearShelf();
+
+    /// <summary>
+    /// Confirms a drop zone's job: <paramref name="path"/> is the new file (if any), <paramref name="count"/> how many
+    /// files were dropped. The file's name is shown, never logged.
+    /// </summary>
+    void ShowFileResult(FileResult result, string? path, int count);
 
     /// <summary>The island heard you talking while the microphone is muted (during a call). Shown at most every 30 s.</summary>
     void NotifySpeakingWhileMuted();

@@ -114,6 +114,7 @@
                 <local:GlancePanel x:Name="GlanceView" Visibility="Collapsed" />
                 <local:NotesPanel x:Name="NotesView" Visibility="Collapsed" />
                 <local:CommandBar x:Name="CommandView" Visibility="Collapsed" />
+                <local:DropZones x:Name="DropView" Visibility="Collapsed" />
 
                 <!-- Page dots under the open panel, as on a phone's home screen. Click one, or swipe sideways. -->
                 <StackPanel

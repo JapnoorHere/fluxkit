@@ -33,6 +33,9 @@ public enum ActivityKind
     DeviceDisconnected,
     Stopwatch,
 
+    /// <summary>A file job from a drop finished (zipped, converted, resized, path copied) or failed.</summary>
+    FileReady,
+
     /// <summary>A call is going on (a call app is using the microphone): its length and the mute state.</summary>
     Call,
 }

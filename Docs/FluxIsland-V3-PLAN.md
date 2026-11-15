@@ -238,6 +238,8 @@ Every phase ends the same way:
 - Commit: "Add a live music visualiser and a call mode with a mute nudge to Flux Island"
 
 ### Phase 7: Drop actions
+
+> **As built:** dragging files over the island shows five zones (Shelf, Copy path, Zip, Convert, Half size). The zone under the pointer springs up in its colour, and the image zones stay dim unless every file is an image. Results land on the shelf with a "file ready" moment that offers "Show in folder". `FileTransforms` uses only BCL zip and Windows imaging, never overwrites, and picks free names. Drag-time file types can only be read where the source allows it.
 - While dragging files over the island it expands into a **zone strip**: Shelf · Copy path · Zip · Convert · Resize. Image-only zones are greyed out for non-images.
 - **`Platform/Shell/FileTransforms.cs`:**
   - `ZipAsync` uses `System.IO.Compression`, writing next to the first file as "Archive.zip" with a unique name.

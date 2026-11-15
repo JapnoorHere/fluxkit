@@ -1389,4 +1389,46 @@
   <data name="FluxIsland_ShowCalls.Description" xml:space="preserve">
     <value>Show a call while one is going on, with its length and a mute button, and warn you if you talk while muted</value>
   </data>
+  <data name="Island_DropHeading.Text" xml:space="preserve">
+    <value>Drop to…</value>
+  </data>
+  <data name="Island_DropName" xml:space="preserve">
+    <value>Drop files: shelf, copy path, zip, convert or resize</value>
+  </data>
+  <data name="Island_DropShelf" xml:space="preserve">
+    <value>Shelf</value>
+  </data>
+  <data name="Island_DropCopyPath" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
+  <data name="Island_DropZip" xml:space="preserve">
+    <value>Zip</value>
+  </data>
+  <data name="Island_DropConvert" xml:space="preserve">
+    <value>Convert</value>
+  </data>
+  <data name="Island_DropResize" xml:space="preserve">
+    <value>Half size</value>
+  </data>
+  <data name="Island_PathCopied" xml:space="preserve">
+    <value>Path copied</value>
+  </data>
+  <data name="Island_PathsCopied" xml:space="preserve">
+    <value>Paths copied</value>
+  </data>
+  <data name="Island_ZippedFormat" xml:space="preserve">
+    <value>Zipped {0} item(s)</value>
+  </data>
+  <data name="Island_ConvertedFormat" xml:space="preserve">
+    <value>Converted {0} image(s)</value>
+  </data>
+  <data name="Island_ResizedFormat" xml:space="preserve">
+    <value>Resized {0} image(s)</value>
+  </data>
+  <data name="Island_FileActionFailed" xml:space="preserve">
+    <value>That didn't work</value>
+  </data>
+  <data name="Island_FileActionFailedDetail" xml:space="preserve">
+    <value>The files couldn't be read or saved</value>
+  </data>
 </root>

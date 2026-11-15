@@ -14,6 +14,14 @@ public sealed partial class IslandPill
 {
     private (UIElement View, string Key, Size Size) BuildPanel(DateTimeOffset now)
     {
+        if (_dragging)
+        {
+            // Files are being dragged over the island: offer what can be done with them.
+            PanelRail.Visibility = Visibility.Collapsed;
+            AutomationProperties.SetName(Surface, Strings.Get("Island_DropName"));
+            return (DropView, "drop", DropZones.PreferredSize);
+        }
+
         List<PanelPage> pages = AvailablePages();
         if (_page is not { } page || !pages.Contains(page))
         {

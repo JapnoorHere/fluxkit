@@ -226,6 +226,15 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         }
     }
 
+    public void ShowFileResult(FileResult result, string? path, int count) =>
+        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.FileReady)
+        {
+            Value = (int)result,
+            Total = count,
+            Path = path,
+            Text = path is null ? null : Path.GetFileName(path),
+        }));
+
     public void NotifySpeakingWhileMuted()
     {
         DateTimeOffset now = _time.GetUtcNow();

@@ -415,6 +415,10 @@ public sealed partial class IslandPill : UserControl
                 ShellLauncher.ShowInFolder(download);
                 Commands?.DismissAlert();
                 break;
+            case { Kind: ActivityKind.FileReady, Path: { } made, Value: not (int)FileResult.PathCopied }:
+                ShellLauncher.ShowInFolder(made);
+                Commands?.DismissAlert();
+                break;
             case { Kind: ActivityKind.Screenshot, Path: { } screenshot }:
                 ShellLauncher.Open(screenshot);
                 Commands?.DismissAlert();
