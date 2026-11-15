@@ -1371,4 +1371,22 @@
   <data name="FluxIsland_KeepNotes.Description" xml:space="preserve">
     <value>Keep notes from the command bar after a restart. They're saved only on this PC.</value>
   </data>
+  <data name="Island_Call" xml:space="preserve">
+    <value>On a call</value>
+  </data>
+  <data name="Island_CallVideo" xml:space="preserve">
+    <value>On a video call</value>
+  </data>
+  <data name="Island_SpeakingMuted" xml:space="preserve">
+    <value>You're muted</value>
+  </data>
+  <data name="Island_SpeakingMutedDetail" xml:space="preserve">
+    <value>You started talking. Unmute to be heard.</value>
+  </data>
+  <data name="FluxIsland_ShowCalls.Header" xml:space="preserve">
+    <value>Calls</value>
+  </data>
+  <data name="FluxIsland_ShowCalls.Description" xml:space="preserve">
+    <value>Show a call while one is going on, with its length and a mute button, and warn you if you talk while muted</value>
+  </data>
 </root>

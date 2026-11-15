@@ -27,6 +27,9 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     /// <summary>A copied link, address, number or colour stays a little longer than a plain copy, so its button can be reached.</summary>
     internal static readonly TimeSpan SmartCopyDuration = TimeSpan.FromSeconds(4);
 
+    /// <summary>The "you're muted" nudge shows at most this often, so talking to yourself doesn't keep setting it off.</summary>
+    internal static readonly TimeSpan NudgeInterval = TimeSpan.FromSeconds(30);
+
     private readonly ISettingsService _settings;
     private readonly Func<IIslandCommands, IIslandView> _viewFactory;
     private readonly IslandSources _factories;
@@ -59,6 +62,8 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private IDeviceSource? _devices;
     private IHotkeySource? _hotkey;
     private bool _micMuted;
+    private DateTimeOffset? _callSince;
+    private DateTimeOffset _lastNudge = DateTimeOffset.MinValue;
     private bool? _wasOnline;
     private bool? _saverWasOn;
     private bool _mediaWasPlaying;
@@ -221,6 +226,18 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         }
     }
 
+    public void NotifySpeakingWhileMuted()
+    {
+        DateTimeOffset now = _time.GetUtcNow();
+        if (!_options.ShowCalls || !_micMuted || _callSince is null || now - _lastNudge < NudgeInterval)
+        {
+            return;
+        }
+
+        _lastNudge = now;
+        Change(() => _arbiter.Raise(new IslandActivity(ActivityKind.MicMuted) { Flag = true, Value = 1 }, MicToggleDuration * 2));
+    }
+
     public void DismissAlert() => Change(() => _arbiter.Dismiss());
 
     public void SwapActivities() => Change(() => _arbiter.Swap());
@@ -254,7 +271,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _media = Start(_options.ShowMedia ? _factories.Media : null, s => s.Changed += OnMediaChanged);
         _power = Start(_options.ShowPower ? _factories.Power : null, s => s.Changed += OnPowerChanged);
         _network = Start(_options.ShowNetwork ? _factories.Network : null, s => s.Changed += OnNetworkChanged);
-        _privacy = Start(_options.ShowPrivacy ? _factories.Privacy : null, s => s.Changed += OnAnyChanged);
+        _privacy = Start(_options.ShowPrivacy || _options.ShowCalls ? _factories.Privacy : null, s => s.Changed += OnAnyChanged);
         Func<IClipboardSource>? clipboard = _options.ShowClipboard && _factories.Clipboard is { } makeClipboard ? () => makeClipboard(_options.SmartCopy) : null;
         _clipboard = Start(clipboard, s => s.Copied += OnCopied);
         _fullScreen = Start(_options.HideInFullScreen ? _factories.FullScreen : null, s => s.Changed += OnAnyChanged);
@@ -619,8 +636,15 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _arbiter.SetLasting(ActivityKind.Stopwatch, stopwatch.IsActive ? new IslandActivity(ActivityKind.Stopwatch) { Stopwatch = stopwatch } : null);
         _arbiter.SetLasting(ActivityKind.Shelf, _options.ShelfEnabled && _shelf.Count > 0 ? new IslandActivity(ActivityKind.Shelf) { Value = _shelf.Count } : null);
 
-        // A muted microphone matters while something is listening, such as a call: keep reminding until it ends.
-        bool listening = _privacy?.Current.MicrophoneInUse == true;
+        // A call shows while a call app uses the microphone: how long it has run, and whether you are muted.
+        PrivacySnapshot privacy = _privacy?.Current ?? default;
+        bool inCall = _options.ShowCalls && privacy.MicrophoneInUse && privacy.CallInProgress;
+        _callSince = inCall ? _callSince ?? _time.GetUtcNow() : null;
+        _arbiter.SetLasting(ActivityKind.Call, inCall ? new IslandActivity(ActivityKind.Call) { Since = _callSince, Flag = _micMuted, Value = privacy.CameraInUse ? 1 : 0 } : null);
+
+        // A muted microphone matters while something is listening: keep reminding until it ends. A call shows the
+        // mute state itself, so the separate reminder steps aside then.
+        bool listening = privacy.MicrophoneInUse && !inCall;
         _arbiter.SetLasting(ActivityKind.MicMuted, _options.ShowMicMute && _micMuted && listening ? new IslandActivity(ActivityKind.MicMuted) { Flag = true } : null);
 
         // The newest download that is still arriving; one that stalls drops off by itself.

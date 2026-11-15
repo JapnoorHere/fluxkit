@@ -36,6 +36,9 @@ public interface IIslandCommands
 
     void ClearShelf();
 
+    /// <summary>The island heard you talking while the microphone is muted (during a call). Shown at most every 30 s.</summary>
+    void NotifySpeakingWhileMuted();
+
     /// <summary>Adds a quick note (from the command bar).</summary>
     void AddNote(string text);
 

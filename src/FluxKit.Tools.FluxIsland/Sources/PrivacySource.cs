@@ -15,7 +15,7 @@ internal sealed class PrivacySource : IPrivacySource
         _watcher.Changed += (_, e) => Changed?.Invoke(this, e);
     }
 
-    public PrivacySnapshot Current => new(_watcher.MicrophoneInUse, _watcher.CameraInUse);
+    public PrivacySnapshot Current => new(_watcher.MicrophoneInUse, _watcher.CameraInUse, _watcher.CallInProgress);
 
     public event EventHandler? Changed;
 

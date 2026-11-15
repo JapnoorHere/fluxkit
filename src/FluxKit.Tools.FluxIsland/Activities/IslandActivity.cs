@@ -32,6 +32,9 @@ public enum ActivityKind
     DeviceConnected,
     DeviceDisconnected,
     Stopwatch,
+
+    /// <summary>A call is going on (a call app is using the microphone): its length and the mute state.</summary>
+    Call,
 }
 
 /// <summary>One thing to show. Carries data only; the App turns it into text, so every string stays in resources.</summary>
@@ -66,5 +69,8 @@ public sealed record IslandActivity(ActivityKind Kind)
     /// <summary>Extra numbers some moments carry, such as the desktop count beside the desktop index in <see cref="Value"/>.</summary>
     public int Total { get; init; }
 
-    public bool IsAlert => Kind is not (ActivityKind.Media or ActivityKind.Timer or ActivityKind.Shelf or ActivityKind.Download or ActivityKind.MicMuted or ActivityKind.Stopwatch);
+    /// <summary>When something that is still going on began, such as a call.</summary>
+    public DateTimeOffset? Since { get; init; }
+
+    public bool IsAlert => Kind is not (ActivityKind.Media or ActivityKind.Timer or ActivityKind.Shelf or ActivityKind.Download or ActivityKind.MicMuted or ActivityKind.Stopwatch or ActivityKind.Call);
 }

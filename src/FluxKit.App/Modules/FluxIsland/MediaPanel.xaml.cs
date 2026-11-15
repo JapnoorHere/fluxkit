@@ -68,6 +68,9 @@ public sealed partial class MediaPanel : UserControl, IIslandPage
         return string.Join(", ", new[] { media.Title, media.Artist }.Where(t => !string.IsNullOrEmpty(t)));
     }
 
+    /// <summary>Drives the bars from the live output level.</summary>
+    internal void SetLevel(float level) => Bars.SetLevel(level);
+
     /// <summary>Shares the pill's art, so each track is decoded once for both the pill and the panel.</summary>
     internal void UseArt(AlbumArt art)
     {

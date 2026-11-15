@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A "playing" indicator: three bars bouncing on the compositor. It is not a real audio meter (see Docs/FluxIsland-PLAN.md). -->
+<!-- Three music bars. They follow the real output level (PlayingBars.SetLevel) and fall back to a bounce. -->
 <UserControl
     x:Class="FluxKit.App.Modules.FluxIsland.PlayingBars"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

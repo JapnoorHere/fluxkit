@@ -224,6 +224,8 @@ Every phase ends the same way:
 - Commit: "Add the Island Command bar for timers, sums, colours, notes and quick actions"
 
 ### Phase 6: Live audio visualiser and call mode
+
+> **As built:** `PeakMeter` reads Windows' own peak meter, and `LevelMeter` samples it at 30 Hz only while music bars are on screen. The bars spring to the real level. Call mode is a lasting `Call` moment (a call app or browser using the mic; names are compared, never kept) with the call's length and a mute button. While a call is muted, the mic level is checked at 4 Hz and the tool shows "You're muted" at most every 30 s. Whether the capture meter still reads while the endpoint is muted varies by driver, so this needs the manual test.
 - **Platform:** `Audio/PeakMeter.cs` wraps `IAudioMeterInformation` for the default render and capture endpoints. It reuses the COM interop style in `Platform/Audio/CoreAudio.cs` and `EndpointVolume.cs`. It is read at about 30 Hz only while the bars or call mode are on screen, through a `DispatcherQueueTimer` that stops otherwise.
 - **`PlayingBars`:** driven by the real level, with per-bar easing and an idle fall.
 - **Call mode:**

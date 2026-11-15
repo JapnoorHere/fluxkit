@@ -489,4 +489,62 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
         Assert.True(_notesStore.Deleted);
         Assert.Single(_view.Last.Notes);
     }
+
+    [Fact]
+    public void A_call_app_using_the_microphone_shows_a_call_that_ends_with_it()
+    {
+        _privacy.Set(microphone: true, call: true);
+
+        IslandActivity? call = _view.Last.Primary;
+        Assert.Equal(ActivityKind.Call, call?.Kind);
+        Assert.Equal(_time.GetUtcNow(), call?.Since);
+
+        _time.Advance(TimeSpan.FromMinutes(3));
+        _privacy.Set(microphone: true, call: true);
+        Assert.Equal(call?.Since, _view.Last.Primary?.Since);
+
+        _privacy.Set(microphone: false);
+        Assert.NotEqual(ActivityKind.Call, _view.Last.Primary?.Kind);
+    }
+
+    [Fact]
+    public void An_app_that_is_not_a_call_app_shows_no_call()
+    {
+        _privacy.Set(microphone: true, call: false);
+
+        Assert.NotEqual(ActivityKind.Call, _view.Last.Primary?.Kind);
+    }
+
+    [Fact]
+    public void A_muted_call_shows_the_mute_state_instead_of_the_separate_reminder()
+    {
+        _audio.SetMicMuted(true);
+        _time.Advance(TimeSpan.FromSeconds(5));
+        _privacy.Set(microphone: true, call: true);
+
+        Assert.Equal(ActivityKind.Call, _view.Last.Primary?.Kind);
+        Assert.True(_view.Last.Primary?.Flag);
+        Assert.NotEqual(ActivityKind.MicMuted, _view.Last.Secondary?.Kind);
+    }
+
+    [Fact]
+    public void The_you_are_muted_nudge_needs_a_muted_call_and_waits_between_nudges()
+    {
+        _tool.NotifySpeakingWhileMuted();
+        Assert.NotEqual(ActivityKind.MicMuted, _view.Last.Primary?.Kind);
+
+        _audio.SetMicMuted(true);
+        _time.Advance(TimeSpan.FromSeconds(5));
+        _privacy.Set(microphone: true, call: true);
+        _tool.NotifySpeakingWhileMuted();
+        Assert.Equal(1, _view.Last.Primary?.Value);
+
+        _time.Advance(TimeSpan.FromSeconds(10));
+        _tool.NotifySpeakingWhileMuted();
+        Assert.Equal(ActivityKind.Call, _view.Last.Primary?.Kind);
+
+        _time.Advance(FluxIslandTool.NudgeInterval);
+        _tool.NotifySpeakingWhileMuted();
+        Assert.Equal(ActivityKind.MicMuted, _view.Last.Primary?.Kind);
+    }
 }

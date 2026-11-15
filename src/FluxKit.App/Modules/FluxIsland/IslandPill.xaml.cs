@@ -48,6 +48,7 @@ public sealed partial class IslandPill : UserControl
 
     private readonly PillShape _shape;
     private readonly AlbumArt _art = new();
+    private readonly LevelMeter _meter;
     private readonly DispatcherQueueTimer _peekTimer;
     private readonly DispatcherQueueTimer _closeTimer;
     private readonly DispatcherQueueTimer _clockTimer;
@@ -99,6 +100,8 @@ public sealed partial class IslandPill : UserControl
         Surface.Margin = new Thickness(0, TopInset, 0, 0);
         _shape = new PillShape(ShapeHost, ContentLayer, Stage, new Vector2((float)StageWidth, (float)StageHeight), (float)TopInset);
         MediaView.UseArt(_art);
+        _meter = new LevelMeter(DispatcherQueue);
+        _meter.Changed += (_, level) => ShowLevel(level);
         _art.Changed += (_, _) =>
         {
             CompactArt.Source = _art.Image;
@@ -287,6 +290,8 @@ public sealed partial class IslandPill : UserControl
             _lingerTimer.Stop();
             _mode = PillMode.Compact;
             GlanceView.SetLive(false);
+            _meter.SetRunning(false);
+            _callTimer?.Stop();
             ReleaseKeyboard();
             _hovering = false;
             _dragging = false;
@@ -320,6 +325,8 @@ public sealed partial class IslandPill : UserControl
         MorphTo(size);
         ScheduleTimers(now);
         GlanceView.SetLive(_active && _mode == PillMode.Panel && _page == PanelPage.Glance);
+        UpdateMeter(view);
+        UpdateCallListener();
     }
 
     /// <summary>Each kind of alert arrives with its own small signature, so moments feel distinct, not generic.</summary>
@@ -400,7 +407,7 @@ public sealed partial class IslandPill : UserControl
     {
         switch (activity)
         {
-            case { Kind: ActivityKind.MicMuted }:
+            case { Kind: ActivityKind.MicMuted or ActivityKind.Call }:
                 Commands?.ToggleMicMute();
                 break;
             case { Kind: ActivityKind.DownloadDone, Path: { } download }:
@@ -587,7 +594,7 @@ public sealed partial class IslandPill : UserControl
         bool stopwatchRunning = _scene.Stopwatch?.State == TimerState.Running;
         bool counting = _mode == PillMode.Panel
             ? (_page == PanelPage.Timer && (timerRunning || stopwatchRunning)) || (_page == PanelPage.Media && _scene.Media?.IsPlaying == true)
-            : (_scene.Primary?.Kind == ActivityKind.Timer && timerRunning) || (_scene.Primary?.Kind == ActivityKind.Stopwatch && stopwatchRunning);
+            : (_scene.Primary?.Kind == ActivityKind.Timer && timerRunning) || (_scene.Primary?.Kind == ActivityKind.Stopwatch && stopwatchRunning) || _scene.Primary?.Kind == ActivityKind.Call;
         if (counting && !_tickTimer.IsRunning)
         {
             _tickTimer.Start();

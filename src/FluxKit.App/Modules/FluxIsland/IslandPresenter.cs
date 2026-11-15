@@ -69,7 +69,14 @@ internal static class IslandPresenter
         ActivityKind.Screenshot => new(ScreenshotGlyph, Strings.Get("Island_Screenshot"), activity.Text, null, IslandPalette.Violet),
         ActivityKind.DesktopSwitched => new(DesktopGlyph, activity.Text ?? Strings.Format("Island_DesktopFormat", activity.Value), null, Strings.Format("Island_OfFormat", activity.Value, activity.Total), IslandPalette.Violet),
         ActivityKind.AudioDevice => new(HeadphoneGlyph, activity.Text ?? string.Empty, Strings.Get("Island_AudioDeviceNow"), null, IslandPalette.Cyan),
+        ActivityKind.MicMuted when activity.Value == 1 => new(MicOffGlyph, Strings.Get("Island_SpeakingMuted"), Strings.Get("Island_SpeakingMutedDetail"), null, IslandPalette.Red),
         ActivityKind.MicMuted => new(activity.Flag ? MicOffGlyph : MicGlyph, Strings.Get(activity.Flag ? "Island_MicMuted" : "Island_MicOn"), null, null, activity.Flag ? IslandPalette.Red : IslandPalette.Green),
+        ActivityKind.Call => new(
+            PhoneGlyph,
+            FormatPosition(activity.Since is { } since && now > since ? now - since : TimeSpan.Zero),
+            Strings.Get(activity.Value == 1 ? "Island_CallVideo" : "Island_Call"),
+            activity.Flag ? Strings.Get("Island_MicMuted") : null,
+            activity.Flag ? IslandPalette.Red : IslandPalette.Green),
         ActivityKind.CapsLock => new(KeyboardGlyph, Strings.Get(activity.Flag ? "Island_CapsOn" : "Island_CapsOff"), null, null, activity.Flag ? IslandPalette.Orange : IslandPalette.TextPrimary),
         ActivityKind.NumLock => new(KeyboardGlyph, Strings.Get(activity.Flag ? "Island_NumOn" : "Island_NumOff"), null, null, IslandPalette.TextPrimary),
         ActivityKind.BatterySaver => new(LeafGlyph, Strings.Get(activity.Flag ? "Island_SaverOn" : "Island_SaverOff"), TimeLeft("Island_LeftFormat", activity.Total), Percent(activity.Value), activity.Flag ? IslandPalette.Green : IslandPalette.TextPrimary, activity.Value / 100.0),
@@ -88,7 +95,7 @@ internal static class IslandPresenter
     /// <summary>The label of the one action a moment offers while peeking, or null when it has none.</summary>
     public static string? ActionLabel(IslandActivity activity) => activity.Kind switch
     {
-        ActivityKind.MicMuted => Strings.Get(activity.Flag ? "Island_Action_Unmute" : "Island_Action_Mute"),
+        ActivityKind.MicMuted or ActivityKind.Call => Strings.Get(activity.Flag ? "Island_Action_Unmute" : "Island_Action_Mute"),
         ActivityKind.DownloadDone when activity.Path is not null => Strings.Get("Island_Action_ShowInFolder"),
         ActivityKind.Screenshot when activity.Path is not null => Strings.Get("Island_Action_Open"),
         ActivityKind.Copied when activity.Path is not null => Strings.Get(activity.Smart == SmartText.Email ? "Island_Action_Write" : "Island_Action_Open"),

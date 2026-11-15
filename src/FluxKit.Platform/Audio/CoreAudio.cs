@@ -7,12 +7,21 @@ internal static class CoreAudio
 {
     public const int ClsctxAll = 0x17;
     public static readonly Guid AudioEndpointVolumeId = new("5CDF2C82-841E-4546-9722-0CF74078229A");
+    public static readonly Guid AudioMeterInformationId = new("C02216F6-8C67-4B5B-9D00-D008E73E0064");
 
     /// <summary>Tags FluxKit's own changes, so a watcher can tell them apart if it needs to.</summary>
     public static readonly Guid EventContext = new("6E7C2E0E-5C9E-4D3A-9A3E-5E3E2C1B7F01");
 
     /// <summary>The default endpoint's volume interface for <paramref name="flow"/>, or null when there is no such device.</summary>
-    public static IAudioEndpointVolume? DefaultEndpoint(IMMDeviceEnumerator enumerator, AudioFlow flow)
+    public static IAudioEndpointVolume? DefaultEndpoint(IMMDeviceEnumerator enumerator, AudioFlow flow) =>
+        Activate(enumerator, flow, AudioEndpointVolumeId) as IAudioEndpointVolume;
+
+    /// <summary>The default endpoint's peak meter for <paramref name="flow"/>, or null when there is no such device.</summary>
+    public static IAudioMeterInformation? DefaultMeter(IMMDeviceEnumerator enumerator, AudioFlow flow) =>
+        Activate(enumerator, flow, AudioMeterInformationId) as IAudioMeterInformation;
+
+    /// <summary>Activates interface <paramref name="iid"/> on the default endpoint for <paramref name="flow"/>.</summary>
+    private static object? Activate(IMMDeviceEnumerator enumerator, AudioFlow flow, Guid iid)
     {
         IMMDevice? device = null;
         try
@@ -23,9 +32,8 @@ internal static class CoreAudio
                 return null;
             }
 
-            Guid iid = AudioEndpointVolumeId;
             Marshal.ThrowExceptionForHR(device.Activate(ref iid, ClsctxAll, 0, out object? activated));
-            return activated as IAudioEndpointVolume;
+            return activated;
         }
         finally
         {
@@ -116,4 +124,13 @@ internal interface IAudioEndpointVolume
 
     [PreserveSig]
     int GetMute([MarshalAs(UnmanagedType.Bool)] out bool mute);
+}
+
+[ComImport]
+[Guid("C02216F6-8C67-4B5B-9D00-D008E73E0064")]
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+internal interface IAudioMeterInformation
+{
+    [PreserveSig]
+    int GetPeakValue(out float peak);
 }

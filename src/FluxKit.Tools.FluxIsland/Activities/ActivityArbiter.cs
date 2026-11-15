@@ -53,6 +53,7 @@ internal sealed class ActivityArbiter(TimeProvider time)
         ActivityKind.CapsLock or ActivityKind.NumLock => 44,
         ActivityKind.Copied => 40,
         ActivityKind.MicMuted => 35,
+        ActivityKind.Call => 32,
         ActivityKind.Timer => 30,
         ActivityKind.Stopwatch => 28,
         ActivityKind.Media => activity.Media?.IsPlaying == true ? 25 : 10,

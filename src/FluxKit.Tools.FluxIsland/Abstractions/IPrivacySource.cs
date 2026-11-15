@@ -8,4 +8,5 @@ public interface IPrivacySource : IIslandSource
     event EventHandler? Changed;
 }
 
-public readonly record struct PrivacySnapshot(bool MicrophoneInUse, bool CameraInUse);
+/// <param name="CallInProgress">A call app (Teams, Zoom, a browser…) is the one using the microphone.</param>
+public readonly record struct PrivacySnapshot(bool MicrophoneInUse, bool CameraInUse, bool CallInProgress = false);

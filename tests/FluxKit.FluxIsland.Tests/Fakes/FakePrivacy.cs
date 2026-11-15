@@ -8,9 +8,9 @@ internal sealed class FakePrivacy : IPrivacySource
 
     public event EventHandler? Changed;
 
-    public void Set(bool microphone, bool camera = false)
+    public void Set(bool microphone, bool camera = false, bool call = false)
     {
-        Current = new PrivacySnapshot(microphone, camera);
+        Current = new PrivacySnapshot(microphone, camera, call);
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
