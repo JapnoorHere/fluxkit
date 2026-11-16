@@ -25,6 +25,17 @@ All notable changes to FluxKit are documented here. The format follows [Keep a C
   - A Glance page with live CPU, memory, disk and battery, network speed, and quick actions (screenshot, lock, screen off, mic, settings).
   - A keyboard shortcut (Ctrl+Alt+I by default) that opens the panel; Tab, arrows, Enter and Esc work inside it.
   - A setting to put the island on the screen where the mouse is.
+- Flux Island v3, a redesign:
+  - A new look: true black with an edge light, a glow in each moment's own colour, rounder panel corners, and a labs Glass look.
+  - New motion: content scales and fades as it changes, the second bubble buds off the pill like a drop of liquid, each moment arrives with its own flourish, and the pill leans toward the pointer.
+  - Timers, the stopwatch and the battery show in a progress ring on the compact pill.
+  - The panel has page dots and sideways swipes instead of a side rail. Music has bigger art and a scrubber that thickens on hover; timers get a dial; laps show the best and slowest.
+  - Island Command: the shortcut opens a bar for timers, sums, colours, notes and quick actions, with a live preview, plus a Notes page.
+  - Music bars follow the real sound. Call mode shows the call time and a mute button, and nudges you when you talk while muted.
+  - Drop to act: keep, copy paths, zip, convert or halve dropped files.
+  - A Recent page of moments you may have missed, and an opt-in clipboard history.
+  - A first-run tour, one-time gesture tips, a Try it gallery in settings, Narrator announcements and high contrast support.
+  - Choose what can interrupt, and optional sounds.
 - `--page <name>` opens FluxKit on a chosen page.
 - `--preview-island <sample>[-open]` shows a sample island state, for screenshots and testing.
 

@@ -50,12 +50,18 @@ Your drag is never interrupted, and FluxKit never copies, moves, opens or upload
 
 ## Flux Island
 
-A small black pill sits at the top centre of your main screen. It shows the time when nothing is happening, and grows to show what is.
+A small black pill sits at the top centre of your screen. It shows the time when nothing is happening, and grows to show what is. Every moment has its own colour and a soft glow, it springs between shapes like a living thing, and when two things happen at once the second buds off into a bubble.
+
+**Three things no other island does:**
+
+- **Island Command.** Press **Ctrl+Alt+I** and type: `5m` starts a timer, `= 12*8` calculates (Enter copies the answer), `#3a7bff` shows a colour, `note call Sam` saves a note, and words like `lock`, `screenshot`, `pause` or `glance` do what they say.
+- **Call mode.** During a Teams, Zoom or browser call, the island shows the call time and a mute button, and nudges you if you start talking while muted.
+- **Drop to act.** Drag files onto the island to keep them on the shelf, copy their paths, zip them, or convert or halve images. The results land on the shelf.
 
 | Moment | What you see |
 |---|---|
-| Music or video playing | The album art and title, with bouncing bars. Click to open play, skip and a seek bar over a glow in the album's colours. |
-| Timer | Quick 1, 5 and 10 minute timers and a focus cycle (25 min focus, 5 min break by default), with rolling digits and a bounce when time's up. |
+| Music or video playing | The album art and title, with bars that move to the real sound. Click to open play, skip and a scrubber over a glow in the album's colours. |
+| Timer | Quick 1, 5 and 10 minute timers and a focus cycle (25 min focus, 5 min break by default), in a ring that empties as time runs out, with a dial, rolling digits and a bounce when time's up. |
 | Charger | A ring that sweeps to the battery level when you plug in, and a warning when the battery runs low. |
 | Connection | A note when the internet drops, and when it comes back. |
 | Microphone or camera | A small orange or green dot while an app uses them. |
@@ -71,8 +77,15 @@ A small black pill sits at the top centre of your main screen. It shows the time
 | Bluetooth | When paired earbuds, a mouse or another device connects or disconnects. |
 | Stopwatch | A stopwatch with laps, beside the timers, and +1 min while a timer runs. |
 | Glance | A page with live CPU, memory, disk and battery rings, network speed, and buttons to take a screenshot, lock the PC, turn the screen off, mute the mic or open settings. |
+| Notes | Quick notes from the command bar, on their own page. Click to copy. |
+| Recent | The last 30 moments worth a second look (downloads, screenshots, copied links, devices), so nothing you missed is lost. |
+| Clipboard (opt-in) | The last 25 pieces of text you copied, with pins. |
 
-Hover over the island to peek at more, and click it to open the panel. Press **Ctrl+Alt+I** to open it from the keyboard: arrows and Tab move, Enter presses, Esc closes. When two things happen at once, the second shows in a small bubble beside the pill; click it to swap. Right-click waves a moment away. When an app goes full screen, the island steps out of the way. It runs only on events, so it uses no CPU while nothing changes.
+Hover over the island to peek at more, and click it to open the panel; swipe sideways (or press PageDown) to move between its pages. In the command bar, press Down to open the panel instead. When two things happen at once, the second shows in a small bubble beside the pill; click it to swap. Right-click waves a moment away. You choose what may interrupt (everything, important only, or nothing) and whether moments make a sound. When an app goes full screen, the island steps out of the way.
+
+New to it? The island gives a 30-second tour the first time it runs, shows a one-time tip the first time each gesture helps, and its settings page has a **Try it** gallery that plays any moment on the real island. There's also a labs **Glass** look.
+
+It runs only on events: with nothing changing it uses no CPU, and everything stays on your PC.
 
 ## Install
 

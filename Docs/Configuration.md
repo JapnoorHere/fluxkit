@@ -93,6 +93,14 @@ Section `utilities/flux-island`.
 | `showGlance` | bool | `true` | The Glance page in the panel. Its numbers are read once a second, only while it's on screen. |
 | `hotkey` | text | `Ctrl+Alt+I` | Opens the panel from the keyboard. Ctrl, Alt or Win (plus Shift if you like) with a letter, digit, F1–F24 or Space; an F-key can be used alone. Empty turns it off; anything unreadable goes back to the default. |
 | `monitor` | `Main`, `FollowMouse` | `Main` | The screen the island sits on. `FollowMouse` moves it to the screen with the pointer when something new shows. |
+| `keepNotes` | bool | `true` | Keep notes from the command bar in `%LOCALAPPDATA%\FluxKit\notes.json`. Turning it off deletes the file. |
+| `showCalls` | bool | `true` | Show a call while a call app or browser uses the microphone, with its length, a mute button and a nudge when you talk while muted. |
+| `clipboardHistory` | bool | `false` | Keep the last 25 pieces of copied text (memory only) for the Clipboard page. Turning it off forgets them, pins too. |
+| `interruptions` | `Everything`, `Important`, `Nothing` | `Everything` | Which quick moments may take over the island. Important: time's up, low battery, offline, talking while muted and your own file jobs. |
+| `sounds` | bool | `false` | Play Windows' reminder sound when a timer ends, and the default notification sound for low battery or talking while muted. |
+| `look` | `Onyx`, `Glass` | `Onyx` | True black, or the labs smoked-glass look. |
+| `tourSeen` | bool | `false` | Set once the first-run tour has played. Set it to `false` to see the tour again (or use Settings › Try it). |
+| `seenHints` | flags | `None` | One-time gesture tips already shown: `Bubble`, `Dismiss`, `Volume`, `Pages`. |
 | `hideInFullScreen` | bool | `true` | Hide while a full-screen app covers the main screen. |
 | `showClockWhenIdle` | bool | `true` | The time on the idle pill. Off leaves a small empty pill. |
 | `effects` | `Full`, `Light` | `Full` | Springs, glow and playing bars, or short fades only. Light is also used whenever Windows animations are off. |

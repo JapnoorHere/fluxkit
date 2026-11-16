@@ -17,6 +17,13 @@ FluxKit works entirely on your PC.
   - **Bluetooth:** the names of paired devices as they connect or disconnect, from Windows' device list. Names are shown on screen only.
   - **Keyboard shortcut:** registered with Windows' standard `RegisterHotKey`, so FluxKit hears only that one key combination.
   - **Glance:** CPU, memory, disk and network totals, read once a second only while the Glance page is open. Nothing about individual apps or connections is read.
+  - **Calls:** whether the app using the microphone is a call app or a browser. The app's name is compared with a short list and dropped; it is never shown, stored or logged. During a muted call, Windows' microphone level meter is read four times a second to notice talking. The meter gives a single loudness number; no sound is recorded, kept or sent.
+  - **Music bars:** Windows' speaker level meter is read about 30 times a second, only while the bars are on screen and music is playing. Again, a single loudness number; no audio is captured.
+  - **Command bar and notes:** what you type is read only to work out the command. Notes are saved in `%LOCALAPPDATA%\FluxKit\notes.json` while "Keep notes" is on, and deleted when it's turned off.
+  - **Clipboard history (off by default):** the last 25 pieces of copied text, kept in memory only and gone when FluxKit exits or the setting is turned off. Private copies (password managers) are skipped.
+  - **Recent:** the last 30 moments (file names, copied link hosts, device names), in memory only.
+  - **Drop to act:** files dropped on a zone are read to zip or convert them. The result is a new file next to the original; originals are never changed, moved or overwritten.
+  - **Sounds (off by default):** Windows' own event sounds, so your Sound settings apply.
 - **No code injection.** FluxKit doesn't load anything into other processes.
 - **What's stored**, in `%LOCALAPPDATA%\FluxKit` only:
   - `settings.json`: your preferences.

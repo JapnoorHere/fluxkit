@@ -311,6 +311,8 @@ Every phase ends the same way:
 - Commit: "Add priority rules, quiet presentation mode and optional sounds to Flux Island"
 
 ### Phase 12: Docs, tests and final pass
+
+> **As built:** README (the three standout features and the new moments), CHANGELOG, Configuration (all new keys), Privacy (calls, meters, notes, clipboard, Recent, drops, sounds), KnownLimitations (honest limits and measured memory) and ManualTestPlan FI-25 to FI-33 are updated. There are 291 automated tests.
 - README Flux Island section with the new pillars and a feature table.
 - CHANGELOG v3, Configuration (all new keys), Privacy (call detection, peak meter, notes, clipboard history, Rewind), KnownLimitations, and ManualTestPlan cases FI-25 onward.
 - Add `--preview-island` samples for every new state: `call`, `command`, `drop-zones`, `rewind`, `notes`, `glass`.

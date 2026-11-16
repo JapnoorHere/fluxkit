@@ -65,6 +65,15 @@ Environment for recorded runs: Windows 11 Home Single Language 26H2, build 26300
 | FI-22 | Glance | Open the panel › Glance; start a big download | Rings move once a second; ↓ speed rises; nothing sampled after closing (check CPU) | N | Not run | — | Live numbers checked with `--preview-island glance` |
 | FI-23 | Glance actions | Press screenshot, lock, screen off, mic, settings | Snipping bar; PC locks; screens go dark; mic mutes; settings open on Flux Island | N | Not run | — | |
 | FI-24 | Follow the mouse | Two screens; Screen › Where the mouse is; copy something with the pointer on each screen | The island moves to the pointer's screen | N | Not run | — | |
+| FI-25 | Command bar | Ctrl+Alt+I, then type 5m, = 12*8, #3a7bff, note test, lock (Esc to leave) | Live preview for each; Enter runs it (sums and colours copy and stay open); lock locks | N | Not run | — | Parser unit-tested; rendered with `--preview-island command` |
+| FI-26 | Call mode | Join a Teams or browser call; mute; talk for a second | Call time and Mute button; "You're muted" at most every 30 s | N | Not run | — | Rendered with `--preview-island call`; nudge depends on the driver |
+| FI-27 | Live music bars | Play music with quiet and loud parts | Bars move with the sound; stop when paused or hidden | N | Not run | — | |
+| FI-28 | Drop zones | Drag two images from Explorer onto the island; drop on Zip, then on Convert and Half size | Zones light up under the pointer; new files appear next to the originals and on the shelf | N | Not run | — | Zip and naming unit-tested; rendered with `--preview-island drop` |
+| FI-29 | Recent and clipboard | Take a screenshot, copy a link; turn on clipboard history and copy text | Recent lists them with actions; Clipboard lists text with pin and remove | N | Not run | — | Rendered with `rewind` and `clips` samples |
+| FI-30 | Tour and tips | First run (or Settings › Try it › Take the tour); later use the bubble, an alert, the wheel, the pages | Tour plays once; each tip shows once and never again | N | Not run | — | Tour checked with `--island-tour` |
+| FI-31 | Interruptions and sounds | Set Important only, copy text, let a timer end; turn on sounds | Copy shows nothing; timer done shows and plays the reminder sound | N | Not run | — | Rules unit-tested |
+| FI-32 | Glass and high contrast | Settings › Labs › Glass; then Windows high contrast on | Smoked glass with a bright rim; in high contrast a white outline and no glow | N | Not run | — | Rendered with `--preview-island glass` |
+| FI-33 | Narrator | Narrator on; trigger a timer end and a copy | Narrator reads each moment as it arrives | N | Not run | — | |
 
 ## Smoke checks executed during development
 
