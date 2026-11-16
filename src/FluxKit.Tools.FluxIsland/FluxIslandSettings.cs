@@ -13,6 +13,19 @@ public enum IslandMonitor
     FollowMouse,
 }
 
+/// <summary>Which moments may take over the island.</summary>
+public enum IslandInterruptions
+{
+    /// <summary>Every moment shows.</summary>
+    Everything,
+
+    /// <summary>Only what needs you: time's up, low battery, going offline, talking while muted, and your own file jobs.</summary>
+    Important,
+
+    /// <summary>No quick moments; only lasting things (music, timers, calls, the shelf).</summary>
+    Nothing,
+}
+
 /// <summary>One-time tips the island has already shown, so each appears only once.</summary>
 [Flags]
 public enum IslandHints
@@ -141,6 +154,11 @@ public sealed class FluxIslandSettings : ISettingsSection
 
     public IslandLook Look { get; set; } = IslandLook.Onyx;
 
+    public IslandInterruptions Interruptions { get; set; } = IslandInterruptions.Everything;
+
+    /// <summary>Plays a soft Windows sound when a timer ends or the battery runs low. Off by default.</summary>
+    public bool Sounds { get; set; }
+
     /// <summary>True once the first-run tour has played (it can be replayed from settings).</summary>
     public bool TourSeen { get; set; }
 
@@ -170,6 +188,12 @@ public sealed class FluxIslandSettings : ISettingsSection
         {
             Effects = IslandEffects.Full;
             yield return "effects reset to Full";
+        }
+
+        if (!Enum.IsDefined(Interruptions))
+        {
+            Interruptions = IslandInterruptions.Everything;
+            yield return "interruptions reset to Everything";
         }
 
         if (!Enum.IsDefined(Look))

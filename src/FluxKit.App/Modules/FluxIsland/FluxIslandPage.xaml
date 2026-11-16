@@ -187,6 +187,16 @@
                                 <ComboBoxItem x:Uid="FluxIsland_MonitorMouse" />
                             </ComboBox>
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_Interruptions" Glyph="&#xE7E7;">
+                            <ComboBox x:Name="InterruptionsCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
+                                <ComboBoxItem x:Uid="FluxIsland_InterruptEverything" />
+                                <ComboBoxItem x:Uid="FluxIsland_InterruptImportant" />
+                                <ComboBoxItem x:Uid="FluxIsland_InterruptNothing" />
+                            </ComboBox>
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_Sounds" Glyph="&#xE767;">
+                            <ToggleSwitch x:Name="SoundsToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_HideFullScreen" Glyph="&#xE740;">
                             <ToggleSwitch x:Name="FullScreenToggle" Toggled="OnChanged" />
                         </c:SettingRow>

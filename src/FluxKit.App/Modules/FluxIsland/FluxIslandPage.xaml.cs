@@ -71,6 +71,8 @@ public sealed partial class FluxIslandPage : Page
         HotkeyRow.Description = Strings.Get("FluxIsland_HotkeyHelp");
         MonitorCombo.SelectedIndex = (int)s.Monitor;
         LookCombo.SelectedIndex = (int)s.Look;
+        InterruptionsCombo.SelectedIndex = (int)s.Interruptions;
+        SoundsToggle.IsOn = s.Sounds;
         ClockToggle.IsOn = s.ShowClockWhenIdle;
         ShelfToggle.IsOn = s.ShelfEnabled;
         KeepShelfToggle.IsOn = s.KeepShelf;
@@ -199,6 +201,8 @@ public sealed partial class FluxIslandPage : Page
             s.ShowGlance = GlanceToggle.IsOn;
             s.Monitor = (IslandMonitor)Math.Max(0, MonitorCombo.SelectedIndex);
             s.Look = (IslandLook)Math.Max(0, LookCombo.SelectedIndex);
+            s.Interruptions = (IslandInterruptions)Math.Max(0, InterruptionsCombo.SelectedIndex);
+            s.Sounds = SoundsToggle.IsOn;
             s.ShowClockWhenIdle = ClockToggle.IsOn;
             s.ShelfEnabled = ShelfToggle.IsOn;
             s.KeepShelf = KeepShelfToggle.IsOn;

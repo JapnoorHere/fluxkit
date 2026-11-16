@@ -297,6 +297,8 @@ Every phase ends the same way:
 - Commit: "Add a first-run tour, gesture hints and a new Studio settings page for Flux Island"
 
 ### Phase 11: Smart quiet and polish
+
+> **As built:** "What can interrupt" (Everything, Important only, Nothing) is applied in one place (`MayInterrupt`). Opt-in sounds use Windows' own event sounds (`PlaySound` aliases), so no audio files ship. Settings that only affect the look no longer restart the watchers (`SourcesKey`). Presentation mode is covered by the existing full-screen hiding; screen-share detection was left out. **Measured (Release, idle 30 s):** 0 ms CPU, about 183 MB working set and 90 MB private. That is mostly WinUI 3's own baseline across FluxKit's windows, so the plan's "under 60 MB" target doesn't fit this stack. Deferring page creation (`x:Load`) is the next lever if memory matters.
 - **Presentation and screen-share awareness:** hide or dim during PowerPoint slideshow or Teams screen share (process plus full-screen checks already in `FullScreenWatcher`; extend the window class checks).
 - **Priority rules** in settings ("What can interrupt"):
   - Everything

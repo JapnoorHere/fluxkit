@@ -356,6 +356,24 @@ public sealed partial class IslandPill : UserControl
         }
     }
 
+    /// <summary>When the user turned sounds on, a soft Windows sound for the moments that need attention.</summary>
+    private void PlaySound(IslandActivity alert)
+    {
+        if (!_scene.Settings.Sounds || Commands is null)
+        {
+            return;
+        }
+
+        if (alert.Kind == ActivityKind.TimerDone)
+        {
+            FluxKit.Platform.Shell.SystemSounds.Play(FluxKit.Platform.Shell.SoundCue.Reminder);
+        }
+        else if (alert.Kind is ActivityKind.LowBattery or ActivityKind.Offline || (alert.Kind == ActivityKind.MicMuted && alert.Value == 1))
+        {
+            FluxKit.Platform.Shell.SystemSounds.Play(FluxKit.Platform.Shell.SoundCue.Notification);
+        }
+    }
+
     /// <summary>Tells Narrator and other screen readers about a moment as it arrives, without moving focus.</summary>
     private void Announce(IslandActivity alert)
     {
@@ -372,6 +390,7 @@ public sealed partial class IslandPill : UserControl
     private void PlayArrival(IslandActivity alert)
     {
         Announce(alert);
+        PlaySound(alert);
         switch (alert.Kind)
         {
             case ActivityKind.PluggedIn:

@@ -399,6 +399,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             return;
         }
 
+        FluxIslandSettings before = _options;
         bool keptBefore = _options.KeepShelf;
         bool notesBefore = _options.KeepNotes;
         bool clipsBefore = _options.ClipboardHistory;
@@ -436,10 +437,39 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             }
         }
 
-        StopSources();
-        StartSources();
+        // Only settings that change which watchers run restart them; looks, hints and the like just redraw.
+        if (SourcesKey(before) != SourcesKey(_options))
+        {
+            StopSources();
+            StartSources();
+        }
+
         Publish();
     }
+
+    /// <summary>Everything that decides which watchers run and how. Two settings with the same key need no restart.</summary>
+    private static string SourcesKey(FluxIslandSettings s) => string.Join(
+        ',',
+        s.ShowMedia,
+        s.ShowPower,
+        s.ShowNetwork,
+        s.ShowPrivacy,
+        s.ShowCalls,
+        s.ShowClipboard,
+        s.ClipboardHistory,
+        s.SmartCopy,
+        s.HideInFullScreen,
+        s.ScrollForVolume,
+        s.ShowVolumeChanges,
+        s.ShowAudioDevices,
+        s.ShowMicMute,
+        s.ShowDesktopSwitches,
+        s.ShowDownloads,
+        s.ShowScreenshots,
+        s.ShowBrightness,
+        s.ShowLockKeys,
+        s.ShowDevices,
+        s.Hotkey);
 
     private void OnMediaChanged(object? sender, EventArgs e) => Publish();
 
@@ -612,9 +642,23 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         }
     }
 
+    /// <summary>Whether <paramref name="moment"/> may take over the island under the user's interruption setting.</summary>
+    internal static bool MayInterrupt(IslandActivity moment, IslandInterruptions level) => level switch
+    {
+        IslandInterruptions.Nothing => false,
+        IslandInterruptions.Important => moment.Kind is ActivityKind.TimerDone or ActivityKind.LowBattery or ActivityKind.Offline or ActivityKind.FileReady
+            || (moment.Kind == ActivityKind.MicMuted && moment.Value == 1),
+        _ => true,
+    };
+
     /// <summary>Shows a moment, and keeps it for Rewind if it is worth looking back at. Call under the lock.</summary>
     private void RaiseMoment(IslandActivity moment, TimeSpan? duration = null)
     {
+        if (!MayInterrupt(moment, _options.Interruptions))
+        {
+            return;
+        }
+
         _arbiter.Raise(moment, duration ?? ActivityArbiter.DurationOf(moment.Kind));
         _rewind.Record(moment, _time.GetUtcNow());
     }

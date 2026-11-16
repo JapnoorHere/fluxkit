@@ -586,4 +586,58 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
         });
         Assert.Empty(_view.Last.Clips);
     }
+
+    [Fact]
+    public async Task Important_only_lets_through_what_needs_you()
+    {
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.Interruptions = IslandInterruptions.Important;
+            return s;
+        });
+
+        _clipboard.Copy(ClipboardKind.Text);
+        Assert.Null(_view.Last.Primary);
+
+        _tool.StartTimer(TimeSpan.FromMinutes(1));
+        _time.Advance(TimeSpan.FromMinutes(1));
+        Assert.Equal(ActivityKind.TimerDone, _view.Last.Primary?.Kind);
+    }
+
+    [Fact]
+    public async Task Nothing_keeps_quick_moments_away_but_lasting_ones_still_show()
+    {
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.Interruptions = IslandInterruptions.Nothing;
+            return s;
+        });
+
+        _tool.StartTimer(TimeSpan.FromMinutes(1));
+        Assert.Equal(ActivityKind.Timer, _view.Last.Primary?.Kind);
+
+        _time.Advance(TimeSpan.FromMinutes(1));
+        Assert.NotEqual(ActivityKind.TimerDone, _view.Last.Primary?.Kind);
+    }
+
+    [Fact]
+    public async Task Changing_only_the_look_redraws_without_restarting_the_watchers()
+    {
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.Look = IslandLook.Glass;
+            return s;
+        });
+
+        Assert.False(_clipboard.Disposed);
+        Assert.Equal(IslandLook.Glass, _view.Last.Settings.Look);
+
+        await _settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+        {
+            s.ShowNetwork = false;
+            return s;
+        });
+
+        Assert.True(_clipboard.Disposed);
+    }
 }
