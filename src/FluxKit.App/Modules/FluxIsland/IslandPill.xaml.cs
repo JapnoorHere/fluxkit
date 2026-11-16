@@ -23,7 +23,7 @@ namespace FluxKit.App.Modules.FluxIsland;
 public sealed partial class IslandPill : UserControl
 {
     public const double StageWidth = 460;
-    public const double StageHeight = 240;
+    public const double StageHeight = 290;
     public const double TopInset = 6;
 
     private const double CompactHeight = 36;
@@ -73,6 +73,7 @@ public sealed partial class IslandPill : UserControl
     private bool _held;
     private Vector3 _lean;
     private bool _glass;
+    private bool _highContrast;
     private int _pageSlide;
     private bool _keyboard;
 
@@ -335,11 +336,42 @@ public sealed partial class IslandPill : UserControl
         GlanceView.SetLive(_active && _mode == PillMode.Panel && _page == PanelPage.Glance);
         UpdateMeter(view);
         UpdateCallListener();
+        OfferHint();
+    }
+
+    /// <summary>
+    /// True while Windows high contrast is on: the glow is dropped and the pill gets a solid white outline, so its
+    /// edge is clear against any background.
+    /// </summary>
+    public bool HighContrast
+    {
+        get => _highContrast;
+        set
+        {
+            if (value != _highContrast)
+            {
+                _highContrast = value;
+                _shape.SetHighContrast(value);
+            }
+        }
+    }
+
+    /// <summary>Tells Narrator and other screen readers about a moment as it arrives, without moving focus.</summary>
+    private void Announce(IslandActivity alert)
+    {
+        CompactContent content = IslandPresenter.Describe(alert, DateTimeOffset.Now);
+        string text = string.Join(", ", new[] { content.Title, content.Subtitle, content.Trail }.Where(t => !string.IsNullOrEmpty(t)));
+        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.FromElement(Surface)?.RaiseNotificationEvent(
+            Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.Other,
+            Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.ImportantMostRecent,
+            text,
+            "FluxIslandMoment");
     }
 
     /// <summary>Each kind of alert arrives with its own small signature, so moments feel distinct, not generic.</summary>
     private void PlayArrival(IslandActivity alert)
     {
+        Announce(alert);
         switch (alert.Kind)
         {
             case ActivityKind.PluggedIn:
@@ -376,6 +408,13 @@ public sealed partial class IslandPill : UserControl
     /// </summary>
     private void UpdateGlow(DateTimeOffset now, bool flare)
     {
+        if (HighContrast)
+        {
+            // High contrast: no colour glow, just the solid outline.
+            _shape.SetAccent(IslandPalette.TextPrimary, 0, Springs);
+            return;
+        }
+
         if (_mode == PillMode.Command)
         {
             _shape.SetAccent(IslandPalette.Blue, 0.4f, Springs);
@@ -571,6 +610,7 @@ public sealed partial class IslandPill : UserControl
 
     private void MorphTo(Size size)
     {
+        _size = size;
         Surface.Width = size.Width;
         Surface.Height = size.Height;
         _shape.MorphTo(new Vector2((float)size.Width, (float)size.Height), Springs);
@@ -579,6 +619,12 @@ public sealed partial class IslandPill : UserControl
         if (_bubbleShown)
         {
             region.Union(new Rect(bounds.Right + BubbleGap, TopInset + ((CompactHeight - BubbleSize) / 2), BubbleSize, BubbleSize));
+        }
+
+        if (Hint.Visibility == Visibility.Visible)
+        {
+            PlaceHint();
+            region.Union(HintBounds());
         }
 
         TargetBounds = bounds;

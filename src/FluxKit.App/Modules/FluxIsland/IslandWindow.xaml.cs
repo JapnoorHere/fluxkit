@@ -26,11 +26,13 @@ public sealed partial class IslandWindow : Window
     private const double ShadowBottom = PillShape.Bleed + 4;
     private static readonly TimeSpan ShrinkDelay = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan PreviewHold = TimeSpan.FromSeconds(12);
+    private static readonly TimeSpan TourStep = TimeSpan.FromSeconds(3.6);
 
     private readonly IVirtualDesktopService _desktops;
     private readonly ILogger _log;
     private readonly nint _hwnd;
     private readonly UISettings _uiSettings = new();
+    private readonly AccessibilitySettings _accessibility = new();
     private readonly DispatcherQueueTimer _shrinkTimer;
     private Rect _region;
     private double _scale = 1;
@@ -39,6 +41,7 @@ public sealed partial class IslandWindow : Window
     private bool _closed;
     private readonly IIslandCommands? _commands;
     private long _previewUntil;
+    private DispatcherQueueTimer? _tourTimer;
     private nint _focusReturn;
     private PixelRect _monitor;
     private IslandMonitor _monitorSetting;
@@ -68,6 +71,7 @@ public sealed partial class IslandWindow : Window
         _commands = commands;
         Pill.Commands = commands;
         Pill.TargetChanged += OnTargetChanged;
+        Pill.HintSeen += (_, hint) => HintSeen?.Invoke(this, hint);
         Pill.ShareRequested += (_, files) => ShareSheet.Show(_hwnd, files, Strings.Get("Island_ShareTitle"));
         Pill.KeyboardReleased += (_, _) =>
         {
@@ -120,6 +124,57 @@ public sealed partial class IslandWindow : Window
             _ = PinAsync();
         }
     }
+    /// <summary>A one-time tip was shown on the island; the host saves it so it never shows again.</summary>
+    public event EventHandler<IslandHints>? HintSeen;
+
+    /// <summary>
+    /// The first-run tour: a short walk through what the island does, played on the island itself with a caption
+    /// under it. About half a minute; the live island comes back when it ends.
+    /// </summary>
+    public void PlayTour()
+    {
+        if (_closed)
+        {
+            return;
+        }
+
+        (string Sample, bool Open, string Key)[] steps =
+        [
+            ("clock", false, "Island_Tour1"),
+            ("music", false, "Island_Tour2"),
+            ("music", true, "Island_Tour3"),
+            ("split", false, "Island_Tour4"),
+            ("copied", false, "Island_Tour5"),
+            ("command", false, "Island_Tour6"),
+            ("drop", false, "Island_Tour7"),
+            ("glance", false, "Island_Tour8"),
+        ];
+        int step = 0;
+        _tourTimer?.Stop();
+        _tourTimer = DispatcherQueue.CreateTimer();
+        _tourTimer.Interval = TourStep;
+        DispatcherQueueTimer timer = _tourTimer;
+        void Next()
+        {
+            if (step >= steps.Length)
+            {
+                timer.Stop();
+                Pill.HideHint();
+                _previewUntil = Environment.TickCount64; // The next live update takes over again.
+                return;
+            }
+
+            (string sample, bool open, string key) = steps[step++];
+            ShowPreview(sample, open);
+            Pill.ShowHint(Strings.Get(key), TourStep);
+        }
+
+        timer.Tick += (_, _) => Next();
+        Next();
+        timer.Start();
+        _log.Information("Island tour started");
+    }
+
 
     /// <summary>
     /// Shows one of the <see cref="IslandSamples"/> for <see cref="PreviewHold"/>, even while live updates arrive
@@ -155,6 +210,7 @@ public sealed partial class IslandWindow : Window
         }
 
         Pill.Springs = scene.Settings.Effects == IslandEffects.Full && _uiSettings.AnimationsEnabled;
+        Pill.HighContrast = _accessibility.HighContrast;
         if (scene.Hidden)
         {
             HideCore();

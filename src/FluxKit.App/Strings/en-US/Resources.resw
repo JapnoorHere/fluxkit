@@ -1482,4 +1482,91 @@
   <data name="FluxIsland_LookGlass.Content" xml:space="preserve">
     <value>Glass (labs)</value>
   </data>
+  <data name="Island_Tour1" xml:space="preserve">
+    <value>Hi, I'm Flux Island. I live up here and show what's going on.</value>
+  </data>
+  <data name="Island_Tour2" xml:space="preserve">
+    <value>Music, timers, calls and more show here while they last.</value>
+  </data>
+  <data name="Island_Tour3" xml:space="preserve">
+    <value>Click me to open. Hover to peek first.</value>
+  </data>
+  <data name="Island_Tour4" xml:space="preserve">
+    <value>Two things at once? The second waits in a bubble. Click it to swap.</value>
+  </data>
+  <data name="Island_Tour5" xml:space="preserve">
+    <value>Quick moments come and go. Right-click to wave one away.</value>
+  </data>
+  <data name="Island_Tour6" xml:space="preserve">
+    <value>Press Ctrl+Alt+I and type: 5m, = 12*8, #3a7bff or note …</value>
+  </data>
+  <data name="Island_Tour7" xml:space="preserve">
+    <value>Drop files on me to keep, zip, convert or resize them.</value>
+  </data>
+  <data name="Island_Tour8" xml:space="preserve">
+    <value>That's it. Everything stays on this PC. Have fun!</value>
+  </data>
+  <data name="Island_HintBubble" xml:space="preserve">
+    <value>Tip: click the bubble to swap</value>
+  </data>
+  <data name="Island_HintDismiss" xml:space="preserve">
+    <value>Tip: right-click to wave this away</value>
+  </data>
+  <data name="Island_HintVolume" xml:space="preserve">
+    <value>Tip: scroll over the island to change the volume</value>
+  </data>
+  <data name="Island_HintPages" xml:space="preserve">
+    <value>Tip: swipe sideways or press PageDown for more</value>
+  </data>
+  <data name="FluxIsland_TryGroup.Header" xml:space="preserve">
+    <value>Try it</value>
+  </data>
+  <data name="FluxIsland_TryIntro.Text" xml:space="preserve">
+    <value>See any moment on the real island, or take the short tour again.</value>
+  </data>
+  <data name="FluxIsland_ReplayTour.Content" xml:space="preserve">
+    <value>Take the tour</value>
+  </data>
+  <data name="FluxIsland_TryMusic" xml:space="preserve">
+    <value>Music</value>
+  </data>
+  <data name="FluxIsland_TryTimer" xml:space="preserve">
+    <value>Timer</value>
+  </data>
+  <data name="FluxIsland_TryStopwatch" xml:space="preserve">
+    <value>Stopwatch</value>
+  </data>
+  <data name="FluxIsland_TryCharging" xml:space="preserve">
+    <value>Charging</value>
+  </data>
+  <data name="FluxIsland_TryTwo" xml:space="preserve">
+    <value>Two at once</value>
+  </data>
+  <data name="FluxIsland_TryCall" xml:space="preserve">
+    <value>Call</value>
+  </data>
+  <data name="FluxIsland_TryCommand" xml:space="preserve">
+    <value>Command bar</value>
+  </data>
+  <data name="FluxIsland_TryDrop" xml:space="preserve">
+    <value>Drop files</value>
+  </data>
+  <data name="FluxIsland_TryScreenshot" xml:space="preserve">
+    <value>Screenshot</value>
+  </data>
+  <data name="FluxIsland_TryLink" xml:space="preserve">
+    <value>Copied link</value>
+  </data>
+  <data name="FluxIsland_TryDevice" xml:space="preserve">
+    <value>Earbuds</value>
+  </data>
+  <data name="FluxIsland_TryGlance" xml:space="preserve">
+    <value>Glance</value>
+  </data>
+  <data name="FluxIsland_TryRecent" xml:space="preserve">
+    <value>Recent</value>
+  </data>
+  <data name="FluxIsland_TryGlass" xml:space="preserve">
+    <value>Glass look</value>
+  </data>
 </root>

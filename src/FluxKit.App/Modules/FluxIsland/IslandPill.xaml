@@ -151,6 +151,24 @@
             </Grid>
         </Grid>
 
+        <!-- A short tip under the pill: the first-run tour, or a gesture shown once ("Click the bubble to swap"). -->
+        <Border
+            x:Name="Hint"
+            Padding="12,6"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Background="#F2141418"
+            BorderBrush="#24FFFFFF"
+            BorderThickness="1"
+            CornerRadius="13"
+            IsHitTestVisible="False"
+            Visibility="Collapsed">
+            <TextBlock
+                x:Name="HintText"
+                FontSize="12"
+                Foreground="#F5F5F7" />
+        </Border>
+
         <!-- The second activity, in a small bubble beside the pill (like a second Live Activity). Click to swap. -->
         <Grid
             x:Name="Bubble"

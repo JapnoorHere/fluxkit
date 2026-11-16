@@ -25,6 +25,33 @@
             </c:ToolPageLayout.Preview>
 
             <StackPanel x:Name="OptionsPanel" Spacing="{StaticResource GroupSpacing}">
+                <!-- Try any moment on the real island, or replay the tour. Buttons are built from IslandSamples. -->
+                <c:SettingsGroup x:Uid="FluxIsland_TryGroup">
+                    <StackPanel Padding="16,12" Spacing="12">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                TextWrapping="Wrap"
+                                x:Uid="FluxIsland_TryIntro" />
+                            <Button
+                                x:Name="TourButton"
+                                Grid.Column="1"
+                                Click="OnTourClicked"
+                                Style="{StaticResource AccentButtonStyle}"
+                                x:Uid="FluxIsland_ReplayTour" />
+                        </Grid>
+                        <VariableSizedWrapGrid
+                            x:Name="Gallery"
+                            ItemHeight="36"
+                            ItemWidth="132"
+                            Orientation="Horizontal" />
+                    </StackPanel>
+                </c:SettingsGroup>
+
                 <c:SettingsGroup x:Uid="FluxIsland_ShowGroup">
                     <StackPanel>
                         <c:SettingRow x:Uid="FluxIsland_ShowMedia" Glyph="&#xE8D6;">

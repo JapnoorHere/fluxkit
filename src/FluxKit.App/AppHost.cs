@@ -124,6 +124,11 @@ public sealed class AppHost
             commands =>
             {
                 _island = new IslandWindow(commands, Desktops, Serilog.Log.Logger);
+                _island.HintSeen += (_, hint) => _ = Settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+                {
+                    s.SeenHints |= hint;
+                    return s;
+                });
                 return _island.View;
             },
             SystemSources.Create(Serilog.Log.Logger, Desktops),
@@ -132,6 +137,7 @@ public sealed class AppHost
         FluxIsland.StateChanged += (_, _) => _dispatcher.TryEnqueue(OnStatusChanged);
         Registry.Register(FluxIsland);
         await Registry.StartEnabledAsync(CancellationToken.None);
+        OfferIslandTour();
 
         CreateTray();
         AppInstance.GetCurrent().Activated += (_, _) => _dispatcher.TryEnqueue(() => ShowMainWindow());
@@ -152,6 +158,11 @@ public sealed class AppHost
                 () => _selector?.ShowPreview(Settings.Read<DragToSwitchSettings>(DragToSwitchSettings.Section)));
         }
 
+        if (args.Contains("--island-tour", StringComparer.OrdinalIgnoreCase))
+        {
+            _dispatcher.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => _island?.PlayTour());
+        }
+
         int islandPreview = Array.FindIndex(args, a => a.Equals("--preview-island", StringComparison.OrdinalIgnoreCase));
         if (islandPreview >= 0 && islandPreview + 1 < args.Length)
         {
@@ -163,6 +174,35 @@ public sealed class AppHost
         }
 
         Log.Information("FluxKit ready (background={Background})", background);
+    }
+
+    /// <summary>Plays one of the island's sample moments on the real island, from the settings page's gallery.</summary>
+    public void PreviewIsland(string sample, bool open) => _island?.ShowPreview(sample, open);
+
+    /// <summary>Replays the Flux Island tour on the island itself (from its settings page).</summary>
+    public void PlayIslandTour() => _island?.PlayTour();
+
+    /// <summary>The first time Flux Island runs, it shows the user round once, a few seconds after starting.</summary>
+    private void OfferIslandTour()
+    {
+        if (_island is null || Settings.Read<FluxIslandSettings>(FluxIslandSettings.Section).TourSeen)
+        {
+            return;
+        }
+
+        DispatcherQueueTimer wait = _dispatcher.CreateTimer();
+        wait.Interval = TimeSpan.FromSeconds(3);
+        wait.IsRepeating = false;
+        wait.Tick += (_, _) =>
+        {
+            _island?.PlayTour();
+            _ = Settings.UpdateAsync<FluxIslandSettings>(FluxIslandSettings.Section, s =>
+            {
+                s.TourSeen = true;
+                return s;
+            });
+        };
+        wait.Start();
     }
 
     public void ShowMainWindow(string? page = null)

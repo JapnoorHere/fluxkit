@@ -13,6 +13,25 @@ public enum IslandMonitor
     FollowMouse,
 }
 
+/// <summary>One-time tips the island has already shown, so each appears only once.</summary>
+[Flags]
+public enum IslandHints
+{
+    None = 0,
+
+    /// <summary>"Click the bubble to swap."</summary>
+    Bubble = 1,
+
+    /// <summary>"Right-click to wave it away."</summary>
+    Dismiss = 2,
+
+    /// <summary>"Scroll over the island to change the volume."</summary>
+    Volume = 4,
+
+    /// <summary>"Swipe sideways for more pages."</summary>
+    Pages = 8,
+}
+
 /// <summary>The island's material.</summary>
 public enum IslandLook
 {
@@ -121,6 +140,11 @@ public sealed class FluxIslandSettings : ISettingsSection
     public IslandEffects Effects { get; set; } = IslandEffects.Full;
 
     public IslandLook Look { get; set; } = IslandLook.Onyx;
+
+    /// <summary>True once the first-run tour has played (it can be replayed from settings).</summary>
+    public bool TourSeen { get; set; }
+
+    public IslandHints SeenHints { get; set; }
 
     public int FocusMinutes { get; set; } = 25;
 

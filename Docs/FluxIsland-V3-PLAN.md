@@ -273,6 +273,8 @@ Every phase ends the same way:
 - Commit: "Add a labs Glass style for Flux Island"
 
 ### Phase 10: Teach the user (onboarding and discoverability)
+
+> **As built:** the tour plays eight scripted steps with a caption chip under the pill. It starts 3 s after Flux Island first runs, and can be replayed from Settings › Try it or with `--island-tour`. There are four one-time gesture tips (bubble, dismiss, volume, pages), saved in `seenHints`. The Try it gallery plays 14 moments on the real island. Narrator announces each moment as it arrives, and high contrast swaps the glow for a solid 2 px outline. The settings page got a Try it group and a Labs group rather than a full redesign.
 - **First-run tour on the real island:** after Flux Island is first turned on, the island plays a 25 s scripted demo through `IslandWindow.ShowPreview`:
   1. "Hi, I'm Flux Island"
   2. Music

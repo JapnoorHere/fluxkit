@@ -31,6 +31,7 @@ internal sealed class PillShape
     private readonly CompositionRoundedRectangleGeometry _geometry;
     private readonly CompositionRoundedRectangleGeometry _neck;
     private readonly CompositionColorBrush _body;
+    private readonly CompositionSpriteShape _fill;
     private CompositionColorGradientStop? _rim;
     private readonly ShapeVisual _glow;
     private readonly List<(CompositionColorBrush Brush, byte Alpha)> _glowBrushes = [];
@@ -88,11 +89,11 @@ internal sealed class PillShape
         neck.FillBrush = _body;
         body.Shapes.Add(neck);
 
-        CompositionSpriteShape fill = _compositor.CreateSpriteShape(_geometry);
-        fill.FillBrush = _body;
-        fill.StrokeBrush = EdgeLight();
-        fill.StrokeThickness = 1;
-        body.Shapes.Add(fill);
+        _fill = _compositor.CreateSpriteShape(_geometry);
+        _fill.FillBrush = _body;
+        _fill.StrokeBrush = EdgeLight();
+        _fill.StrokeThickness = 1;
+        body.Shapes.Add(_fill);
         root.Children.InsertAtTop(body);
         ElementCompositionPreview.SetElementChildVisual(shapeHost, root);
 
@@ -195,6 +196,13 @@ internal sealed class PillShape
             _glow.StopAnimation("Opacity");
             _glow.Opacity = intensity;
         }
+    }
+
+    /// <summary>High contrast: a solid 2 px white outline instead of the soft edge light.</summary>
+    public void SetHighContrast(bool on)
+    {
+        _fill.StrokeThickness = on ? 2 : 1;
+        _fill.StrokeBrush = on ? _compositor.CreateColorBrush(Microsoft.UI.Colors.White) : EdgeLight();
     }
 
     /// <summary>

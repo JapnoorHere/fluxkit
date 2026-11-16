@@ -16,10 +16,30 @@ public sealed partial class FluxIslandPage : Page
     public FluxIslandPage()
     {
         InitializeComponent();
+        BuildGallery();
         Load();
         Loaded += (_, _) => _host.StatusChanged += OnStatusChanged;
         Unloaded += (_, _) => _host.StatusChanged -= OnStatusChanged;
     }
+
+    /// <summary>The moments offered in the "Try it" gallery: sample name, whether it opens the panel, and its label.</summary>
+    private static readonly (string Sample, bool Open, string Key)[] TrySamples =
+    [
+        ("music", true, "FluxIsland_TryMusic"),
+        ("timer", false, "FluxIsland_TryTimer"),
+        ("both", true, "FluxIsland_TryStopwatch"),
+        ("charging", false, "FluxIsland_TryCharging"),
+        ("split", false, "FluxIsland_TryTwo"),
+        ("call", false, "FluxIsland_TryCall"),
+        ("command", false, "FluxIsland_TryCommand"),
+        ("drop", false, "FluxIsland_TryDrop"),
+        ("screenshot", false, "FluxIsland_TryScreenshot"),
+        ("link", false, "FluxIsland_TryLink"),
+        ("device", false, "FluxIsland_TryDevice"),
+        ("glance", false, "FluxIsland_TryGlance"),
+        ("rewind", false, "FluxIsland_TryRecent"),
+        ("glass", true, "FluxIsland_TryGlass"),
+    ];
 
     private FluxIslandSettings Current => _host.Settings.Read<FluxIslandSettings>(FluxIslandSettings.Section);
 
@@ -68,6 +88,18 @@ public sealed partial class FluxIslandPage : Page
         Preview.Update(s);
         _loading = false;
     }
+
+    private void BuildGallery()
+    {
+        foreach ((string sample, bool open, string key) in TrySamples)
+        {
+            var button = new Button { Content = Strings.Get(key), HorizontalAlignment = HorizontalAlignment.Stretch, Margin = new Thickness(0, 0, 8, 8) };
+            button.Click += (_, _) => _host.PreviewIsland(sample, open);
+            Gallery.Children.Add(button);
+        }
+    }
+
+    private void OnTourClicked(object sender, RoutedEventArgs e) => _host.PlayIslandTour();
 
     private void RefreshStatus()
     {
