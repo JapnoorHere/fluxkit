@@ -255,3 +255,101 @@ These new reusable controls go in `Modules/FluxIsland/Design/`. They're built on
 - Emil Kowalski, "Great animations": https://emilkowal.ski/ui/great-animations and "7 practical animation tips": https://emilkowal.ski/ui/7-practical-animation-tips
 - Benji Taylor, "Family Values": https://benji.org/family-values
 - 2026 trend round-ups: https://www.mindinventory.com/blog/mobile-app-ui-ux-design-trends/, https://midrocket.com/en/guides/ui-design-trends-2026/, https://www.wavespace.agency/blog/ui-design-trends
+
+## 9. Implementation detail per phase
+
+Each phase lists the files it touches, what is built, and how it's accepted. "Accept" means checked on a screenshot of the named samples, plus build, format and tests.
+
+### Phase 1: Type, colour, badges, buttons
+- **`IslandPalette.cs`**
+  - Swap to the iOS dark system colours: Orange `#FF9F0A`, Green `#30D158`, Red `#FF453A`, Blue `#0A84FF`, Teal `#64D2FF`, Indigo `#5E5CE6`, Pink `#FF375F`, Yellow `#FFD60A`, Purple `#BF5AF2`.
+  - Label colours: primary `#FFFFFF`, secondary `#99EBEBF5`, tertiary `#4DEBEBF5`. Raised `#1C1C1E`, Pressed `#2C2C2E`.
+  - `Tint(color)` returns the colour at 22 % alpha.
+  - Accent mapping: Media Pink; Timer Orange; Call Green; Shelf Indigo; Copy Indigo; Download Blue; Device Teal; Notes Yellow; Glance Purple.
+- **`IslandStyles.xaml`**
+  - Text styles `IslandHeroText`, `IslandDisplayText`, `IslandTitleText`, `IslandCompactText`, `IslandBodyText`, `IslandCaptionText`: Segoe UI Variable Display or Text, the 3.1 weights and sizes, and `Typography.NumeralAlignment="Tabular"` on number styles.
+  - Button styles `IslandTintButtonStyle` (round 44; background from `Tag` tint), `IslandGhostButtonStyle` (round, transparent), `IslandPillChipStyle` (height 30, `#1C1C1E`), and `IslandKeyCapStyle` (Border).
+  - Hover, pressed and disabled resources for the 3.5 states.
+- **`Design/IconBadge.xaml(.cs)`**
+  - Properties: `Glyph`, `Accent`, `Size` (24/28/40/52), `Filled` (solid accent with a black glyph, vs tint with an accent glyph).
+  - Methods: `Pop()`, `Breathe(bool)` (I1), `DrawCheck()` (I4, a trimmed path).
+- **`PressFeedback.cs`:** press 0.97 with Snappy, release with Bouncy (M2/M3).
+- **Restyle pass:**
+  - Header glyphs become `IconBadge` 28.
+  - Chips become `IslandPillChipStyle`.
+  - Primary actions become `IslandTintButtonStyle`.
+  - Section labels become `IslandCaptionText`.
+- **Accept:** `music-open`, `clock-open`, `both-open`, `shelf-open`, `notes`, `glance` show badges, tinted primary buttons and caption labels.
+
+### Phase 2: Compact pill and peek
+- **`IslandPill.xaml`:**
+  - The compact leading slot holds `LeadBadge` (an `IconBadge` 24), `CompactRing` (`ProgressGlyph` 24 with a tint fill) and `CompactArtFrame`.
+  - The trailing value uses `IslandCompactText` in the accent colour.
+  - The middle title is white at 60 % and only shows when `CompactContent.Title` is a label.
+- **`CompactContent`:** gains `Value` (the trailing big value) and `Live` (`None`, `Bars`, `Pulse`).
+- **`IslandPresenter`:** every kind is remapped to the 4.1 table (leading badge glyph, middle label, trailing value).
+- **Bubble:** its glyph becomes a 26 `IconBadge`; timers show a 26 `ProgressGlyph`.
+- **Peek:** the action becomes `IslandTintButtonStyle` (height 30) in the accent colour.
+- **Icon life:** I1 breathe for Call and MicMuted (live), I3 bolt flash, I5 flip, I6 slash (a strike line drawn over the badge), I7 slide (exists), and the I2 bell (exists).
+- **Accept:** `timer`, `music`, `call`, `charging`, `copied`, `download`, `device`, `micmuted`, `split`, `clock`.
+
+### Phase 3: Music page
+- **`Design/ArtWash.cs`:** an `Image` with `DecodePixelWidth=8`, `Stretch=UniformToFill`, and a 400 ms opacity cross-fade between two images. A black gradient overlay goes on top.
+- **`AlbumArt`:** exposes the stream bytes for the wash (decoded separately at 8 px).
+- **`Design/Scrubber.xaml(.cs)`:**
+  - The track grows 4→8 on hover and the knob grows 0→14 (I8).
+  - Drag with pointer capture shows a time bubble above the knob (I9). Release seeks.
+- **`MediaPanel.xaml`:**
+  - Art 72 (radius 16) and `Caption` "NOW PLAYING".
+  - The title in `IslandTitleText`, the artist in `IslandBodyText` at 60 %.
+  - Controls: ghost 44, play as a white 56 circle with a black solid glyph (`F5B0`/`F8AE`), ghost 44.
+- **Accept:** `music-open`.
+
+### Phase 4: Timer page
+- **Idle:** the clock in `IslandDisplayText` with the date in `Caption`. A bento row of four `BentoTile`s (86 × 64) with the number in `Display` and the unit in `Caption` (1, 5, 10, Focus 25), and the stopwatch as a ghost button.
+- **Running:**
+  - Left column: `TintButton` pause (orange tint) and `GhostButton` cancel.
+  - Right: the `Caption` label and `Hero` digits (`RollingText` with a size parameter) in orange, right-aligned.
+  - The dial moves left as an `IconBadge`-sized ring of 52.
+  - A +1 min chip and lap chips.
+- **`RollingText`:** gains `FontSize`, `FontWeight` and tabular numerals.
+- **Laps:** a row of up to three small tiles (#, time), the best in green and the slowest in orange.
+- **Accept:** `clock-open`, `both-open`, `stopwatch-open`.
+
+### Phase 5: Glance (bento)
+- **Layout:** a 2 × 2 grid of `BentoTile`s (CPU, Memory, Disk, Battery). Each has a `ProgressGlyph` 40 ring with a gradient stroke, the value in `Display` 22, and a `Caption` label.
+- **Network tile:** spans the width, with ↓ and ↑ values and a `Sparkline` (a 60-sample polyline) for download.
+- **Quick actions:** a row of ghost 40 buttons.
+- **Panel height:** about 250, so the stage grows to 320.
+- **Accept:** `glance`.
+
+### Phase 6: Lists, shelf, command bar, drop zones
+- **`ListPanel`:**
+  - Rows 44 with radius 12, a hover fill, a leading `IconBadge` 28, hover-only actions, and the collapse-out animation on remove (I10).
+  - The pin rotates and fills (I11).
+  - Empty states get a badge 52 and a sentence.
+  - The Clear button shows an undo chip for 4 s; the tool keeps a one-step undo (`RestoreNotes`, `RestoreClips`, `RestoreRewind`).
+- **Shelf:** `ShelfTile` gets an 84 tile with radius 18, a hover lift of 1.03, and a dashed empty tile.
+- **`CommandBar`:**
+  - The input row in `Title` with a magnifier badge and an "esc" key cap.
+  - The result tile with a badge 40, the result in `Display`, and a ↵ key cap.
+  - Success draws a check (I14).
+- **`DropZones`:** badges 40, the hovered tile's badge fills solid and the others dim to 60 % (I12), and a "suck-in" on drop.
+- **Accept:** `notes`, `rewind`, `clips`, `shelf-open`, `command`, `drop`.
+
+### Phase 7: Continuity
+- **Opening and closing** (M4/M5): the compact leading element animates to the expanded badge or art position using a composition translate-and-scale from its compact bounds to its expanded bounds. These are measured before and after layout, the FLIP technique.
+- **Elements that travel:**
+  - The timer ring travels to the dial.
+  - The music art travels to the 72 art.
+  - The call badge travels to the hero badge.
+- **Accept:** a burst of screenshots during the transition.
+
+### Phase 8: Polish
+- I16 error shake, I18 rubber-band at the ends of the pages, and a `Marquee` for long titles on hover.
+- The hint chip with a badge and tour dots.
+- Contrast check of every text colour against its background.
+- Reduced motion (Windows animations off): fades only.
+- High contrast: outlines.
+- An idle CPU and memory check.
+- Docs: README, CHANGELOG and ManualTestPlan.
