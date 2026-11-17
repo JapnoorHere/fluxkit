@@ -7,6 +7,7 @@
     x:Class="FluxKit.App.Modules.FluxIsland.ShelfPanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="using:FluxKit.App.Modules.FluxIsland.Design"
     RequestedTheme="Dark">
     <UserControl.Resources>
         <ResourceDictionary Source="ms-appx:///Modules/FluxIsland/IslandStyles.xaml" />
@@ -25,10 +26,9 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="8">
-                <FontIcon
+                <d:IconBadge
                     x:Name="HeaderGlyph"
-                    FontSize="14"
-                    Glyph="&#xE7B8;" />
+                    BadgeSize="28" />
                 <TextBlock
                     FontSize="13"
                     FontWeight="SemiBold"

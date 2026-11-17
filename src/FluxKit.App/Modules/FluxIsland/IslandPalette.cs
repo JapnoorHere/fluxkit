@@ -19,8 +19,11 @@ internal static class IslandPalette
     /// <summary>The Glass look's brighter rim.</summary>
     public static readonly Color GlassRim = Color.FromArgb(0x7A, 0xFF, 0xFF, 0xFF);
 
-    /// <summary>Raised areas inside the panel (art frames, tiles).</summary>
-    public static readonly Color Raised = Color.FromArgb(0xFF, 0x1A, 0x1A, 0x1F);
+    /// <summary>Raised tiles inside the panel (iOS secondary system background, dark).</summary>
+    public static readonly Color Raised = Color.FromArgb(0xFF, 0x1C, 0x1C, 0x1E);
+
+    /// <summary>A raised tile under the pointer or pressed (iOS tertiary background, dark).</summary>
+    public static readonly Color RaisedHover = Color.FromArgb(0xFF, 0x2C, 0x2C, 0x2E);
 
     /// <summary>A chip at rest, on hover and pressed.</summary>
     public static readonly Color Chip = Color.FromArgb(0x1C, 0xFF, 0xFF, 0xFF);
@@ -38,11 +41,13 @@ internal static class IslandPalette
     /// <summary>Kept for older callers: the faint 1 px inner edge.</summary>
     public static readonly Color Highlight = Color.FromArgb(0x14, 0xFF, 0xFF, 0xFF);
 
-    public static readonly Color TextPrimary = Color.FromArgb(0xFF, 0xF5, 0xF5, 0xF7);
+    public static readonly Color TextPrimary = Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF);
 
-    public static readonly Color TextSecondary = Color.FromArgb(0xFF, 0xA1, 0xA1, 0xAA);
+    /// <summary>iOS secondary label: soft white at 60 %, for artists, details and labels.</summary>
+    public static readonly Color TextSecondary = Color.FromArgb(0x99, 0xEB, 0xEB, 0xF5);
 
-    public static readonly Color TextTertiary = Color.FromArgb(0xFF, 0x6B, 0x6B, 0x74);
+    /// <summary>iOS tertiary label: white at 30 %, for times and hints.</summary>
+    public static readonly Color TextTertiary = Color.FromArgb(0x4D, 0xEB, 0xEB, 0xF5);
 
     public static readonly Color Green = Color.FromArgb(0xFF, 0x30, 0xD1, 0x58);
 
@@ -52,11 +57,16 @@ internal static class IslandPalette
 
     public static readonly Color Yellow = Color.FromArgb(0xFF, 0xFF, 0xD6, 0x0A);
 
-    public static readonly Color Cyan = Color.FromArgb(0xFF, 0x3C, 0xCD, 0xEB);
+    /// <summary>iOS teal (dark).</summary>
+    public static readonly Color Cyan = Color.FromArgb(0xFF, 0x64, 0xD2, 0xFF);
 
     public static readonly Color Blue = Color.FromArgb(0xFF, 0x0A, 0x84, 0xFF);
 
-    public static readonly Color Violet = Color.FromArgb(0xFF, 0x8A, 0x84, 0xFF);
+    /// <summary>iOS indigo (dark).</summary>
+    public static readonly Color Violet = Color.FromArgb(0xFF, 0x5E, 0x5C, 0xE6);
+
+    /// <summary>iOS purple (dark).</summary>
+    public static readonly Color Purple = Color.FromArgb(0xFF, 0xBF, 0x5A, 0xF2);
 
     public static readonly Color Pink = Color.FromArgb(0xFF, 0xFF, 0x37, 0x5F);
 
@@ -85,6 +95,9 @@ internal static class IslandPalette
         _ when activity.IsAlert => 1,
         _ => 0.45f,
     };
+
+    /// <summary>The soft background behind a badge or a tinted button: the colour at 22 % on black.</summary>
+    public static Color Tint(Color color) => WithAlpha(color, 0x38);
 
     /// <summary><paramref name="color"/> with a new alpha.</summary>
     public static Color WithAlpha(Color color, byte alpha) => Color.FromArgb(alpha, color.R, color.G, color.B);

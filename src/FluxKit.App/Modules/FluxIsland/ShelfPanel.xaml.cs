@@ -27,7 +27,7 @@ public sealed partial class ShelfPanel : UserControl, IIslandPage
     {
         InitializeComponent();
         Count.Foreground = new SolidColorBrush(IslandPalette.TextSecondary);
-        HeaderGlyph.Foreground = new SolidColorBrush(IslandPalette.Cyan);
+        HeaderGlyph.Show("\xE7B8", IslandPalette.Violet);
         ClearButton.Click += (_, _) => Commands?.ClearShelf();
         ShareButton.Click += (_, _) => ShareRequested?.Invoke(this, [.. _tiles.Keys.Where(File.Exists)]);
         PressFeedback.Attach(ShareButton);

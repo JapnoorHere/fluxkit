@@ -4,6 +4,7 @@
     x:Class="FluxKit.App.Modules.FluxIsland.ListPanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="using:FluxKit.App.Modules.FluxIsland.Design"
     RequestedTheme="Dark">
     <UserControl.Resources>
         <ResourceDictionary Source="ms-appx:///Modules/FluxIsland/IslandStyles.xaml" />
@@ -21,11 +22,10 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <FontIcon
+            <d:IconBadge
                 x:Name="HeaderGlyph"
                 VerticalAlignment="Center"
-                FontSize="14"
-                Glyph="&#xE70B;" />
+                BadgeSize="28" />
             <TextBlock
                 Grid.Column="1"
                 VerticalAlignment="Center"

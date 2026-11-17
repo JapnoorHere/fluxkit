@@ -75,8 +75,7 @@ public sealed partial class ListPanel : UserControl, IIslandPage
     internal void Configure(ListPageSpec spec)
     {
         _spec = spec;
-        HeaderGlyph.Glyph = spec.Glyph;
-        HeaderGlyph.Foreground = new SolidColorBrush(spec.Accent);
+        HeaderGlyph.Show(spec.Glyph, spec.Accent);
         Title.Text = Strings.Get(spec.TitleKey);
     }
 
