@@ -19,6 +19,12 @@ internal sealed class AlbumArt
 
     public ImageSource? Image { get; private set; }
 
+    /// <summary>
+    /// The art decoded at 6 pixels wide: stretched to fill the music panel, smooth scaling turns it into a soft blur of
+    /// the album's colours, with no blur effect at all.
+    /// </summary>
+    public ImageSource? Wash { get; private set; }
+
     public Color Accent { get; private set; } = IslandPalette.Violet;
 
     /// <summary>Raised on the UI thread when <see cref="Image"/> and <see cref="Accent"/> change.</summary>
@@ -34,7 +40,7 @@ internal sealed class AlbumArt
         _bytes = bytes;
         if (bytes.IsEmpty)
         {
-            Apply(null, IslandPalette.Violet);
+            Apply(null, null, IslandPalette.Violet);
             return;
         }
 
@@ -44,6 +50,7 @@ internal sealed class AlbumArt
     private async Task LoadAsync(ReadOnlyMemory<byte> bytes)
     {
         ImageSource? image = null;
+        ImageSource? wash = null;
         Color accent = IslandPalette.Violet;
         try
         {
@@ -53,6 +60,11 @@ internal sealed class AlbumArt
             var bitmap = new BitmapImage { DecodePixelWidth = DecodeSize, DecodePixelType = DecodePixelType.Logical };
             await bitmap.SetSourceAsync(stream);
             image = bitmap;
+
+            stream.Seek(0);
+            var tiny = new BitmapImage { DecodePixelWidth = 6, DecodePixelType = DecodePixelType.Physical };
+            await tiny.SetSourceAsync(stream);
+            wash = tiny;
 
             stream.Seek(0);
             BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream);
@@ -68,13 +80,14 @@ internal sealed class AlbumArt
 
         if (bytes.Equals(_bytes))
         {
-            Apply(image, accent);
+            Apply(image, wash, accent);
         }
     }
 
-    private void Apply(ImageSource? image, Color accent)
+    private void Apply(ImageSource? image, ImageSource? wash, Color accent)
     {
         Image = image;
+        Wash = wash;
         Accent = accent;
         Changed?.Invoke(this, EventArgs.Empty);
     }

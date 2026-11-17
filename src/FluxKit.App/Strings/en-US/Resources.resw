@@ -1590,4 +1590,7 @@
   <data name="FluxIsland_Sounds.Description" xml:space="preserve">
     <value>Play your Windows reminder sound when a timer ends, and a soft sound for low battery or talking while muted</value>
   </data>
+  <data name="Island_NowPlaying.Text" xml:space="preserve">
+    <value>NOW PLAYING</value>
+  </data>
 </root>

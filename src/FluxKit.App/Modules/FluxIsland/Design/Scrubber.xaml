@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    A seek bar that invites a touch (plan I8, I9): it thickens and shows a knob under the pointer, and while it is
+    dragged a time bubble rides above the knob. The time bubble may draw above the control's own bounds.
+-->
+<UserControl
+    x:Class="FluxKit.App.Modules.FluxIsland.Design.Scrubber"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid
+        x:Name="Hit"
+        Height="22"
+        Background="Transparent">
+        <Border
+            x:Name="Track"
+            Height="4"
+            VerticalAlignment="Center"
+            Background="#33FFFFFF"
+            CornerRadius="2" />
+        <Border
+            x:Name="Fill"
+            Width="0"
+            Height="4"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            CornerRadius="2" />
+        <Ellipse
+            x:Name="Knob"
+            Width="14"
+            Height="14"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Fill="#FFFFFF" />
+        <Border
+            x:Name="Bubble"
+            Margin="0,-30,0,0"
+            Padding="8,3"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Background="#F2FFFFFF"
+            CornerRadius="9"
+            IsHitTestVisible="False"
+            Visibility="Collapsed">
+            <TextBlock
+                x:Name="BubbleText"
+                FontSize="11"
+                FontWeight="SemiBold"
+                Foreground="#000000"
+                Typography.NumeralAlignment="Tabular" />
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,10 +1,12 @@
+using System.Numerics;
 using FluxKit.App.Modules.FluxIsland.Design;
 using FluxKit.Tools.FluxIsland.Abstractions;
 using FluxKit.Tools.FluxIsland.Activities;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using Windows.UI;
@@ -14,16 +16,14 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// <summary>The music page. It shows the scene's music and sends button presses to <see cref="Commands"/>.</summary>
 public sealed partial class MediaPanel : UserControl, IIslandPage
 {
-    private const string PlayGlyph = "\xE768";
-    private const string PauseGlyph = "\xE769";
-    private const double TrackThin = 4;
-    private const double TrackThick = 7;
-    private static readonly Size PlayingSize = new(420, 188);
-    private static readonly Size EmptySize = new(420, 140);
+    private const string PlayGlyph = "\xF5B0";
+    private const string PauseGlyph = "\xF8AE";
+    private static readonly Size PlayingSize = new(420, 214);
+    private static readonly Size EmptySize = new(420, 156);
 
     private AlbumArt? _art;
     private MediaInfo? _media;
-    private double _progress;
+    private bool _animate = true;
 
     public MediaPanel()
     {
@@ -33,8 +33,9 @@ public sealed partial class MediaPanel : UserControl, IIslandPage
         Elapsed.Foreground = secondary;
         Remaining.Foreground = secondary;
         ArtFallback.Foreground = secondary;
-        EmptyGlyph.Foreground = new SolidColorBrush(IslandPalette.Pink);
+        EmptyGlyph.Show("\xE8D6", IslandPalette.Pink);
         EmptyHint.Foreground = secondary;
+        PlayPauseGlyph.Glyph = PauseGlyph;
 
         PreviousButton.Click += (_, _) => Commands?.PreviousTrack();
         NextButton.Click += (_, _) => Commands?.NextTrack();
@@ -42,10 +43,13 @@ public sealed partial class MediaPanel : UserControl, IIslandPage
         PressFeedback.Attach(PreviousButton);
         PressFeedback.Attach(PlayPauseButton);
         PressFeedback.Attach(NextButton);
-        Track.PointerPressed += OnTrackPressed;
-        Track.PointerEntered += (_, _) => SetTrackThickness(TrackThick);
-        Track.PointerExited += (_, _) => SetTrackThickness(TrackThin);
-        Track.SizeChanged += (_, _) => ApplyProgress();
+        Track.SeekRequested += (_, at) =>
+        {
+            if (_media is { CanSeek: true } media && media.Duration > TimeSpan.Zero)
+            {
+                Commands?.Seek(media.Duration * at);
+            }
+        };
     }
 
     public IIslandCommands? Commands { get; set; }
@@ -58,6 +62,8 @@ public sealed partial class MediaPanel : UserControl, IIslandPage
 
     string IIslandPage.Update(IslandScene scene, DateTimeOffset now, bool springs)
     {
+        _animate = springs;
+        Track.Animate = springs;
         if (scene.Media is not { } media)
         {
             ShowEmpty(springs);
@@ -84,7 +90,6 @@ public sealed partial class MediaPanel : UserControl, IIslandPage
         _media = null;
         Bars.SetPlaying(false, springs);
         ContentGrid.Visibility = Visibility.Collapsed;
-        Glow.Visibility = Visibility.Collapsed;
         EmptyState.Visibility = Visibility.Visible;
     }
 
@@ -92,13 +97,18 @@ public sealed partial class MediaPanel : UserControl, IIslandPage
     {
         _media = media;
         ContentGrid.Visibility = Visibility.Visible;
-        Glow.Visibility = Visibility.Visible;
         EmptyState.Visibility = Visibility.Collapsed;
         Title.Text = string.IsNullOrWhiteSpace(media.Title) ? Strings.Get("Island_Media_Untitled") : media.Title;
         Artist.Text = media.Artist;
         Artist.Visibility = string.IsNullOrEmpty(media.Artist) ? Visibility.Collapsed : Visibility.Visible;
         Bars.SetPlaying(media.IsPlaying, springs);
-        PlayPauseGlyph.Glyph = media.IsPlaying ? PauseGlyph : PlayGlyph;
+        string glyph = media.IsPlaying ? PauseGlyph : PlayGlyph;
+        if (glyph != PlayPauseGlyph.Glyph)
+        {
+            PlayPauseGlyph.Glyph = glyph;
+            IslandMotion.Pop(PlayPauseGlyph, springs);
+        }
+
         AutomationProperties.SetName(PlayPauseButton, Strings.Get(media.IsPlaying ? "Island_Pause" : "Island_Play"));
         PreviousButton.IsEnabled = media.CanGoPrevious;
         NextButton.IsEnabled = media.CanGoNext;
@@ -110,44 +120,38 @@ public sealed partial class MediaPanel : UserControl, IIslandPage
             TimeSpan position = media.EstimatedPosition(now);
             Elapsed.Text = IslandPresenter.FormatPosition(position);
             Remaining.Text = Strings.Format("Island_RemainingFormat", IslandPresenter.FormatPosition(media.Duration - position));
-            _progress = position / media.Duration;
-            ApplyProgress();
+            Track.Duration = media.Duration;
+            Track.Progress = position / media.Duration;
+            Track.IsHitTestVisible = media.CanSeek;
         }
     }
 
+    /// <summary>A new track: the art and its colour wash cross-fade in, and the accents take the album's colour.</summary>
     private void ApplyArt()
     {
-        Color accent = _art?.Accent ?? IslandPalette.Pink;
+        Color accent = _art?.Image is null ? IslandPalette.Pink : _art.Accent;
         Art.Source = _art?.Image;
         ArtFallback.Visibility = Art.Source is null ? Visibility.Visible : Visibility.Collapsed;
-        GlowStart.Color = IslandPalette.WithAlpha(accent, 0x70);
-        GlowEnd.Color = IslandPalette.WithAlpha(accent, 0x30);
-        TrackFill.Background = new SolidColorBrush(accent);
+        GlowStart.Color = IslandPalette.WithAlpha(accent, 0x66);
+        Track.SetAccent(accent);
         Bars.SetColor(accent);
-    }
 
-    /// <summary>The scrubber thickens under the pointer, inviting a drag or a click.</summary>
-    private void SetTrackThickness(double height)
-    {
-        TrackBase.Height = height;
-        TrackFill.Height = height;
-        TrackBase.CornerRadius = new CornerRadius(height / 2);
-        TrackFill.CornerRadius = new CornerRadius(height / 2);
-    }
-
-    private void ApplyProgress() => TrackFill.Width = Math.Clamp(_progress, 0, 1) * Track.ActualWidth;
-
-    private void OnTrackPressed(object sender, PointerRoutedEventArgs e)
-    {
-        if (_media is not { CanSeek: true } media || media.Duration <= TimeSpan.Zero || Track.ActualWidth <= 0)
+        Wash.Source = _art?.Wash;
+        Visual wash = ElementCompositionPreview.GetElementVisual(Wash);
+        float target = Wash.Source is null ? 0 : 0.9f;
+        if (_animate)
         {
-            return;
+            ScalarKeyFrameAnimation fade = wash.Compositor.CreateScalarKeyFrameAnimation();
+            fade.InsertKeyFrame(0, 0);
+            fade.InsertKeyFrame(1, target, IslandSprings.EaseOut(wash.Compositor));
+            fade.Duration = TimeSpan.FromMilliseconds(400);
+            wash.StartAnimation("Opacity", fade);
+        }
+        else
+        {
+            wash.Opacity = target;
         }
 
-        // Jump the bar at once so the click feels instant; the player's own update follows.
-        _progress = Math.Clamp(e.GetCurrentPoint(Track).Position.X / Track.ActualWidth, 0, 1);
-        ApplyProgress();
-        Commands?.Seek(media.Duration * _progress);
-        e.Handled = true;
+        Glow.Visibility = Wash.Source is null ? Visibility.Visible : Visibility.Collapsed;
     }
 }

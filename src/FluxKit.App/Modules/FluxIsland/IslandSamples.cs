@@ -20,7 +20,12 @@ internal static class IslandSamples
 
     public static IslandScene Create(string name, DateTimeOffset now)
     {
-        var media = new MediaInfo("Midnight Drive", "The Night Owls", true, TimeSpan.FromSeconds(72), TimeSpan.FromSeconds(214), now, true, true, true);
+        // Windows' own wallpaper stands in for album art, so previews show the colour wash.
+        string sampleArt = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Web", "Wallpaper", "Windows", "img0.jpg");
+        var media = new MediaInfo("Midnight Drive", "The Night Owls", true, TimeSpan.FromSeconds(72), TimeSpan.FromSeconds(214), now, true, true, true)
+        {
+            Thumbnail = File.Exists(sampleArt) ? File.ReadAllBytes(sampleArt) : ReadOnlyMemory<byte>.Empty,
+        };
         var timer = new FocusTimerSnapshot(TimerMode.Focus, TimerState.Running, TimeSpan.FromMinutes(25), TimeSpan.FromMinutes(18), now + TimeSpan.FromMinutes(18) + TimeSpan.FromSeconds(42), 1);
         var stopwatch = new StopwatchSnapshot(TimerState.Running, TimeSpan.Zero, now - TimeSpan.FromSeconds(83), [TimeSpan.FromSeconds(41), TimeSpan.FromSeconds(38)]);
         var power = new PowerSnapshot(true, 76, true);
