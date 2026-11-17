@@ -1,6 +1,7 @@
 using System.Numerics;
 using FluxKit.App.Modules.FluxIsland.Design;
 using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
@@ -75,6 +76,7 @@ public sealed partial class ProgressGlyph : UserControl
         _arcShape.CenterPoint = center;
         _shapes.Size = new Vector2(size);
         Icon.FontSize = size <= 28 ? 11 : size * 0.34;
+        Disc.Margin = new Thickness(stroke + 1);
     }
 
     /// <summary>Colours the ring and the icon.</summary>
@@ -82,6 +84,26 @@ public sealed partial class ProgressGlyph : UserControl
     {
         _arcBrush.Color = color;
         Icon.Foreground = new SolidColorBrush(color);
+        Disc.Fill = new SolidColorBrush(IslandPalette.WithAlpha(color, 0x26));
+    }
+
+    /// <summary>The icon dims and comes back once, like a spark (the charger's bolt arriving).</summary>
+    public void Flash(bool springs)
+    {
+        if (!springs)
+        {
+            return;
+        }
+
+        Visual visual = ElementCompositionPreview.GetElementVisual(Icon);
+        ScalarKeyFrameAnimation flash = _compositor.CreateScalarKeyFrameAnimation();
+        flash.InsertKeyFrame(0.2f, 0.2f);
+        flash.InsertKeyFrame(0.45f, 1);
+        flash.InsertKeyFrame(0.65f, 0.4f);
+        flash.InsertKeyFrame(1, 1);
+        flash.Duration = TimeSpan.FromMilliseconds(600);
+        flash.DelayTime = TimeSpan.FromMilliseconds(500);
+        visual.StartAnimation("Opacity", flash);
     }
 
     public void SetGlyph(string glyph) => Icon.Glyph = glyph;

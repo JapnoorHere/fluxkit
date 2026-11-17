@@ -8,6 +8,8 @@
     Height="24"
     IsHitTestVisible="False">
     <Grid>
+        <!-- A soft disc of the ring's colour inside it, so a ring reads as a badge like every other icon. -->
+        <Ellipse x:Name="Disc" Margin="2" />
         <Grid x:Name="RingHost" />
         <FontIcon
             x:Name="Icon"

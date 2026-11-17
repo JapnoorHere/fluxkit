@@ -27,7 +27,7 @@ public sealed partial class IslandPill : UserControl
     public const double TopInset = 6;
 
     private const double CompactHeight = 36;
-    private const double MinCompactWidth = 220;
+    private const double MinCompactWidth = 150;
     private const double MaxCompactWidth = 300;
     private const double DotsRoom = 20;
     private const double PageDotsRoom = 18;
@@ -74,6 +74,7 @@ public sealed partial class IslandPill : UserControl
     private Vector3 _lean;
     private bool _glass;
     private bool _highContrast;
+    private bool _struck;
     private int _pageSlide;
     private bool _keyboard;
 
@@ -386,6 +387,22 @@ public sealed partial class IslandPill : UserControl
             "FluxIslandMoment");
     }
 
+    /// <summary>
+    /// The one gentle motion a live moment carries (plan I1, I6): a call's badge breathes while you can be heard, and a
+    /// slash draws across the mic when it is muted. Started only when the state changes, so updates cost nothing.
+    /// </summary>
+    private void ShowIconLife(IslandActivity? activity)
+    {
+        bool live = activity is { Kind: ActivityKind.Call, Flag: false };
+        CompactGlyph.Breathe(live && _active, Springs);
+        bool muted = activity is { Kind: ActivityKind.MicMuted, Flag: true } or { Kind: ActivityKind.Call, Flag: true };
+        if (muted != _struck)
+        {
+            _struck = muted;
+            CompactGlyph.Strike(muted, Springs);
+        }
+    }
+
     /// <summary>Each kind of alert arrives with its own small signature, so moments feel distinct, not generic.</summary>
     private void PlayArrival(IslandActivity alert)
     {
@@ -395,6 +412,7 @@ public sealed partial class IslandPill : UserControl
         {
             case ActivityKind.PluggedIn:
                 CompactRing.Sweep(alert.Value, Springs);
+                CompactRing.Flash(Springs);
                 break;
             case ActivityKind.TimerDone:
                 // Time's up deserves the most: the bell rings, a ring bursts out of it and the pill bounces once.
@@ -571,26 +589,40 @@ public sealed partial class IslandPill : UserControl
             content = content with { Accent = _art.Accent };
         }
 
-        CompactGlyph.Glyph = content.Glyph;
+        // Leading: every moment shows its icon in a badge of its colour (plan §4.1).
+        CompactGlyph.Show(content.Glyph, content.Accent);
         CompactGlyph.Visibility = content.Glyph.Length > 0 && !art && !ring ? Visibility.Visible : Visibility.Collapsed;
-        CompactGlyph.Foreground = new SolidColorBrush(content.Accent);
+        ShowIconLife(activity);
         bool level = activity?.Kind is ActivityKind.Volume or ActivityKind.Brightness;
         CompactLevel.Visibility = level ? Visibility.Visible : Visibility.Collapsed;
-        CompactTitle.Visibility = level ? Visibility.Collapsed : Visibility.Visible;
+        CompactTitle.Visibility = level || content.Title.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
         if (level)
         {
             SetLevel(activity!.Value);
         }
 
+        // Middle: a label. It is white when it is the message itself, and steps back when a value follows it.
         CompactTitle.Text = content.Title;
+        CompactTitle.Foreground = new SolidColorBrush(content.Trail is null || twoLines ? IslandPalette.TextPrimary : IslandPalette.TextSecondary);
         CompactSubtitle.Text = content.Subtitle ?? string.Empty;
         CompactSubtitle.Visibility = twoLines ? Visibility.Visible : Visibility.Collapsed;
+        if (twoLines && content.Title.Length == 0)
+        {
+            // Value-only moments (a timer, a call) say what they are when peeked at.
+            CompactTitle.Text = content.Subtitle ?? string.Empty;
+            CompactTitle.Visibility = Visibility.Visible;
+            CompactSubtitle.Visibility = Visibility.Collapsed;
+        }
+
+        // Trailing: the value, large and in the moment's colour.
         CompactTrail.Text = content.Trail ?? string.Empty;
-        CompactTrail.Foreground = new SolidColorBrush(content.Accent == IslandPalette.TextPrimary ? IslandPalette.TextSecondary : content.Accent);
+        CompactTrail.Foreground = new SolidColorBrush(content.Accent == IslandPalette.TextPrimary ? IslandPalette.TextPrimary : content.Accent);
         CompactTrail.Visibility = content.Trail is null ? Visibility.Collapsed : Visibility.Visible;
         string? action = _mode == PillMode.Peek && Commands is not null && activity is not null ? IslandPresenter.ActionLabel(activity) : null;
         CompactAction.Content = action;
         CompactAction.Visibility = action is null ? Visibility.Collapsed : Visibility.Visible;
+        CompactAction.Background = new SolidColorBrush(IslandPalette.Tint(content.Accent));
+        CompactAction.Foreground = new SolidColorBrush(content.Accent);
         if (action is not null)
         {
             CompactTrail.Visibility = Visibility.Collapsed;

@@ -184,9 +184,9 @@ public sealed partial class IslandWindow : Window
     {
         IslandScene scene = IslandSamples.Create(sample, DateTimeOffset.Now);
         _previewUntil = 0;
+        Pill.Commands = null; // Before the first render, so nothing in a preview acts or shows one-time tips.
         RenderCore(scene);
         _previewUntil = Environment.TickCount64 + (long)PreviewHold.TotalMilliseconds;
-        Pill.Commands = null;
         Pill.Preview(scene, open, dropping: sample == IslandSamples.Drop, sample: sample);
         _log.Information("Island preview {Sample} (open={Open})", sample, open);
     }

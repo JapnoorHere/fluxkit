@@ -9,6 +9,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:FluxKit.App.Modules.FluxIsland"
+    xmlns:d="using:FluxKit.App.Modules.FluxIsland.Design"
     RequestedTheme="Dark">
     <UserControl.Resources>
         <ResourceDictionary Source="ms-appx:///Modules/FluxIsland/IslandStyles.xaml" />
@@ -53,7 +54,7 @@
                             Height="22"
                             StrokeThickness="2"
                             Opacity="0" />
-                        <FontIcon x:Name="CompactGlyph" FontSize="16" />
+                        <d:IconBadge x:Name="CompactGlyph" BadgeSize="24" />
                         <local:ProgressGlyph x:Name="CompactRing" Visibility="Collapsed" />
                         <Border
                             x:Name="CompactArtFrame"
@@ -67,9 +68,9 @@
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock
                             x:Name="CompactTitle"
-                            FontSize="13"
-                            FontWeight="SemiBold"
                             MaxLines="1"
+                            Style="{StaticResource IslandCompactText}"
+                            FontSize="14"
                             TextTrimming="CharacterEllipsis" />
                         <TextBlock
                             x:Name="CompactSubtitle"
@@ -95,12 +96,13 @@
                         <TextBlock
                             x:Name="CompactTrail"
                             VerticalAlignment="Center"
-                            FontSize="13"
-                            FontWeight="SemiBold" />
+                            Style="{StaticResource IslandCompactText}" />
                         <local:PlayingBars x:Name="CompactBars" Visibility="Collapsed" />
                         <!-- The one thing to do about this moment (Unmute, Open…), offered while peeking. -->
                         <Button
                             x:Name="CompactAction"
+                            Height="30"
+                            Padding="12,0"
                             VerticalAlignment="Center"
                             Style="{StaticResource IslandChipButtonStyle}"
                             Visibility="Collapsed" />
@@ -180,7 +182,11 @@
             Visibility="Collapsed">
             <Ellipse x:Name="BubbleFill" />
             <Ellipse x:Name="BubbleEdge" StrokeThickness="1" />
-            <FontIcon x:Name="BubbleGlyph" FontSize="15" />
+            <d:IconBadge
+                x:Name="BubbleGlyph"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BadgeSize="28" />
             <Ellipse
                 x:Name="BubbleArt"
                 Width="26"

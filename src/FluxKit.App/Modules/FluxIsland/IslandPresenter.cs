@@ -74,13 +74,13 @@ internal static class IslandPresenter
         ActivityKind.DesktopSwitched => new(DesktopGlyph, activity.Text ?? Strings.Format("Island_DesktopFormat", activity.Value), null, Strings.Format("Island_OfFormat", activity.Value, activity.Total), IslandPalette.Violet),
         ActivityKind.AudioDevice => new(HeadphoneGlyph, activity.Text ?? string.Empty, Strings.Get("Island_AudioDeviceNow"), null, IslandPalette.Cyan),
         ActivityKind.MicMuted when activity.Value == 1 => new(MicOffGlyph, Strings.Get("Island_SpeakingMuted"), Strings.Get("Island_SpeakingMutedDetail"), null, IslandPalette.Red),
-        ActivityKind.MicMuted => new(activity.Flag ? MicOffGlyph : MicGlyph, Strings.Get(activity.Flag ? "Island_MicMuted" : "Island_MicOn"), null, null, activity.Flag ? IslandPalette.Red : IslandPalette.Green),
+        ActivityKind.MicMuted => new(MicGlyph, Strings.Get(activity.Flag ? "Island_MicMuted" : "Island_MicOn"), null, null, activity.Flag ? IslandPalette.Red : IslandPalette.Green),
         ActivityKind.FileReady => DescribeFile(activity),
         ActivityKind.Call => new(
             PhoneGlyph,
+            string.Empty,
+            Strings.Get(activity.Flag ? "Island_MicMuted" : activity.Value == 1 ? "Island_CallVideo" : "Island_Call"),
             FormatPosition(activity.Since is { } since && now > since ? now - since : TimeSpan.Zero),
-            Strings.Get(activity.Value == 1 ? "Island_CallVideo" : "Island_Call"),
-            activity.Flag ? Strings.Get("Island_MicMuted") : null,
             activity.Flag ? IslandPalette.Red : IslandPalette.Green),
         ActivityKind.CapsLock => new(KeyboardGlyph, Strings.Get(activity.Flag ? "Island_CapsOn" : "Island_CapsOff"), null, null, activity.Flag ? IslandPalette.Orange : IslandPalette.TextPrimary),
         ActivityKind.NumLock => new(KeyboardGlyph, Strings.Get(activity.Flag ? "Island_NumOn" : "Island_NumOff"), null, null, IslandPalette.TextPrimary),
@@ -89,9 +89,11 @@ internal static class IslandPresenter
         ActivityKind.DeviceDisconnected => new(BluetoothGlyph, activity.Text ?? string.Empty, Strings.Get("Island_DeviceDisconnected"), null, IslandPalette.TextSecondary),
         ActivityKind.Stopwatch => new(
             StopwatchGlyph,
+            string.Empty,
+            activity.Stopwatch is { Laps.Count: > 0 } laps
+                ? Strings.Format("Island_LapFormat", laps.Laps.Count + 1)
+                : Strings.Get(activity.Stopwatch?.State == TimerState.Paused ? "Island_Timer_Paused" : "Island_Stopwatch"),
             FormatPosition(activity.Stopwatch?.ElapsedAt(now) ?? TimeSpan.Zero),
-            activity.Stopwatch is { Laps.Count: > 0 } laps ? Strings.Format("Island_LapFormat", laps.Laps.Count + 1) : null,
-            Strings.Get(activity.Stopwatch?.State == TimerState.Paused ? "Island_Timer_Paused" : "Island_Stopwatch"),
             IslandPalette.Orange,
             SecondHand(activity.Stopwatch?.ElapsedAt(now) ?? TimeSpan.Zero)),
         _ => new(string.Empty, string.Empty, null, null, IslandPalette.TextPrimary),
@@ -202,7 +204,7 @@ internal static class IslandPresenter
                 _ => null,
             };
         // The ring empties as time runs out, like a kitchen timer.
-        return new(TimerGlyph, FormatRemaining(timer.RemainingAt(now)), null, label, IslandPalette.Orange, 1 - timer.ProgressAt(now));
+        return new(TimerGlyph, string.Empty, label ?? Strings.Get("Island_Timer_Countdown"), FormatRemaining(timer.RemainingAt(now)), IslandPalette.Orange, 1 - timer.ProgressAt(now));
     }
 
     /// <summary>The Segoe Fluent battery glyph for a level (Battery0 to Battery10).</summary>

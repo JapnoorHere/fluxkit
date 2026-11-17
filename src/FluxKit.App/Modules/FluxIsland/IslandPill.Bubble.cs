@@ -27,10 +27,9 @@ public sealed partial class IslandPill
             BubbleArtBrush.ImageSource = art ? _art.Image : null;
             BubbleArt.Visibility = art ? Visibility.Visible : Visibility.Collapsed;
             BubbleGlyph.Visibility = art ? Visibility.Collapsed : Visibility.Visible;
-            BubbleGlyph.Glyph = content.Glyph;
-            BubbleGlyph.Foreground = new SolidColorBrush(secondary.Kind == ActivityKind.Media ? _art.Accent : content.Accent);
+            BubbleGlyph.Show(content.Glyph, secondary.Kind == ActivityKind.Media ? _art.Accent : content.Accent);
             AutomationProperties.SetName(Bubble, string.Join(", ", new[] { content.Title, content.Trail }.Where(t => !string.IsNullOrEmpty(t))));
-            ToolTipService.SetToolTip(Bubble, content.Title);
+            ToolTipService.SetToolTip(Bubble, content.Title.Length > 0 ? content.Title : content.Trail);
         }
 
         if (show == _bubbleShown)
