@@ -59,6 +59,13 @@ public sealed class ClipboardHistoryModel
 
     public bool Remove(string text) => _items.RemoveAll(i => string.Equals(i.Text, text, StringComparison.Ordinal)) > 0;
 
+    /// <summary>Puts back items taken away by <see cref="Clear"/> (undo).</summary>
+    public void Restore(IEnumerable<ClipEntry> items)
+    {
+        _items.Clear();
+        _items.AddRange(items);
+    }
+
     /// <summary>Forgets everything, pins too: for when the user turns clipboard history off.</summary>
     public void ForgetAll() => _items.Clear();
 

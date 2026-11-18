@@ -10,10 +10,11 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// <summary>The Island Command bar: the shortcut opens it, and what is typed runs here.</summary>
 public sealed partial class IslandPill
 {
-    private static readonly Size CommandSize = new(420, 100);
+    private static readonly Size CommandSize = new(420, 128);
 
     private (UIElement View, string Key, Size Size) BuildCommand()
     {
+        CommandView.Animate = Springs;
         PanelRail.Visibility = Visibility.Collapsed;
         AutomationProperties.SetName(Surface, Strings.Get("Island_CommandName"));
         return (CommandView, "command", CommandSize);

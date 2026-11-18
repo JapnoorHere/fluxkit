@@ -21,6 +21,7 @@ public sealed partial class IslandPill
             IslandPalette.Yellow,
             "Island_NotesTitle",
             "Island_NotesNameFormat",
+            "Island_NotesEmpty",
             (scene, now) => [.. scene.Notes.Select(note => new ListItem(
                 note.Text,
                 note.Text,
@@ -29,22 +30,26 @@ public sealed partial class IslandPill
                 IslandPalette.Yellow,
                 () => Copy(note.Text),
                 Strings.Get("Island_CopyNote"),
-                [new ListAction(RemoveGlyph, Strings.Get("Island_RemoveNote"), () => Commands?.RemoveNote(note.Text))]))],
-            () => Commands?.ClearNotes()));
+                [new ListAction(RemoveGlyph, Strings.Get("Island_RemoveNote"), () => Commands?.RemoveNote(note.Text), Removes: true)]))],
+            () => Commands?.ClearNotes(),
+            () => Commands?.UndoClear()));
 
         RewindView.Configure(new ListPageSpec(
             RewindGlyph,
             IslandPalette.Blue,
             "Island_RewindTitle",
             "Island_RewindNameFormat",
+            "Island_RewindEmpty",
             (scene, now) => [.. scene.Rewind.Select(entry => RewindItem(entry, now))],
-            () => Commands?.ClearRewind()));
+            () => Commands?.ClearRewind(),
+            () => Commands?.UndoClear()));
 
         ClipsView.Configure(new ListPageSpec(
             ClipboardGlyph,
             IslandPalette.Cyan,
             "Island_ClipsTitle",
             "Island_ClipsNameFormat",
+            "Island_ClipsEmpty",
             (scene, now) => [.. scene.Clips.Select(clip => new ListItem(
                 clip.Text,
                 clip.Text.ReplaceLineEndings(" "),
@@ -55,9 +60,10 @@ public sealed partial class IslandPill
                 Strings.Get("Island_CopyClip"),
                 [
                     new ListAction(PinGlyph, Strings.Get(clip.Pinned ? "Island_UnpinClip" : "Island_PinClip"), () => Commands?.PinClip(clip.Text), clip.Pinned),
-                    new ListAction(RemoveGlyph, Strings.Get("Island_RemoveClip"), () => Commands?.RemoveClip(clip.Text)),
+                    new ListAction(RemoveGlyph, Strings.Get("Island_RemoveClip"), () => Commands?.RemoveClip(clip.Text), Removes: true),
                 ]))],
-            () => Commands?.ClearClips()));
+            () => Commands?.ClearClips(),
+            () => Commands?.UndoClear()));
     }
 
     /// <summary>A recent moment as a row: how it looked on the pill, when, and its action (open, show in folder…).</summary>

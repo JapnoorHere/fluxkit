@@ -44,6 +44,13 @@ public sealed class MomentHistory
         return true;
     }
 
+    /// <summary>Puts back entries taken away by <see cref="Clear"/> (undo).</summary>
+    public void Restore(IEnumerable<RewindEntry> entries)
+    {
+        _items.Clear();
+        _items.AddRange(entries.Take(MaxItems));
+    }
+
     public bool Clear()
     {
         bool had = _items.Count > 0;

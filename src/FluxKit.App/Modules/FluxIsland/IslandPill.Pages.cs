@@ -80,12 +80,13 @@ public sealed partial class IslandPill
             pages.Add(PanelPage.Glance);
         }
 
-        if (_scene.Notes.Count > 0)
+        // A list stays reachable while it is the page on show, so Undo can bring back what Clear took away.
+        if (_scene.Notes.Count > 0 || _page == PanelPage.Notes)
         {
             pages.Add(PanelPage.Notes);
         }
 
-        if (_scene.Rewind.Count > 0)
+        if (_scene.Rewind.Count > 0 || _page == PanelPage.Rewind)
         {
             pages.Add(PanelPage.Rewind);
         }

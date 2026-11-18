@@ -640,4 +640,18 @@ public sealed class FluxIslandToolTests : IAsyncLifetime
 
         Assert.True(_clipboard.Disposed);
     }
+
+    [Fact]
+    public void Clearing_notes_can_be_undone_once()
+    {
+        _tool.AddNote("keep me");
+        _tool.ClearNotes();
+        Assert.Empty(_view.Last.Notes);
+
+        _tool.UndoClear();
+        Assert.Equal("keep me", Assert.Single(_view.Last.Notes).Text);
+
+        _tool.UndoClear();
+        Assert.Single(_view.Last.Notes);
+    }
 }

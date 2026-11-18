@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A list page (notes, recent moments, clipboard history): a header with a count and Clear, then rows. -->
+<!--
+    A list page (notes, recent moments, clipboard history), plan §4.4: a header with a badge, a count and Clear (which
+    turns into Undo for a few seconds), then rows with a badge, the text and the time; a row's own actions appear when
+    it is hovered. An empty list says what to do.
+-->
 <UserControl
     x:Class="FluxKit.App.Modules.FluxIsland.ListPanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,13 +13,19 @@
     <UserControl.Resources>
         <ResourceDictionary Source="ms-appx:///Modules/FluxIsland/IslandStyles.xaml" />
     </UserControl.Resources>
-    <Grid x:Name="ContentGrid" Padding="18,12,14,4" RowSpacing="6">
+    <Grid
+        x:Name="ContentGrid"
+        Padding="16,14,14,4"
+        RowSpacing="6">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid x:Name="Header" ColumnSpacing="8">
+        <Grid
+            x:Name="Header"
+            Padding="4,0,0,0"
+            ColumnSpacing="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -27,22 +37,31 @@
                 VerticalAlignment="Center"
                 BadgeSize="28" />
             <TextBlock
+                x:Name="Title"
                 Grid.Column="1"
                 VerticalAlignment="Center"
-                FontSize="13"
-                FontWeight="SemiBold"
-                x:Name="Title" />
+                Style="{StaticResource IslandTitleText}"
+                FontSize="15" />
             <TextBlock
                 x:Name="Count"
                 Grid.Column="2"
                 VerticalAlignment="Center"
-                FontSize="12" />
+                FontSize="13"
+                FontWeight="SemiBold"
+                Typography.NumeralAlignment="Tabular" />
             <Button
                 x:Name="ClearButton"
                 Grid.Column="3"
                 Height="28"
                 Style="{StaticResource IslandChipButtonStyle}"
                 x:Uid="Island_ClearList" />
+            <Button
+                x:Name="UndoButton"
+                Grid.Column="3"
+                Height="28"
+                Style="{StaticResource IslandChipButtonStyle}"
+                Visibility="Collapsed"
+                x:Uid="Island_UndoClear" />
         </Grid>
 
         <ScrollViewer
@@ -52,5 +71,23 @@
             VerticalScrollBarVisibility="Auto">
             <StackPanel x:Name="Items" Spacing="2" />
         </ScrollViewer>
+
+        <StackPanel
+            x:Name="EmptyState"
+            Grid.Row="1"
+            Margin="0,4,0,0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="12"
+            Visibility="Collapsed">
+            <d:IconBadge x:Name="EmptyBadge" BadgeSize="40" />
+            <TextBlock
+                x:Name="EmptyText"
+                MaxWidth="260"
+                VerticalAlignment="Center"
+                Style="{StaticResource IslandBodyText}"
+                TextWrapping="Wrap" />
+        </StackPanel>
     </Grid>
 </UserControl>

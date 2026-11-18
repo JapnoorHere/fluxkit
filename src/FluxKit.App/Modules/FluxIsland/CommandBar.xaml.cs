@@ -14,6 +14,7 @@ namespace FluxKit.App.Modules.FluxIsland;
 public sealed partial class CommandBar : UserControl
 {
     private IslandCommand? _command;
+    private CommandPreview? _shown;
 
     public CommandBar()
     {
@@ -26,6 +27,9 @@ public sealed partial class CommandBar : UserControl
         Input.PreviewKeyDown += OnKeyDown;
         Preview();
     }
+
+    /// <summary>False when effects are reduced: results swap without motion.</summary>
+    public bool Animate { get; set; } = true;
 
     /// <summary>Enter was pressed on something the bar understood.</summary>
     public event EventHandler<IslandCommand>? Submitted;
@@ -51,8 +55,9 @@ public sealed partial class CommandBar : UserControl
     /// <summary>Briefly shows a confirmation in the result line, e.g. "Copied 99" after a sum.</summary>
     public void Confirm(string text)
     {
-        ResultGlyph.Glyph = "\xE73E";
-        ResultGlyph.Foreground = new SolidColorBrush(IslandPalette.Green);
+        Swatch.Visibility = Visibility.Collapsed;
+        ResultBadge.DrawCheck(IslandPalette.Green, Animate);
+        _shown = null;
         ResultTitle.Text = text;
         ResultDetail.Text = Strings.Get("Island_Cmd_KeepTyping");
         EnterHint.Visibility = Visibility.Collapsed;
@@ -82,15 +87,21 @@ public sealed partial class CommandBar : UserControl
 
     private void ShowPreview(CommandPreview preview)
     {
-        ResultGlyph.Glyph = preview.Glyph;
-        ResultGlyph.Foreground = new SolidColorBrush(preview.Accent);
+        if (preview.Glyph != _shown?.Glyph || preview.Accent != _shown?.Accent)
+        {
+            // A new kind of result: its badge pops in, in its own colour (plan I13).
+            ResultBadge.Show(preview.Glyph, preview.Accent);
+            ResultBadge.Pop(Animate);
+        }
+
+        _shown = preview;
         ResultTitle.Text = preview.Title;
         ResultDetail.Text = preview.Detail ?? string.Empty;
         ResultDetail.Visibility = preview.Detail is null ? Visibility.Collapsed : Visibility.Visible;
         Swatch.Visibility = preview.Swatch is null ? Visibility.Collapsed : Visibility.Visible;
         if (preview.Swatch is { } swatch)
         {
-            Swatch.Background = new SolidColorBrush(swatch);
+            Swatch.Fill = new SolidColorBrush(swatch);
         }
     }
 

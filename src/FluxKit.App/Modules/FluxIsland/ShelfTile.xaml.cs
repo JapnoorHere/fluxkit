@@ -19,8 +19,8 @@ namespace FluxKit.App.Modules.FluxIsland;
 public sealed partial class ShelfTile : UserControl
 {
     private const string FolderGlyph = "\xE8B7";
-    private static readonly Color RestFill = Color.FromArgb(0x14, 0xFF, 0xFF, 0xFF);
-    private static readonly Color HoverFill = Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF);
+    private static readonly Color RestFill = IslandPalette.Raised;
+    private static readonly Color HoverFill = IslandPalette.RaisedHover;
 
     private IStorageItem? _item;
 
@@ -146,6 +146,7 @@ public sealed partial class ShelfTile : UserControl
     private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
         Card.Background = new SolidColorBrush(HoverFill);
+        Lift(1.04f);
         RemoveButton.Visibility = Visibility.Visible;
         IslandMotion.Pop(RemoveButton, Animate);
     }
@@ -154,6 +155,18 @@ public sealed partial class ShelfTile : UserControl
     {
         Card.Background = new SolidColorBrush(RestFill);
         RemoveButton.Visibility = Visibility.Collapsed;
+        Lift(1);
+    }
+
+    /// <summary>Hovered tiles rise a little toward the pointer, like a card being picked up.</summary>
+    private void Lift(float scale)
+    {
+        Microsoft.UI.Composition.Visual visual = Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(Card);
+        visual.CenterPoint = new System.Numerics.Vector3(Card.ActualSize / 2, 0);
+        if (Animate)
+        {
+            visual.StartAnimation("Scale", Design.IslandSprings.Vector3(visual.Compositor, Design.IslandSprings.Snappy, new System.Numerics.Vector3(scale, scale, 1)));
+        }
     }
 
     private void OnDragStarting(UIElement sender, DragStartingEventArgs args)

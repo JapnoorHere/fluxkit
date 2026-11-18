@@ -30,8 +30,9 @@
                     x:Name="HeaderGlyph"
                     BadgeSize="28" />
                 <TextBlock
-                    FontSize="13"
-                    FontWeight="SemiBold"
+                    VerticalAlignment="Center"
+                    FontSize="15"
+                    Style="{StaticResource IslandTitleText}"
                     x:Uid="Island_ShelfTitle" />
                 <TextBlock
                     x:Name="Count"

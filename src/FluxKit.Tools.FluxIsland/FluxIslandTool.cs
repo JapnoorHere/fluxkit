@@ -65,6 +65,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     private IHotkeySource? _hotkey;
     private bool _micMuted;
     private DateTimeOffset? _callSince;
+    private Action? _undo;
     private DateTimeOffset _lastNudge = DateTimeOffset.MinValue;
     private bool? _wasOnline;
     private bool? _saverWasOn;
@@ -191,15 +192,41 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
 
     public void RemoveNote(string text) => ChangeNotes(() => _notes.Remove(text));
 
-    public void ClearNotes() => ChangeNotes(_notes.Clear);
+    public void ClearNotes()
+    {
+        IReadOnlyList<IslandNote> before = _notes.Items;
+        ChangeNotes(_notes.Clear);
+        _undo = () => ChangeNotes(() =>
+        {
+            _notes.Restore(before);
+            return true;
+        });
+    }
 
-    public void ClearRewind() => Change(() => _rewind.Clear());
+    public void ClearRewind()
+    {
+        IReadOnlyList<RewindEntry> before = _rewind.Items;
+        Change(() => _rewind.Clear());
+        _undo = () => Change(() => _rewind.Restore(before));
+    }
 
     public void PinClip(string text) => Change(() => _clips.TogglePin(text));
 
     public void RemoveClip(string text) => Change(() => _clips.Remove(text));
 
-    public void ClearClips() => Change(() => _clips.Clear());
+    public void ClearClips()
+    {
+        IReadOnlyList<ClipEntry> before = _clips.Items;
+        Change(() => _clips.Clear());
+        _undo = () => Change(() => _clips.Restore(before));
+    }
+
+    public void UndoClear()
+    {
+        Action? undo = _undo;
+        _undo = null;
+        undo?.Invoke();
+    }
 
     public void StepVolume(int notches)
     {

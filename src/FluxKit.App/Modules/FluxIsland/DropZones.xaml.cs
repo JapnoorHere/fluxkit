@@ -37,7 +37,7 @@ public sealed partial class DropZones : UserControl
         (DropAction.Resize, "\xE740", "Island_DropResize", IslandPalette.Orange),
     ];
 
-    private readonly Dictionary<DropAction, (Border Tile, TextBlock Label, FontIcon Icon, Color Accent)> _tiles = [];
+    private readonly Dictionary<DropAction, (Border Tile, TextBlock Label, IconBadge Icon, string Glyph, Color Accent)> _tiles = [];
     private bool _images;
     private DropAction? _lit;
 
@@ -49,7 +49,8 @@ public sealed partial class DropZones : UserControl
         {
             (DropAction action, string glyph, string key, Color accent) = Definitions[i];
             Zones.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            var icon = new FontIcon { Glyph = glyph, FontSize = 18, HorizontalAlignment = HorizontalAlignment.Center };
+            var icon = new IconBadge { BadgeSize = 36, HorizontalAlignment = HorizontalAlignment.Center };
+            icon.Show(glyph, accent);
             var label = new TextBlock { Text = Strings.Get(key), FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
             var tile = new Border
             {
@@ -59,7 +60,7 @@ public sealed partial class DropZones : UserControl
             };
             Grid.SetColumn(tile, i);
             Zones.Children.Add(tile);
-            _tiles[action] = (tile, label, icon, accent);
+            _tiles[action] = (tile, label, icon, glyph, accent);
         }
 
         Paint();
@@ -77,7 +78,7 @@ public sealed partial class DropZones : UserControl
     /// <summary>The usable zone at <paramref name="point"/> (relative to this control), or null between zones.</summary>
     public DropAction? ZoneAt(Point point)
     {
-        foreach ((DropAction action, (Border tile, _, _, _)) in _tiles)
+        foreach ((DropAction action, (Border tile, _, _, _, _)) in _tiles)
         {
             Rect bounds = tile.TransformToVisual(this).TransformBounds(new Rect(0, 0, tile.ActualWidth, tile.ActualHeight));
             if (bounds.Contains(point))
@@ -98,7 +99,7 @@ public sealed partial class DropZones : UserControl
 
         _lit = action;
         Paint();
-        foreach ((DropAction zone, (Border tile, _, _, _)) in _tiles)
+        foreach ((DropAction zone, (Border tile, _, _, _, _)) in _tiles)
         {
             Visual visual = ElementCompositionPreview.GetElementVisual(tile);
             visual.CenterPoint = new Vector3(tile.ActualSize / 2, 0);
@@ -121,14 +122,16 @@ public sealed partial class DropZones : UserControl
 
     private void Paint()
     {
-        foreach ((DropAction action, (Border tile, TextBlock label, FontIcon icon, Color accent)) in _tiles)
+        foreach ((DropAction action, (Border tile, TextBlock label, IconBadge icon, string glyph, Color accent)) in _tiles)
         {
             bool usable = IsUsable(action);
             bool lit = action == _lit;
-            tile.Opacity = usable ? 1 : 0.35;
-            tile.Background = new SolidColorBrush(lit ? IslandPalette.WithAlpha(accent, 0x2E) : IslandPalette.Chip);
+
+            // The zone under the pointer fills in its colour; the others step back (plan I12).
+            tile.Opacity = !usable ? 0.35 : _lit is null || lit ? 1 : 0.6;
+            tile.Background = new SolidColorBrush(lit ? IslandPalette.Tint(accent) : IslandPalette.Raised);
             tile.BorderBrush = new SolidColorBrush(lit ? accent : Microsoft.UI.Colors.Transparent);
-            icon.Foreground = new SolidColorBrush(lit || usable ? accent : IslandPalette.TextSecondary);
+            icon.Show(glyph, usable ? accent : IslandPalette.TextSecondary, filled: lit);
             label.Foreground = new SolidColorBrush(lit ? IslandPalette.TextPrimary : IslandPalette.TextSecondary);
         }
     }

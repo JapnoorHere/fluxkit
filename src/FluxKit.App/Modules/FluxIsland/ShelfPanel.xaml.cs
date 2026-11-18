@@ -17,7 +17,7 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// </summary>
 public sealed partial class ShelfPanel : UserControl, IIslandPage
 {
-    private static readonly Size PageSize = new(420, 148);
+    private static readonly Size PageSize = new(420, 162);
 
     private readonly Dictionary<string, ShelfTile> _tiles = new(StringComparer.OrdinalIgnoreCase);
     private bool _dropping;

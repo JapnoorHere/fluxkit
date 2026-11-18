@@ -1611,4 +1611,16 @@
   <data name="Island_TenMinutesTile.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Start a 10 minute timer</value>
   </data>
+  <data name="Island_UndoClear.Content" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="Island_NotesEmpty" xml:space="preserve">
+    <value>No notes. Press Ctrl+Alt+I and type: note call Sam</value>
+  </data>
+  <data name="Island_RewindEmpty" xml:space="preserve">
+    <value>Nothing yet. Downloads, screenshots and copied links show here.</value>
+  </data>
+  <data name="Island_ClipsEmpty" xml:space="preserve">
+    <value>Copy some text and it shows here, ready to copy again.</value>
+  </data>
 </root>

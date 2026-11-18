@@ -63,6 +63,9 @@ public interface IIslandCommands
 
     void ClearClips();
 
+    /// <summary>Brings back what the last Clear (notes, recent or clipboard) took away.</summary>
+    void UndoClear();
+
     void StepVolume(int notches);
 
     /// <summary>Mutes the microphone, or unmutes it if it is muted.</summary>
