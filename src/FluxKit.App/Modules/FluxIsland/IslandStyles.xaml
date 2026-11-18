@@ -135,6 +135,7 @@
         x:Key="IslandTileButtonStyle"
         BasedOn="{StaticResource DefaultButtonStyle}"
         TargetType="Button">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="Background" Value="#1C1C1E" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="0" />

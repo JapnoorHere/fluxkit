@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    The island's timer page. With no timer: the clock, the date, the battery and quick timers.
-    With a timer: rolling digits, a progress bar, and pause and cancel.
+    The timers page (plan §4.4).
+    Idle: the clock and date, then a row of tiles to start a timer, a focus round or the stopwatch.
+    Running (like the iOS timer): a dial that empties beside big orange digits, then round buttons to pause and stop.
 -->
 <UserControl
     x:Class="FluxKit.App.Modules.FluxIsland.TimerPanel"
@@ -12,7 +13,10 @@
     <UserControl.Resources>
         <ResourceDictionary Source="ms-appx:///Modules/FluxIsland/IslandStyles.xaml" />
     </UserControl.Resources>
-    <Grid x:Name="ContentGrid" Padding="20,16,18,16">
+    <Grid
+        x:Name="ContentGrid"
+        Padding="20,18,20,6"
+        RowSpacing="14">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -23,9 +27,9 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock x:Name="Clock" FontSize="28" FontWeight="SemiBold" />
-                <TextBlock x:Name="Date" FontSize="13" />
+            <StackPanel Spacing="0">
+                <TextBlock x:Name="Clock" Style="{StaticResource IslandDisplayText}" />
+                <TextBlock x:Name="Date" Style="{StaticResource IslandBodyText}" />
             </StackPanel>
             <StackPanel
                 x:Name="Battery"
@@ -35,24 +39,38 @@
                 Spacing="6"
                 Visibility="Collapsed">
                 <FontIcon x:Name="BatteryGlyph" FontSize="16" />
-                <TextBlock x:Name="BatteryText" VerticalAlignment="Center" FontSize="13" />
+                <TextBlock
+                    x:Name="BatteryText"
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    Typography.NumeralAlignment="Tabular" />
             </StackPanel>
         </Grid>
 
-        <!-- A running timer or stopwatch: a dial that empties (or a seconds hand that sweeps) beside big digits. -->
-        <Grid x:Name="ActiveHeader" ColumnSpacing="16" Visibility="Collapsed">
+        <!-- A running timer or stopwatch: the dial, then the label over big digits. -->
+        <Grid
+            x:Name="ActiveHeader"
+            ColumnSpacing="16"
+            Visibility="Collapsed">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <local:ProgressGlyph
                 x:Name="Dial"
-                Width="64"
-                Height="64"
+                Width="60"
+                Height="60"
                 VerticalAlignment="Center" />
-            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="0">
+            <StackPanel
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Spacing="0">
                 <TextBlock x:Name="Label" Style="{StaticResource IslandCaptionText}" />
-                <local:RollingText x:Name="Digits" />
+                <local:RollingText
+                    x:Name="Digits"
+                    TextSize="44"
+                    Bold="True" />
                 <!-- The stopwatch's latest laps, newest first. -->
                 <TextBlock
                     x:Name="LapsText"
@@ -60,6 +78,7 @@
                     FontSize="12"
                     MaxLines="1"
                     TextTrimming="CharacterEllipsis"
+                    Typography.NumeralAlignment="Tabular"
                     Visibility="Collapsed" />
             </StackPanel>
         </Grid>
@@ -69,68 +88,89 @@
             Grid.Row="1"
             VerticalAlignment="Bottom"
             Spacing="8">
-            <TextBlock x:Name="QuickLabel" Style="{StaticResource IslandCaptionText}" x:Uid="Island_QuickTimerLabel" />
-            <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock
+                x:Name="QuickLabel"
+                Style="{StaticResource IslandCaptionText}"
+                x:Uid="Island_QuickTimerLabel" />
+            <Grid x:Name="Tiles" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
                 <Button
                     x:Name="OneMinute"
-                    Style="{StaticResource IslandChipButtonStyle}"
-                    x:Uid="Island_OneMinute" />
+                    Height="58"
+                    Style="{StaticResource IslandTileButtonStyle}"
+                    x:Uid="Island_OneMinuteTile" />
                 <Button
                     x:Name="FiveMinutes"
-                    Style="{StaticResource IslandChipButtonStyle}"
-                    x:Uid="Island_FiveMinutes" />
+                    Grid.Column="1"
+                    Height="58"
+                    Style="{StaticResource IslandTileButtonStyle}"
+                    x:Uid="Island_FiveMinutesTile" />
                 <Button
                     x:Name="TenMinutes"
-                    Style="{StaticResource IslandChipButtonStyle}"
-                    x:Uid="Island_TenMinutes" />
-                <Button x:Name="FocusButton" Style="{StaticResource IslandChipButtonStyle}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon FontSize="12" Glyph="&#xE916;" />
-                        <TextBlock x:Name="FocusText" />
-                    </StackPanel>
+                    Grid.Column="2"
+                    Height="58"
+                    Style="{StaticResource IslandTileButtonStyle}"
+                    x:Uid="Island_TenMinutesTile" />
+                <Button
+                    x:Name="FocusButton"
+                    Grid.Column="3"
+                    Height="58"
+                    Style="{StaticResource IslandTileButtonStyle}">
+                    <TextBlock x:Name="FocusText" Visibility="Collapsed" />
                 </Button>
-                <!-- Counts up instead of down; icon only so the row still fits. -->
                 <Button
                     x:Name="StopwatchButton"
-                    Style="{StaticResource IslandChipButtonStyle}"
-                    x:Uid="Island_StartStopwatch">
-                    <FontIcon FontSize="12" Glyph="&#xE121;" />
-                </Button>
-            </StackPanel>
+                    Grid.Column="4"
+                    Height="58"
+                    Style="{StaticResource IslandTileButtonStyle}"
+                    x:Uid="Island_StartStopwatch" />
+            </Grid>
         </StackPanel>
 
+        <!-- Round controls, like the iOS timer: pause in the timer's colour, stop in grey. -->
         <StackPanel
             x:Name="ActiveRow"
             Grid.Row="1"
             VerticalAlignment="Bottom"
             Orientation="Horizontal"
-            Spacing="8"
+            Spacing="10"
             Visibility="Collapsed">
-            <!-- Shown while a timer and the stopwatch both run: flips the page between them. -->
-            <Button
-                x:Name="SwitchButton"
-                Style="{StaticResource IslandChipButtonStyle}"
-                Visibility="Collapsed">
-                <FontIcon x:Name="SwitchGlyph" FontSize="12" />
+            <Button x:Name="PauseButton" Style="{StaticResource IslandTintButtonStyle}">
+                <Grid>
+                    <FontIcon x:Name="PauseGlyph" FontSize="16" />
+                    <TextBlock x:Name="PauseText" Visibility="Collapsed" />
+                </Grid>
             </Button>
-            <Button x:Name="PauseButton" Style="{StaticResource IslandChipButtonStyle}">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <FontIcon x:Name="PauseGlyph" FontSize="12" />
-                    <TextBlock x:Name="PauseText" />
-                </StackPanel>
+            <Button x:Name="CancelButton" Style="{StaticResource IslandTintButtonStyle}">
+                <Grid>
+                    <FontIcon FontSize="14" Glyph="&#xE711;" />
+                    <TextBlock x:Name="CancelText" Visibility="Collapsed" />
+                </Grid>
             </Button>
             <!-- "+1 min" for a timer, "Lap" for the stopwatch. -->
-            <Button x:Name="ExtraButton" Style="{StaticResource IslandChipButtonStyle}">
+            <Button
+                x:Name="ExtraButton"
+                Height="44"
+                Padding="16,0"
+                CornerRadius="22"
+                Style="{StaticResource IslandChipButtonStyle}">
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                    <FontIcon x:Name="ExtraGlyph" FontSize="12" />
+                    <FontIcon x:Name="ExtraGlyph" FontSize="13" />
                     <TextBlock x:Name="ExtraText" />
                 </StackPanel>
             </Button>
-            <Button x:Name="CancelButton" Style="{StaticResource IslandChipButtonStyle}">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <FontIcon FontSize="12" Glyph="&#xE711;" />
-                    <TextBlock x:Name="CancelText" />
-                </StackPanel>
+            <!-- Shown while a timer and the stopwatch both run: flips the page between them. -->
+            <Button
+                x:Name="SwitchButton"
+                Style="{StaticResource IslandGhostButtonStyle}"
+                Visibility="Collapsed">
+                <FontIcon x:Name="SwitchGlyph" FontSize="15" />
             </Button>
         </StackPanel>
     </Grid>

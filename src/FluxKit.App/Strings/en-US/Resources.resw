@@ -916,7 +916,7 @@
     <value>Hover to peek, click to open. Buttons in the preview don&apos;t do anything.</value>
   </data>
   <data name="Island_QuickTimerLabel.Text" xml:space="preserve">
-    <value>Start a timer</value>
+    <value>START A TIMER</value>
   </data>
   <data name="Island_OneMinute.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Start a 1-minute timer</value>
@@ -1592,5 +1592,23 @@
   </data>
   <data name="Island_NowPlaying.Text" xml:space="preserve">
     <value>NOW PLAYING</value>
+  </data>
+  <data name="Island_UnitMin" xml:space="preserve">
+    <value>MIN</value>
+  </data>
+  <data name="Island_UnitFocus" xml:space="preserve">
+    <value>FOCUS</value>
+  </data>
+  <data name="Island_UnitStopwatch" xml:space="preserve">
+    <value>STOPWATCH</value>
+  </data>
+  <data name="Island_OneMinuteTile.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Start a 1 minute timer</value>
+  </data>
+  <data name="Island_FiveMinutesTile.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Start a 5 minute timer</value>
+  </data>
+  <data name="Island_TenMinutesTile.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Start a 10 minute timer</value>
   </data>
 </root>

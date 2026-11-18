@@ -13,8 +13,8 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// <summary>The timers page: quick timers and a focus cycle, a running timer on a dial, or the stopwatch with laps.</summary>
 public sealed partial class TimerPanel : UserControl, IIslandPage
 {
-    private const string PauseIcon = "\xE769";
-    private const string PlayIcon = "\xE768";
+    private const string PauseIcon = "\xF8AE";
+    private const string PlayIcon = "\xF5B0";
     private const string AddIcon = "\xE710";
     private const string LapIcon = "\xE7C1";
     private const string StopwatchIcon = "\xE121";
@@ -44,7 +44,15 @@ public sealed partial class TimerPanel : UserControl, IIslandPage
         LapsText.Foreground = secondary;
         Label.Foreground = new SolidColorBrush(IslandPalette.Orange);
         Dial.SetColor(IslandPalette.Orange);
-        Digits.TextBrush = new SolidColorBrush(IslandPalette.TextPrimary);
+        Digits.TextBrush = new SolidColorBrush(IslandPalette.Orange);
+        PauseButton.Background = new SolidColorBrush(IslandPalette.Tint(IslandPalette.Orange));
+        PauseButton.Foreground = new SolidColorBrush(IslandPalette.Orange);
+        CancelButton.Background = new SolidColorBrush(IslandPalette.RaisedHover);
+        Tile(OneMinute, "1", Strings.Get("Island_UnitMin"));
+        Tile(FiveMinutes, "5", Strings.Get("Island_UnitMin"));
+        Tile(TenMinutes, "10", Strings.Get("Island_UnitMin"));
+        Tile(FocusButton, "25", Strings.Get("Island_UnitFocus"));
+        Tile(StopwatchButton, null, Strings.Get("Island_UnitStopwatch"), StopwatchIcon);
 
         OneMinute.Click += (_, _) => Commands?.StartTimer(TimeSpan.FromMinutes(1));
         FiveMinutes.Click += (_, _) => Commands?.StartTimer(TimeSpan.FromMinutes(5));
@@ -193,6 +201,8 @@ public sealed partial class TimerPanel : UserControl, IIslandPage
             Clock.Text = IslandPresenter.FormatClock(now);
             Date.Text = IslandPresenter.FormatDate(now);
             FocusText.Text = Strings.Format("Island_FocusFormat", scene.Settings.FocusMinutes);
+            Tile(FocusButton, scene.Settings.FocusMinutes.ToString(System.Globalization.CultureInfo.CurrentCulture), Strings.Get("Island_UnitFocus"));
+            AutomationProperties.SetName(FocusButton, FocusText.Text);
             ToolTipService.SetToolTip(FocusButton, Strings.Format("Island_FocusTipFormat", scene.Settings.FocusMinutes, scene.Settings.BreakMinutes));
             PowerSnapshot power = scene.Power;
             Battery.Visibility = power.HasBattery ? Visibility.Visible : Visibility.Collapsed;
@@ -216,6 +226,31 @@ public sealed partial class TimerPanel : UserControl, IIslandPage
         ExtraGlyph.Glyph = extraGlyph;
         ExtraText.Text = extraText;
         CancelText.Text = cancelText;
+
+        // The round buttons show only an icon; their names come from the hidden labels.
+        AutomationProperties.SetName(PauseButton, PauseText.Text);
+        ToolTipService.SetToolTip(PauseButton, PauseText.Text);
+        AutomationProperties.SetName(CancelButton, cancelText);
+        ToolTipService.SetToolTip(CancelButton, cancelText);
+    }
+
+    /// <summary>A bento tile: a big number over a small label (or an icon over a label).</summary>
+    private static void Tile(Button tile, string? number, string unit, string? glyph = null)
+    {
+        var stack = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Spacing = 1 };
+        if (number is not null)
+        {
+            var big = new TextBlock { Text = number, FontSize = 22, FontWeight = Microsoft.UI.Text.FontWeights.Bold, FontFamily = new FontFamily("Segoe UI Variable Display"), HorizontalAlignment = HorizontalAlignment.Center };
+            Microsoft.UI.Xaml.Documents.Typography.SetNumeralAlignment(big, FontNumeralAlignment.Tabular);
+            stack.Children.Add(big);
+        }
+        else if (glyph is not null)
+        {
+            stack.Children.Add(new FontIcon { Glyph = glyph, FontSize = 20, Margin = new Thickness(0, 2, 0, 3), Foreground = new SolidColorBrush(IslandPalette.Orange) });
+        }
+
+        stack.Children.Add(new TextBlock { Text = unit, FontSize = 9, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, CharacterSpacing = 60, Foreground = new SolidColorBrush(IslandPalette.TextSecondary), HorizontalAlignment = HorizontalAlignment.Center });
+        tile.Content = stack;
     }
 
     /// <summary>

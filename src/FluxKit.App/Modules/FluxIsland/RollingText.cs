@@ -31,6 +31,9 @@ public sealed partial class RollingText : StackPanel
 
     public Brush? TextBrush { get; set; }
 
+    /// <summary>Hero numbers are bold; smaller rolling text is semibold.</summary>
+    public bool Bold { get; set; }
+
     /// <summary>Changes the text; with <paramref name="roll"/> false it simply swaps (reduced motion, first show).</summary>
     public void SetText(string text, bool roll)
     {
@@ -87,14 +90,21 @@ public sealed partial class RollingText : StackPanel
         }
     }
 
-    private TextBlock MakeGlyph(char c) => new()
+    /// <summary>One character in the display face, with fixed-width digits so the number never shifts as it rolls.</summary>
+    private TextBlock MakeGlyph(char c)
     {
-        Text = c.ToString(),
-        FontSize = TextSize,
-        FontWeight = FontWeights.SemiBold,
-        Foreground = TextBrush,
-        HorizontalAlignment = HorizontalAlignment.Center,
-    };
+        var glyph = new TextBlock
+        {
+            Text = c.ToString(),
+            FontSize = TextSize,
+            FontWeight = Bold ? FontWeights.Bold : FontWeights.SemiBold,
+            FontFamily = new FontFamily("Segoe UI Variable Display"),
+            Foreground = TextBrush,
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        Microsoft.UI.Xaml.Documents.Typography.SetNumeralAlignment(glyph, FontNumeralAlignment.Tabular);
+        return glyph;
+    }
 
     private static void Slide(UIElement element, float fromY, float toY, float fromOpacity, float toOpacity, Action? done = null)
     {
