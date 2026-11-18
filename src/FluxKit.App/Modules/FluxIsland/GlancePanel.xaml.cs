@@ -20,12 +20,15 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// </summary>
 public sealed partial class GlancePanel : UserControl, IIslandPage
 {
-    private static readonly Size PageSize = new(420, 152);
+    private static readonly Size PageSize = new(420, 228);
+    private const int SparkSamples = 60;
 
     private const string MicOnGlyph = "\xE720";
     private const string MicOffGlyph = "\xEC54";
 
     private readonly SystemStats _stats = new();
+    private readonly Queue<long> _spark = new(SparkSamples);
+    private bool _animate = true;
     private readonly DispatcherQueueTimer _sampler;
     private bool _micMuted;
 
@@ -33,20 +36,19 @@ public sealed partial class GlancePanel : UserControl, IIslandPage
     {
         InitializeComponent();
         var secondary = new SolidColorBrush(IslandPalette.TextSecondary);
-        foreach (TextBlock label in new[] { CpuLabel, MemoryLabel, DiskLabel, BatteryLabel, DownText, UpText })
+        foreach (TextBlock label in new[] { DownText, UpText })
         {
             label.Foreground = secondary;
         }
 
         DownGlyph.Foreground = new SolidColorBrush(IslandPalette.Cyan);
         UpGlyph.Foreground = new SolidColorBrush(IslandPalette.Violet);
-        var track = new SolidColorBrush(Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF));
-        foreach (ProgressRing ring in new[] { CpuRing, MemoryRing, DiskRing, BatteryRing })
+        foreach (ProgressGlyph ring in new[] { CpuRing, MemoryRing, DiskRing, BatteryRing })
         {
-            ring.Background = track;
-            ring.Minimum = 0;
-            ring.Maximum = 100;
+            ring.SetGlyph(string.Empty);
         }
+
+        Spark.Stroke = new SolidColorBrush(IslandPalette.Cyan);
 
         _sampler = DispatcherQueue.CreateTimer();
         _sampler.Interval = TimeSpan.FromSeconds(1);
@@ -71,7 +73,7 @@ public sealed partial class GlancePanel : UserControl, IIslandPage
     /// <summary>Unset in previews, where the buttons do nothing.</summary>
     public IIslandCommands? Commands { get; set; }
 
-    UIElement[] IIslandPage.Rows => [Gauges, Actions];
+    UIElement[] IIslandPage.Rows => [Gauges, NetworkTile, Actions];
 
     Size IIslandPage.PreferredSize => PageSize;
 
@@ -79,6 +81,7 @@ public sealed partial class GlancePanel : UserControl, IIslandPage
 
     string IIslandPage.Update(IslandScene scene, DateTimeOffset now, bool springs)
     {
+        _animate = springs;
         Update(scene);
         return Strings.Get("Island_GlanceName");
     }
@@ -129,11 +132,11 @@ public sealed partial class GlancePanel : UserControl, IIslandPage
         ? Strings.Format("Island_GlanceMbFormat", bytesPerSecond / (1024.0 * 1024.0))
         : Strings.Format("Island_GlanceKbFormat", bytesPerSecond / 1024.0);
 
-    private static void SetGauge(ProgressRing ring, TextBlock text, TextBlock label, double percent, Color color)
+    private void SetGauge(ProgressGlyph ring, TextBlock text, TextBlock label, double percent, Color color)
     {
         int rounded = (int)Math.Round(Math.Clamp(percent, 0, 100));
-        ring.Value = rounded;
-        ring.Foreground = new SolidColorBrush(color);
+        ring.SetColor(color);
+        ring.SetProgress(rounded / 100.0, _animate);
         text.Text = rounded.ToString(System.Globalization.CultureInfo.CurrentCulture);
         AutomationProperties.SetName(ring, Strings.Format("Island_GlanceGaugeName", label.Text, rounded));
     }
@@ -157,6 +160,35 @@ public sealed partial class GlancePanel : UserControl, IIslandPage
         SetGauge(DiskRing, DiskText, DiskLabel, reading.Disk, LoadColor(reading.Disk));
         DownText.Text = FormatSpeed(reading.Download);
         UpText.Text = FormatSpeed(reading.Upload);
+        DrawSpark(reading.Download);
+    }
+
+    /// <summary>The last minute of download speed as a line, scaled to its own peak so small activity still shows.</summary>
+    private void DrawSpark(long download)
+    {
+        _spark.Enqueue(download);
+        while (_spark.Count > SparkSamples)
+        {
+            _spark.Dequeue();
+        }
+
+        double width = SparkHost.ActualWidth;
+        double height = SparkHost.ActualHeight;
+        if (width <= 0 || height <= 0)
+        {
+            return;
+        }
+
+        double peak = Math.Max(1, _spark.Max());
+        var points = new PointCollection();
+        int i = SparkSamples - _spark.Count;
+        foreach (long value in _spark)
+        {
+            points.Add(new Point(width * i / (SparkSamples - 1), height - 1 - ((height - 2) * value / peak)));
+            i++;
+        }
+
+        Spark.Points = points;
     }
 
     private void Act(Action action)

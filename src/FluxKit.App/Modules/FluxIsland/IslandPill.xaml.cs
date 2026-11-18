@@ -23,7 +23,7 @@ namespace FluxKit.App.Modules.FluxIsland;
 public sealed partial class IslandPill : UserControl
 {
     public const double StageWidth = 460;
-    public const double StageHeight = 290;
+    public const double StageHeight = 320;
     public const double TopInset = 6;
 
     private const double CompactHeight = 36;
