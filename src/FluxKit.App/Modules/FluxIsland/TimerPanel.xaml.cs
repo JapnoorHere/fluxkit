@@ -105,6 +105,9 @@ public sealed partial class TimerPanel : UserControl, IIslandPage
 
     public IIslandCommands? Commands { get; set; }
 
+    /// <summary>The element the compact pill's ring grows into when the island opens (continuity, plan M4).</summary>
+    internal UIElement? Hero => _showing == Showing.Idle ? null : Dial;
+
     /// <summary>The switch button flipped between the timer and the stopwatch; the pill redraws the page.</summary>
     public event EventHandler? SwitchChanged;
 

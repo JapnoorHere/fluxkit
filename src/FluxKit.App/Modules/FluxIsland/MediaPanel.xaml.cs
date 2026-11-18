@@ -74,6 +74,9 @@ public sealed partial class MediaPanel : UserControl, IIslandPage
         return string.Join(", ", new[] { media.Title, media.Artist }.Where(t => !string.IsNullOrEmpty(t)));
     }
 
+    /// <summary>The element the compact pill's art grows into when the island opens (continuity, plan M4).</summary>
+    internal UIElement? Hero => _media is null ? null : ArtFrame;
+
     /// <summary>Drives the bars from the live output level.</summary>
     internal void SetLevel(float level) => Bars.SetLevel(level);
 

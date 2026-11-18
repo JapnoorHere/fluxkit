@@ -318,6 +318,8 @@ public sealed partial class IslandPill : UserControl
     private void Update()
     {
         DateTimeOffset now = DateTimeOffset.Now;
+        UIElement? before = _shownView;
+        Rect? heroFrom = BoundsOnStage(HeroOf(before));
         (UIElement view, string key, Size size) = _mode switch
         {
             PillMode.Panel => BuildPanel(now),
@@ -325,6 +327,11 @@ public sealed partial class IslandPill : UserControl
             _ => BuildCompact(now),
         };
         bool changed = ShowView(view, key);
+        if (changed && before != view && (before == CompactView || view == CompactView))
+        {
+            // Opening or closing: what the pill showed travels to its place in the new state.
+            Travel(heroFrom, view);
+        }
         UpdateGlow(now, flare: changed && view == CompactView && _scene.Primary is { IsAlert: true });
         if (changed && view == CompactView && _scene.Primary is { IsAlert: true } alert)
         {
