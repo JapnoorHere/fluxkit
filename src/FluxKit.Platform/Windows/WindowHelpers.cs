@@ -35,10 +35,18 @@ public static partial class WindowHelpers
         long style = GetWindowLongPtr(hwnd, GwlExStyle);
         style = (style | WsExNoActivate | WsExToolWindow | WsExTopmost) & ~WsExAppWindow;
         _ = SetWindowLongPtr(hwnd, GwlExStyle, (nint)style);
-        int round = 2; // DWMWCP_ROUND
-        _ = DwmSetWindowAttribute(hwnd, 33, ref round, sizeof(int));
+        RemoveBorder(hwnd);
+    }
 
-        // No window border: Windows 11 draws a 1 px outline round rounded windows, which shows at the overlay's edges.
+    /// <summary>
+    /// Turns off Windows 11's own corner rounding and 1 px window outline for an overlay that shapes itself with a
+    /// region: otherwise the outline shows as thin lines at the window's edges. Safe to call again whenever the window
+    /// is shown or moved.
+    /// </summary>
+    public static void RemoveBorder(nint hwnd)
+    {
+        int square = 1; // DWMWCP_DONOTROUND: the region does the rounding.
+        _ = DwmSetWindowAttribute(hwnd, 33, ref square, sizeof(int));
         int noBorder = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
         _ = DwmSetWindowAttribute(hwnd, 34, ref noBorder, sizeof(int)); // DWMWA_BORDER_COLOR
     }

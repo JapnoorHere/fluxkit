@@ -23,9 +23,17 @@ public sealed partial class IslandPill
     public event EventHandler<IslandHints>? HintSeen;
 
     /// <summary>Shows <paramref name="text"/> under the pill for a few seconds (or until <see cref="HideHint"/>).</summary>
-    public void ShowHint(string text, TimeSpan? duration = null)
+    /// <param name="step">For the tour: which step this is (1-based) and how many there are, shown as dots.</param>
+    public void ShowHint(string text, TimeSpan? duration = null, (int Index, int Count)? step = null)
     {
         HintText.Text = text;
+        HintBadge.Show(step is null ? "\xE82F" : "\xE7E7", step is null ? IslandPalette.Yellow : IslandPalette.Blue);
+        HintSteps.Visibility = step is null ? Visibility.Collapsed : Visibility.Visible;
+        if (step is { } at)
+        {
+            HintSteps.Text = string.Concat(Enumerable.Range(1, at.Count).Select(i => i == at.Index ? "\u25CF" : "\u25CB"));
+        }
+
         Hint.Visibility = Visibility.Visible;
         Hint.Measure(new Size(StageWidth, double.PositiveInfinity));
         PlaceHint();

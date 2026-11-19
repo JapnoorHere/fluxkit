@@ -191,6 +191,40 @@ internal static class IslandMotion
         visual.StartAnimation("Translation", IslandSprings.Vector3(visual.Compositor, IslandSprings.Bouncy, Vector3.Zero));
     }
 
+    /// <summary>
+    /// "No": the element shakes side to side three times, dying away (plan I16, a failed file job). With
+    /// <paramref name="direction"/> set it only leans that way once and springs back: the rubber-band at the end of the
+    /// pages (plan I18).
+    /// </summary>
+    public static void Nudge(UIElement element, bool springs, int direction = 0)
+    {
+        if (!springs)
+        {
+            return;
+        }
+
+        Visual visual = Prepare(element);
+        Vector3KeyFrameAnimation move = visual.Compositor.CreateVector3KeyFrameAnimation();
+        if (direction == 0)
+        {
+            float[] offsets = [0, -7, 6, -4, 3, 0];
+            for (int i = 0; i < offsets.Length; i++)
+            {
+                move.InsertKeyFrame(i / (float)(offsets.Length - 1), new Vector3(offsets[i], 0, 0));
+            }
+
+            move.Duration = TimeSpan.FromMilliseconds(380);
+        }
+        else
+        {
+            move.InsertKeyFrame(0.35f, new Vector3(-12 * Math.Sign(direction), 0, 0), IslandSprings.EaseOut(visual.Compositor));
+            move.InsertKeyFrame(1, Vector3.Zero, IslandSprings.EaseOut(visual.Compositor));
+            move.Duration = TimeSpan.FromMilliseconds(360);
+        }
+
+        visual.StartAnimation("Translation", move);
+    }
+
     /// <summary>A ring that grows out of an icon and fades away, for moments that deserve attention.</summary>
     public static void Burst(UIElement ring, bool springs)
     {

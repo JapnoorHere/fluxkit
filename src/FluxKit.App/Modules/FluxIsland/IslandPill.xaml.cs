@@ -427,6 +427,14 @@ public sealed partial class IslandPill : UserControl
                 IslandMotion.Burst(CompactBurst, Springs);
                 _shape.Bounce(Springs);
                 break;
+            case ActivityKind.FileReady when alert.Value == (int)FileResult.Failed:
+                // "That didn't work": the whole pill shakes no.
+                IslandMotion.Nudge(Stage, Springs);
+                IslandMotion.Pop(CompactGlyph, Springs);
+                break;
+            case ActivityKind.FileReady:
+                CompactGlyph.DrawCheck(IslandPalette.Green, Springs);
+                break;
             case ActivityKind.Copied:
                 IslandMotion.Flip(CompactGlyph, Springs);
                 break;

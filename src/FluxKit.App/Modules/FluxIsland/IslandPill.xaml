@@ -156,19 +156,31 @@
         <!-- A short tip under the pill: the first-run tour, or a gesture shown once ("Click the bubble to swap"). -->
         <Border
             x:Name="Hint"
-            Padding="12,6"
+            Padding="6,6,14,6"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
-            Background="#F2141418"
-            BorderBrush="#24FFFFFF"
-            BorderThickness="1"
-            CornerRadius="13"
+            Background="#F21C1C1E"
+            BorderBrush="#2EFFFFFF"
+            BorderThickness="0,1,0,0"
+            CornerRadius="16"
             IsHitTestVisible="False"
             Visibility="Collapsed">
-            <TextBlock
-                x:Name="HintText"
-                FontSize="12"
-                Foreground="#F5F5F7" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <d:IconBadge x:Name="HintBadge" BadgeSize="20" />
+                <TextBlock
+                    x:Name="HintText"
+                    MaxWidth="330"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    TextWrapping="Wrap"
+                    Foreground="#FFFFFF" />
+                <TextBlock
+                    x:Name="HintSteps"
+                    VerticalAlignment="Center"
+                    FontSize="9"
+                    Foreground="#80EBEBF5"
+                    Visibility="Collapsed" />
+            </StackPanel>
         </Border>
 
         <!-- The second activity, in a small bubble beside the pill (like a second Live Activity). Click to swap. -->

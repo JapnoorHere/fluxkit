@@ -43,6 +43,7 @@ public sealed partial class MediaPanel : UserControl, IIslandPage
         PressFeedback.Attach(PreviousButton);
         PressFeedback.Attach(PlayPauseButton);
         PressFeedback.Attach(NextButton);
+        Marquee.Attach(TrackRow, Title, () => _animate);
         Track.SeekRequested += (_, at) =>
         {
             if (_media is { CanSeek: true } media && media.Duration > TimeSpan.Zero)

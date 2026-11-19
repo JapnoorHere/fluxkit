@@ -24,6 +24,7 @@ public sealed partial class IslandWindow : Window
     // Room around the pill for its shadow, in DIPs. The shadow falls downwards, so the bottom gets more.
     private const double ShadowSide = PillShape.Bleed;
     private const double ShadowBottom = PillShape.Bleed + 4;
+    private const double EdgeInset = 6;
     private static readonly TimeSpan ShrinkDelay = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan PreviewHold = TimeSpan.FromSeconds(12);
     private static readonly TimeSpan TourStep = TimeSpan.FromSeconds(3.6);
@@ -166,7 +167,7 @@ public sealed partial class IslandWindow : Window
 
             (string sample, bool open, string key) = steps[step++];
             ShowPreview(sample, open);
-            Pill.ShowHint(Strings.Get(key), TourStep);
+            Pill.ShowHint(Strings.Get(key), TourStep, (step, steps.Length));
         }
 
         timer.Tick += (_, _) => Next();
@@ -257,6 +258,7 @@ public sealed partial class IslandWindow : Window
         Pill.SnapToTarget();
         ApplyRegion(Pill.RegionBounds);
         WindowHelpers.ShowNoActivate(_hwnd, placement);
+        WindowHelpers.RemoveBorder(_hwnd);
         if (!_pinned)
         {
             _ = PinAsync();
@@ -289,6 +291,7 @@ public sealed partial class IslandWindow : Window
             PixelRect placement = Place();
             ApplyRegion(Pill.RegionBounds);
             WindowHelpers.ShowNoActivate(_hwnd, placement);
+            WindowHelpers.RemoveBorder(_hwnd);
         }
     }
 
@@ -327,11 +330,15 @@ public sealed partial class IslandWindow : Window
     private void ApplyRegion(Rect bounds)
     {
         _region = bounds;
+        // Keep the region a few pixels inside the window on every side: at the very edge a frame line shows.
+        int inset = (int)Math.Ceiling(EdgeInset * _scale);
+        int maxRight = (int)Math.Floor(IslandPill.StageWidth * _scale) - inset;
+        int maxBottom = (int)Math.Floor(IslandPill.StageHeight * _scale) - inset;
         var pixels = new PixelRect(
-            (int)Math.Floor((bounds.Left - ShadowSide) * _scale),
+            Math.Max(inset, (int)Math.Floor((bounds.Left - ShadowSide) * _scale)),
             (int)Math.Floor(bounds.Top * _scale),
-            (int)Math.Ceiling((bounds.Right + ShadowSide) * _scale),
-            (int)Math.Ceiling((bounds.Bottom + ShadowBottom) * _scale));
+            Math.Min(maxRight, (int)Math.Ceiling((bounds.Right + ShadowSide) * _scale)),
+            Math.Min(maxBottom, (int)Math.Ceiling((bounds.Bottom + ShadowBottom) * _scale)));
         int radius = (int)Math.Ceiling((Math.Min(bounds.Height / 2, PillShape.MaxCornerRadius) + ShadowSide) * _scale);
         WindowHelpers.SetHitRegion(_hwnd, pixels, radius);
     }

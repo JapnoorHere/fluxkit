@@ -133,7 +133,7 @@ public sealed partial class IslandPill
         }
     }
 
-    /// <summary>Moves to the next or previous page (a sideways swipe, PageUp or PageDown), wrapping round.</summary>
+    /// <summary>Moves to the next or previous page (a sideways swipe, PageUp or PageDown); at the ends it rubber-bands.</summary>
     private void StepPage(int direction)
     {
         List<PanelPage> pages = AvailablePages();
@@ -142,7 +142,18 @@ public sealed partial class IslandPill
             return;
         }
 
-        int index = (pages.IndexOf(page) + direction + pages.Count) % pages.Count;
+        // Like a phone's pages: no wrapping round; at either end the page leans and springs back.
+        int index = pages.IndexOf(page) + direction;
+        if (index < 0 || index >= pages.Count)
+        {
+            if (_shownView is not null)
+            {
+                IslandMotion.Nudge(_shownView, Springs, direction);
+            }
+
+            return;
+        }
+
         ShowPage(pages[index]);
     }
 

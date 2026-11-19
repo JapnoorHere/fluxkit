@@ -46,8 +46,11 @@ internal static class IslandPalette
     /// <summary>iOS secondary label: soft white at 60 %, for artists, details and labels.</summary>
     public static readonly Color TextSecondary = Color.FromArgb(0x99, 0xEB, 0xEB, 0xF5);
 
-    /// <summary>iOS tertiary label: white at 30 %, for times and hints.</summary>
-    public static readonly Color TextTertiary = Color.FromArgb(0x4D, 0xEB, 0xEB, 0xF5);
+    /// <summary>
+    /// Tertiary label, for times and hints: white at 50 % (iOS uses 30 %, but that is only about 2.2:1 on black; 50 %
+    /// reaches the 4.5:1 that small text needs).
+    /// </summary>
+    public static readonly Color TextTertiary = Color.FromArgb(0x80, 0xEB, 0xEB, 0xF5);
 
     public static readonly Color Green = Color.FromArgb(0xFF, 0x30, 0xD1, 0x58);
 
