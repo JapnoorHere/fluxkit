@@ -18,6 +18,17 @@ public static class ShellLauncher
     internal static bool OpenSystemLink(string link) =>
         link.StartsWith("ms-", StringComparison.Ordinal) && Start(new ProcessStartInfo(link) { UseShellExecute = true });
 
+    /// <summary>
+    /// Opens an app by its AppUserModelID (from a notification), the same way the Start menu would. Works for Store
+    /// and desktop apps. Returns false if Windows couldn't start it.
+    /// </summary>
+    public static bool OpenApp(string appUserModelId) =>
+        !string.IsNullOrWhiteSpace(appUserModelId) && !appUserModelId.Contains('"', StringComparison.Ordinal)
+        && Start(new ProcessStartInfo("explorer.exe", $"\"shell:AppsFolder\\{appUserModelId}\"") { UseShellExecute = true });
+
+    /// <summary>Opens Windows' Notification Center.</summary>
+    public static bool OpenNotificationCenter() => OpenSystemLink("ms-actioncenter:");
+
     /// <summary>Opens File Explorer with <paramref name="path"/> selected, or just its folder if the file is gone.</summary>
     public static bool ShowInFolder(string path)
     {

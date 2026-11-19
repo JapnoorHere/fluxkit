@@ -34,6 +34,9 @@ public sealed class IslandSources
     /// <summary>Registers the given shortcut; the source reports each press.</summary>
     public Func<Activities.HotkeyGesture, IHotkeySource>? Hotkey { get; init; }
 
+    /// <summary>Windows notifications from other apps (needs FluxKit's identity and the user's permission).</summary>
+    public Func<INotificationSource>? Notifications { get; init; }
+
     /// <summary>Where the shelf is kept between runs; null keeps it in memory only.</summary>
     public IShelfStore? ShelfStore { get; init; }
 

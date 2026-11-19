@@ -31,6 +31,9 @@ public sealed record IslandScene
     /// <summary>Recently copied text, when clipboard history is on; pinned items first.</summary>
     public IReadOnlyList<ClipEntry> Clips { get; init; } = [];
 
+    /// <summary>Recent Windows notifications for the Notifications page, already trimmed to what may be shown.</summary>
+    public IReadOnlyList<ToastInfo> Inbox { get; init; } = [];
+
     public PowerSnapshot Power { get; init; }
 
     public PrivacySnapshot Privacy { get; init; }

@@ -63,6 +63,20 @@ public interface IIslandCommands
 
     void ClearClips();
 
+    /// <summary>Opens the app a notification came from (or Notification Center if that fails).</summary>
+    void OpenNotification(uint id);
+
+    /// <summary>Dismisses a notification, from Windows' Notification Center too.</summary>
+    void DismissNotification(uint id);
+
+    /// <summary>Keeps an app's notifications off the island for a while (they still reach the Notifications page).</summary>
+    void MuteNotificationApp(string appId, TimeSpan duration);
+
+    void ClearInbox();
+
+    /// <summary>Clears one app's notifications from the Notifications page.</summary>
+    void RemoveInboxApp(string appId);
+
     /// <summary>Brings back what the last Clear (notes, recent or clipboard) took away.</summary>
     void UndoClear();
 

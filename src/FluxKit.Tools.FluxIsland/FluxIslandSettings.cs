@@ -154,6 +154,17 @@ public sealed class FluxIslandSettings : ISettingsSection
 
     public IslandLook Look { get; set; } = IslandLook.Onyx;
 
+    /// <summary>Shows Windows notifications on the island (ADR-014). Off until the user turns it on and Windows allows it.</summary>
+    public bool ShowNotifications { get; set; }
+
+    public NotificationPrivacy NotificationPrivacy { get; set; } = NotificationPrivacy.Full;
+
+    /// <summary>Shows only the app's name while a full-screen presentation or video is on screen.</summary>
+    public bool HideNotificationsWhilePresenting { get; set; } = true;
+
+    /// <summary>Per-app choices, keyed by the app's AppUserModelID. Apps are added as their first notification arrives.</summary>
+    public Dictionary<string, NotificationAppSettings> NotificationApps { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
     public IslandInterruptions Interruptions { get; set; } = IslandInterruptions.Everything;
 
     /// <summary>Plays a soft Windows sound when a timer ends or the battery runs low. Off by default.</summary>
@@ -194,6 +205,12 @@ public sealed class FluxIslandSettings : ISettingsSection
         {
             Interruptions = IslandInterruptions.Everything;
             yield return "interruptions reset to Everything";
+        }
+
+        if (!Enum.IsDefined(NotificationPrivacy))
+        {
+            NotificationPrivacy = NotificationPrivacy.Full;
+            yield return "notificationPrivacy reset to Full";
         }
 
         if (!Enum.IsDefined(Look))

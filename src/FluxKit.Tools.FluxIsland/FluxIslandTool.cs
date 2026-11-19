@@ -11,7 +11,7 @@ namespace FluxKit.Tools.FluxIsland;
 /// <see cref="ActivityArbiter"/>, and hands a <see cref="IslandScene"/> to the view. Nothing here polls: the only timer
 /// is one-shot, set for the next moment something runs out.
 /// </summary>
-public sealed class FluxIslandTool : IFluxTool, IIslandCommands
+public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
 {
     public const string Id = "flux-island";
 
@@ -305,6 +305,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
                 Notes = _notes.Items,
                 Rewind = _rewind.Items,
                 Clips = _options.ClipboardHistory ? _clips.Items : [],
+                Inbox = InboxForScene(),
                 Power = _power?.Current ?? default,
                 Privacy = _options.ShowPrivacy ? _privacy?.Current ?? default : default,
                 MicMuted = _micMuted,
@@ -346,6 +347,11 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
             ? () => makeHotkey(gesture)
             : null;
         _hotkey = Start(hotkey, s => s.Pressed += OnHotkeyPressed);
+        _notifications = Start(_options.ShowNotifications ? _factories.Notifications : null, s =>
+        {
+            s.Arrived += OnNotification;
+            s.Removed += OnNotificationRemoved;
+        });
         _files = Start(files, s =>
         {
             s.DownloadChanged += OnDownloadChanged;
@@ -413,6 +419,7 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         _lockKeys = null;
         _devices = null;
         _hotkey = null;
+        _notifications = null;
         lock (_sync)
         {
             _arbiter.SetLasting(ActivityKind.Media, null);
@@ -496,7 +503,8 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
         s.ShowBrightness,
         s.ShowLockKeys,
         s.ShowDevices,
-        s.Hotkey);
+        s.Hotkey,
+        s.ShowNotifications);
 
     private void OnMediaChanged(object? sender, EventArgs e) => Publish();
 
@@ -674,7 +682,8 @@ public sealed class FluxIslandTool : IFluxTool, IIslandCommands
     {
         IslandInterruptions.Nothing => false,
         IslandInterruptions.Important => moment.Kind is ActivityKind.TimerDone or ActivityKind.LowBattery or ActivityKind.Offline or ActivityKind.FileReady
-            || (moment.Kind == ActivityKind.MicMuted && moment.Value == 1),
+            || (moment.Kind == ActivityKind.MicMuted && moment.Value == 1)
+            || (moment.Kind == ActivityKind.Notification && moment.Flag),
         _ => true,
     };
 

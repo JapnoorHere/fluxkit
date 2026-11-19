@@ -36,6 +36,9 @@ public enum ActivityKind
     /// <summary>A file job from a drop finished (zipped, converted, resized, path copied) or failed.</summary>
     FileReady,
 
+    /// <summary>A notification from another app (WhatsApp, Teams, mail…), shown in place of Windows' banner.</summary>
+    Notification,
+
     /// <summary>A call is going on (a call app is using the microphone): its length and the mute state.</summary>
     Call,
 }
@@ -74,6 +77,15 @@ public sealed record IslandActivity(ActivityKind Kind)
 
     /// <summary>When something that is still going on began, such as a call.</summary>
     public DateTimeOffset? Since { get; init; }
+
+    /// <summary>A second line of text, such as a notification's message. Shown on screen only, never logged.</summary>
+    public string? Detail { get; init; }
+
+    /// <summary>Where a moment came from, such as the app that sent a notification.</summary>
+    public string? Source { get; init; }
+
+    /// <summary>An image to show with the moment, such as the sending app's logo.</summary>
+    public ReadOnlyMemory<byte> Image { get; init; }
 
     public bool IsAlert => Kind is not (ActivityKind.Media or ActivityKind.Timer or ActivityKind.Shelf or ActivityKind.Download or ActivityKind.MicMuted or ActivityKind.Stopwatch or ActivityKind.Call);
 }

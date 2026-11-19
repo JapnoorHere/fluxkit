@@ -24,6 +24,7 @@ public static class SystemSources
         LockKeys = () => new LockKeysSource(log),
         Devices = () => new BluetoothSource(log),
         Hotkey = gesture => new HotkeySource(gesture, log),
+        Notifications = () => new NotificationSource(log),
         ShelfStore = new JsonShelfStore(FluxKitPaths.ShelfFile, log),
         NotesStore = new JsonNotesStore(FluxKitPaths.NotesFile, log),
     };

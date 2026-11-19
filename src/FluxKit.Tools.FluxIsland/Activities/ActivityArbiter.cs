@@ -42,6 +42,7 @@ internal sealed class ActivityArbiter(TimeProvider time)
         ActivityKind.Offline => 70,
         ActivityKind.Screenshot => 66,
         ActivityKind.FileReady => 65,
+        ActivityKind.Notification => 62,
         ActivityKind.DownloadDone => 64,
         ActivityKind.PluggedIn => 60,
         ActivityKind.DeviceConnected or ActivityKind.DeviceDisconnected => 58,
@@ -67,7 +68,7 @@ internal sealed class ActivityArbiter(TimeProvider time)
     {
         ActivityKind.TimerDone => TimeSpan.FromSeconds(6),
         ActivityKind.LowBattery => TimeSpan.FromSeconds(4),
-        ActivityKind.Screenshot or ActivityKind.DownloadDone or ActivityKind.FileReady => TimeSpan.FromSeconds(5),
+        ActivityKind.Screenshot or ActivityKind.DownloadDone or ActivityKind.FileReady or ActivityKind.Notification => TimeSpan.FromSeconds(5),
         ActivityKind.PluggedIn => TimeSpan.FromSeconds(3.2),
         ActivityKind.Copied => TimeSpan.FromSeconds(1.4),
         ActivityKind.Volume or ActivityKind.Brightness => TimeSpan.FromSeconds(1.6),
