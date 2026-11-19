@@ -15,6 +15,14 @@ public static class Program
         WinRT.ComWrappersSupport.InitializeComWrappers();
 
         AppInstance instance = AppInstance.FindOrRegisterForKey(InstanceKey);
+
+        // A restart (e.g. after registering the identity package) waits for the old instance to finish closing.
+        for (int tries = 0; !instance.IsCurrent && args.Contains("--restarted") && tries < 50; tries++)
+        {
+            Thread.Sleep(100);
+            instance = AppInstance.FindOrRegisterForKey(InstanceKey);
+        }
+
         if (!instance.IsCurrent)
         {
             // Another FluxKit is running: hand it our activation (it opens its window) and exit.

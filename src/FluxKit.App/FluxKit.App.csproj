@@ -30,6 +30,8 @@
     <Content Include="Assets\*.ico;Assets\*.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\Docs\*.md" Link="Docs\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\THIRD-PARTY-NOTICES.md')" />
+    <!-- The identity package for reading notifications (ADR-014); FluxKit registers it from here when asked. -->
+    <Content Include="..\..\packaging\Identity\**" Link="Identity\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

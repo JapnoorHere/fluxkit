@@ -237,6 +237,27 @@ public sealed class AppHost
         OnStatusChanged();
     }
 
+    /// <summary>Whether FluxKit can read notifications yet (ADR-014), and what is needed if not.</summary>
+    public IdentityState NotificationIdentity => PackageIdentity.GetState(AppContext.BaseDirectory);
+
+    /// <summary>
+    /// Registers FluxKit's identity package so it can read notifications. Returns an error message, or null when it
+    /// worked; FluxKit must then restart (<see cref="RestartAsync"/>).
+    /// </summary>
+    public Task<string?> RegisterNotificationIdentityAsync() => PackageIdentity.RegisterAsync(AppContext.BaseDirectory);
+
+    /// <summary>Starts a fresh FluxKit and closes this one, e.g. so a newly registered identity applies.</summary>
+    public async Task RestartAsync()
+    {
+        if (Environment.ProcessPath is { } exe)
+        {
+            // The new instance waits for this one to leave (single instance), then takes over.
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe, "--background --restarted") { UseShellExecute = false });
+        }
+
+        await ExitAsync();
+    }
+
     public async Task ExitAsync()
     {
         if (_exiting)
