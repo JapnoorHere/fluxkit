@@ -36,6 +36,14 @@ All notable changes to FluxKit are documented here. The format follows [Keep a C
   - A Recent page of moments you may have missed, and an opt-in clipboard history.
   - A first-run tour, one-time gesture tips, a Try it gallery in settings, Narrator announcements and high contrast support.
   - Choose what can interrupt, and optional sounds.
+- Flux Island UI pass:
+  - iOS dark system colours, a type ramp with fixed-width numbers, and every icon in a coloured badge.
+  - Compact pill: icon or ring on the left, a big coloured value on the right. The call badge breathes, the mute slash draws, the charging bolt flashes, and the bubble shows a badge.
+  - Music: the album's colours wash the panel, with bigger art, a scrubber that grows a knob and shows the time while you drag, solid controls, and long titles that scroll on hover.
+  - Timers: tiles to start one, then big orange digits beside a dial, with round pause and stop buttons, like an iPhone.
+  - Glance: ring tiles, a live network sparkline and round quick actions.
+  - Lists: badges, actions on hover, rows that shrink away, Undo instead of a confirm, and helpful empty states. The command result is a tile with a check that draws itself; drop zones fill in their colour.
+  - The compact art or ring travels into the open panel, pages rubber-band at the ends, failures shake, and the tour caption shows its steps.
 - `--page <name>` opens FluxKit on a chosen page.
 - `--preview-island <sample>[-open]` shows a sample island state, for screenshots and testing.
 

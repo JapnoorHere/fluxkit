@@ -353,3 +353,20 @@ Each phase lists the files it touches, what is built, and how it's accepted. "Ac
 - High contrast: outlines.
 - An idle CPU and memory check.
 - Docs: README, CHANGELOG and ManualTestPlan.
+
+## 10. As built
+
+All eight phases shipped, each in its own commit, with build, format and tests clean and every state checked on screenshots.
+
+| Phase | What shipped | Changed from the plan |
+|---|---|---|
+| 1 | iOS dark system colours and label colours, `Tint()`, a type ramp in Segoe UI Variable with tabular numbers, `IconBadge` (pop, breathe, flash, strike, drawn check), tint, ghost, chip, tile and key-cap styles, press 0.97 with a bouncy release | Captions use upper-case strings rather than a text transform |
+| 2 | Compact pill as leading badge or ring, a label at 60 %, and a big coloured value. Timers, stopwatch and calls are value-only, the bubble holds a badge, the peek action is tinted, the call badge breathes, the mute slash draws, the charge bolt flashes | — |
+| 3 | Music page: art wash (art decoded at 6 px and stretched), 72 px art, "NOW PLAYING", a `Scrubber` with hover growth, a knob and a time bubble, and solid controls with a white 56 px play button | — |
+| 4 | Timer page: bento tiles (1, 5, 10, Focus, Stopwatch), a 60 px dial, 44 px bold orange rolling digits, round tinted pause and stop buttons, laps in colour | — |
+| 5 | Glance: four ring tiles, a network tile with a 60-sample sparkline, round quick actions | Rings use a solid colour; the gradient stroke wasn't built |
+| 6 | Lists: 44 px rows with badges, hover-only actions, an animated remove, Undo instead of a confirm, empty states. Bigger raised shelf tiles with a hover lift. A command result tile with a 40 px badge, display type and a drawn check. Drop zones with badges, a filled hover and dimmed neighbours | Removed rows shrink and fade; neighbours then close the gap without animation |
+| 7 | Continuity: the compact art, ring or badge travels and scales into the panel's art or dial on open, and back on close (FLIP on the compositor) | Checked in code and on a burst capture from a cold start; the live compact-to-panel handoff needs a manual check |
+| 8 | Error shake, rubber-band at the ends of the pages (no more wrap-around), `Marquee` for long music titles, a hint chip with a badge and tour step dots, tertiary text raised to 50 % for contrast, and Windows' window outline removed (square DWM corners, no border colour, region kept 6 px inside the window) | — |
+
+**Measured:** a Release build settles to about 16 ms of CPU per 10 s at idle, after about a minute of start-up work. One run showed a short 4.8 s burst that didn't repeat and wasn't traced. Memory is about 188 MB working set and 93 MB private.

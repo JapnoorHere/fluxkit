@@ -42,7 +42,7 @@
 
 ## Testing status
 
-- Automated: 291 unit tests (Core, Drag-to-Switch and Flux Island logic).
+- Automated: 292 unit tests (Core, Drag-to-Switch and Flux Island logic).
 - Flux Island: every state was rendered and checked from screenshots with `--preview-island`. The settings page, the transparency and the idle cost (0 ms CPU over 20 s) were checked by running the app. The volume interop was checked with a read-only call. The live checks that need you (music, charger, mic, copy, dropping on the shelf, scrolling, a full-screen game, hover and click) are listed in [ManualTestPlan.md](ManualTestPlan.md) and haven't been run yet.
 - Real-drag E2E through the FluxKit selector, and manual tests with real File Explorer, are tracked in [ManualTestPlan.md](ManualTestPlan.md) and [Feasibility.md](Feasibility.md). Only executed results are marked as passed.
 - Untested: multi-monitor with mixed DPI, Remote Desktop sessions, ARM64 hardware, Windows 10.

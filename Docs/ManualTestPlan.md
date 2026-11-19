@@ -74,6 +74,10 @@ Environment for recorded runs: Windows 11 Home Single Language 26H2, build 26300
 | FI-31 | Interruptions and sounds | Set Important only, copy text, let a timer end; turn on sounds | Copy shows nothing; timer done shows and plays the reminder sound | N | Not run | — | Rules unit-tested |
 | FI-32 | Glass and high contrast | Settings › Labs › Glass; then Windows high contrast on | Smoked glass with a bright rim; in high contrast a white outline and no glow | N | Not run | — | Rendered with `--preview-island glass` |
 | FI-33 | Narrator | Narrator on; trigger a timer end and a copy | Narrator reads each moment as it arrives | N | Not run | — | |
+| FI-34 | UI continuity | Play music, hover then click the pill; close it | The art grows from the pill into the panel and back | N | Not run | — | Rendered with `music-open` |
+| FI-35 | Scrubber | Hover the music scrubber, then drag it | Track thickens with a knob; a time bubble follows; release seeks | N | Not run | — | |
+| FI-36 | List details | Hover a note, remove it, clear the list, press Undo | Actions fade in; the row shrinks away; Undo brings the list back | N | Not run | — | Undo unit-tested |
+| FI-37 | Page ends | On the first or last page, swipe further | The page leans and springs back | N | Not run | — | |
 
 ## Smoke checks executed during development
 
