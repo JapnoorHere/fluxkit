@@ -61,6 +61,12 @@ internal static class Marquee
 
     private static void Stop(TextBlock text)
     {
+        // Only a text that started scrolling has anything to undo (its trimming was turned off to scroll).
+        if (text.TextTrimming != TextTrimming.None)
+        {
+            return;
+        }
+
         Visual visual = ElementCompositionPreview.GetElementVisual(text);
         visual.StopAnimation("Translation");
         visual.Properties.InsertVector3("Translation", Vector3.Zero);

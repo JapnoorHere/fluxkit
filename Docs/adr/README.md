@@ -44,3 +44,23 @@ The interop surface is about 40 functions. Hand-written `LibraryImport` declarat
 
 ## ADR-013 — "Tool" in code, "utilities" in saved settings (2026-10-30)
 **Context:** the app calls each feature a *tool*, but the code said *utility* (`IFluxUtility`, `FluxKit.Utilities.DragToSwitch`), so contributors had to translate between the two. **Decision:** the code now uses the same word as the UI: `IFluxTool`, `ToolRegistry`, `ToolDescriptor`, `ToolState`, `DragToSwitchTool`, `FluxKit.Core.Tools` and `FluxKit.Tools.<Name>` projects. The saved settings keys are **not** renamed: tool sections stay `"utilities/<id>"` under the `"utilities"` node, built only by `SettingsKeys`. **Consequences:** existing settings files keep working with no migration, and tests pin the saved keys. `Docs/PLAN.md` and the changelog keep the old word because they record history. ADR-011 was renamed with the rest.
+
+## ADR-014 — A sparse identity package for reading notifications (2026-11-16)
+**Context:** Flux Island should show Windows notifications in place of Windows' own banners. Windows exposes other apps' notifications only through `UserNotificationListener`, which needs a package identity, the `userNotificationListener` capability, and the user's permission. FluxKit is unpackaged (ADR-002). No API lets an app intercept or replace another app's banner.
+**Decision:**
+- FluxKit keeps its zip install but adds a *sparse* identity package (`packaging/Identity/AppxManifest.xml`, `AllowExternalContent`), which points at the folder `FluxKit.exe` already runs from. `app.manifest` carries the matching `<msix>` element.
+- In development the manifest is registered unsigned in Developer Mode (`Add-AppxPackage -Register … -ExternalLocation <app folder>`). Release builds pack it with MakeAppx and sign it with a real certificate.
+- Windows' banner for an app is turned off only with the user's consent, through its own per-app switch (`HKCU\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\<AUMID>\ShowBanner = 0`). The previous value is recorded first and restored exactly.
+
+**Spike results (2026-11-16, this PC):**
+- With the identity registered, `Package.Current` resolved (`FluxKit.Identity_1.0.0.0_neutral__99d4agh9szqr8`).
+- `RequestAccessAsync` returned **Allowed**.
+- `GetNotificationsAsync(Toast)` returned 31 current toasts with their app names, AUMIDs and `ToastGeneric` text elements.
+- `NotificationChanged` **fired live** (Added) for a test toast and for a real one, so no polling is needed.
+- The per-app settings keys exist under the path above. `ShowBanner` is absent by default, meaning banners are shown. Setting it to 0 and back worked; whether the banner visibly disappeared couldn't be confirmed on this PC, which shows no banners in the corner, so it is a manual test.
+
+**Consequences:**
+- The listener gives text and app info but not the toast's own buttons. The island can open the app, dismiss the notification or open Notification Center, but can't press "Reply" or "Accept".
+- A signing certificate is needed before release.
+- The identity can be removed with `Remove-AppxPackage FluxKit.Identity_…`.
+- Turning off banners leaves notifications in Notification Center.

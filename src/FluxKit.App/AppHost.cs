@@ -158,6 +158,11 @@ public sealed class AppHost
                 () => _selector?.ShowPreview(Settings.Read<DragToSwitchSettings>(DragToSwitchSettings.Section)));
         }
 
+        if (args.Contains("--notification-spike", StringComparer.OrdinalIgnoreCase))
+        {
+            _dispatcher.TryEnqueue(() => _ = Modules.FluxIsland.NotificationSpike.RunAsync(Serilog.Log.Logger));
+        }
+
         if (args.Contains("--island-tour", StringComparer.OrdinalIgnoreCase))
         {
             _dispatcher.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => _island?.PlayTour());
