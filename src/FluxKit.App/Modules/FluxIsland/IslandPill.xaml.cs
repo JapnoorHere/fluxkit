@@ -48,6 +48,11 @@ public sealed partial class IslandPill : UserControl
 
     private readonly PillShape _shape;
     private readonly AlbumArt _art = new();
+
+    /// <summary>The logo of the app whose notification is on show, and its glow colour (decoded like album art).</summary>
+    private readonly AlbumArt _logo = new();
+
+    private readonly LogoCache _logos = new();
     private readonly LevelMeter _meter;
     private readonly DispatcherQueueTimer _peekTimer;
     private readonly DispatcherQueueTimer _closeTimer;
@@ -103,11 +108,23 @@ public sealed partial class IslandPill : UserControl
         Surface.Margin = new Thickness(0, TopInset, 0, 0);
         _shape = new PillShape(ShapeHost, ContentLayer, Stage, new Vector2((float)StageWidth, (float)StageHeight), (float)TopInset);
         MediaView.UseArt(_art);
+        _logo.Changed += (_, _) =>
+        {
+            if (_scene.Primary?.Kind == ActivityKind.Notification)
+            {
+                _shownKey = null;
+                Update();
+            }
+        };
         _meter = new LevelMeter(DispatcherQueue);
         _meter.Changed += (_, level) => ShowLevel(level);
         _art.Changed += (_, _) =>
         {
-            CompactArt.Source = _art.Image;
+            if (_scene.Primary?.Kind == ActivityKind.Media)
+            {
+                CompactArt.Source = _art.Image;
+            }
+
             if (_scene.Media is not null)
             {
                 _shownKey = null;
@@ -153,6 +170,7 @@ public sealed partial class IslandPill : UserControl
         NotesTab.Click += (_, _) => ShowPage(PanelPage.Notes);
         RewindTab.Click += (_, _) => ShowPage(PanelPage.Rewind);
         ClipsTab.Click += (_, _) => ShowPage(PanelPage.Clips);
+        InboxTab.Click += (_, _) => ShowPage(PanelPage.Inbox);
         ConfigureLists();
         WireCommandBar();
         GlanceView.CloseRequested += (_, _) => SetMode(PillMode.Compact);
@@ -200,6 +218,7 @@ public sealed partial class IslandPill : UserControl
         Notes,
         Rewind,
         Clips,
+        Inbox,
     }
 
     /// <summary>What buttons on the island call. Unset in previews, where nothing should happen.</summary>
@@ -251,7 +270,7 @@ public sealed partial class IslandPill : UserControl
     public void Preview(IslandScene scene, bool open, bool dropping = false, string? sample = null)
     {
         _mode = sample == "command" ? PillMode.Command
-            : open || dropping || sample is "glance" or "notes" or "rewind" or "clips" ? PillMode.Panel
+            : open || dropping || sample is "glance" or "notes" or "rewind" or "clips" or "inbox" ? PillMode.Panel
             : PillMode.Compact;
         _page = sample switch
         {
@@ -259,6 +278,7 @@ public sealed partial class IslandPill : UserControl
             "notes" => PanelPage.Notes,
             "rewind" => PanelPage.Rewind,
             "clips" => PanelPage.Clips,
+            "inbox" => PanelPage.Inbox,
             _ => null,
         };
         if (sample == "command")
@@ -277,6 +297,7 @@ public sealed partial class IslandPill : UserControl
         Surface.AllowDrop = scene.Settings.ShelfEnabled;
         ApplyLook(scene.Settings.Look == FluxKit.Tools.FluxIsland.IslandLook.Glass);
         _art.Set(scene.Media?.Thumbnail ?? ReadOnlyMemory<byte>.Empty);
+        _logo.Set(scene.Primary is { Kind: ActivityKind.Notification } note ? note.Image : ReadOnlyMemory<byte>.Empty);
         Update();
     }
 
@@ -442,6 +463,11 @@ public sealed partial class IslandPill : UserControl
                 IslandMotion.Drop(CompactArtFrame, Springs);
                 IslandMotion.Pop(CompactGlyph, Springs);
                 break;
+            case ActivityKind.Notification:
+                // The app's logo pops in, as on a phone.
+                IslandMotion.Pop(CompactArtFrame, Springs);
+                IslandMotion.Pop(CompactGlyph, Springs);
+                break;
             case ActivityKind.DeviceConnected or ActivityKind.DeviceDisconnected or ActivityKind.AudioDevice or ActivityKind.DesktopSwitched:
                 IslandMotion.SlideIn(CompactGlyph, Springs);
                 break;
@@ -492,7 +518,12 @@ public sealed partial class IslandPill : UserControl
             return;
         }
 
-        Windows.UI.Color accent = shown.Kind == ActivityKind.Media ? _art.Accent : IslandPresenter.Describe(shown, now).Accent;
+        Windows.UI.Color accent = shown.Kind switch
+        {
+            ActivityKind.Media => _art.Accent,
+            ActivityKind.Notification when _logo.Image is not null => _logo.Accent,
+            _ => IslandPresenter.Describe(shown, now).Accent,
+        };
         float intensity = accent == IslandPalette.TextPrimary ? 0 : IslandPalette.GlowFor(shown);
         _shape.SetAccent(accent, intensity, Springs);
         if (flare)
@@ -525,6 +556,9 @@ public sealed partial class IslandPill : UserControl
             case { Kind: ActivityKind.Copied, Path: { } link }:
                 ShellLauncher.OpenLink(link);
                 Commands?.DismissAlert();
+                break;
+            case { Kind: ActivityKind.Notification }:
+                Commands?.OpenNotification(unchecked((uint)activity.Total));
                 break;
         }
     }
@@ -583,8 +617,15 @@ public sealed partial class IslandPill : UserControl
         }
 
         // A screenshot shows itself, small, where music shows its art.
-        bool art = media is not null ? _art.Image is not null : _thumb is not null;
-        CompactArt.Source = media is not null ? _art.Image : _thumb;
+        // A notification shows its app's logo there.
+        bool notification = activity?.Kind == ActivityKind.Notification;
+        ImageSource? picture = media is not null ? _art.Image : notification ? _logo.Image : _thumb;
+        bool art = picture is not null;
+        CompactArt.Source = picture;
+        if (notification && art)
+        {
+            content = content with { Accent = _logo.Accent };
+        }
         ring &= !art;
         CompactRing.Visibility = ring ? Visibility.Visible : Visibility.Collapsed;
         if (ring)

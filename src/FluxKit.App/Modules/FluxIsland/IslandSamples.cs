@@ -15,7 +15,7 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "notification", "notifications", "inbox",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
@@ -27,6 +27,9 @@ internal static class IslandSamples
             Thumbnail = File.Exists(sampleArt) ? File.ReadAllBytes(sampleArt) : ReadOnlyMemory<byte>.Empty,
         };
         var timer = new FocusTimerSnapshot(TimerMode.Focus, TimerState.Running, TimeSpan.FromMinutes(25), TimeSpan.FromMinutes(18), now + TimeSpan.FromMinutes(18) + TimeSpan.FromSeconds(42), 1);
+        // FluxKit's own icon stands in for an app logo.
+        string sampleLogo = Path.Combine(AppContext.BaseDirectory, "Assets", "FluxKit.png");
+        ReadOnlyMemory<byte> logo = File.Exists(sampleLogo) ? File.ReadAllBytes(sampleLogo) : ReadOnlyMemory<byte>.Empty;
         var stopwatch = new StopwatchSnapshot(TimerState.Running, TimeSpan.Zero, now - TimeSpan.FromSeconds(83), [TimeSpan.FromSeconds(41), TimeSpan.FromSeconds(38)]);
         var power = new PowerSnapshot(true, 76, true);
         IslandActivity? primary = name switch
@@ -59,6 +62,8 @@ internal static class IslandSamples
             "stopwatch" => new IslandActivity(ActivityKind.Stopwatch) { Stopwatch = stopwatch },
             "link" => new IslandActivity(ActivityKind.Copied) { Clipboard = ClipboardKind.Text, Smart = SmartText.Link, Text = "github.com", Path = "https://github.com/" },
             "colour" => new IslandActivity(ActivityKind.Copied) { Clipboard = ClipboardKind.Text, Smart = SmartText.Color, Text = "#3A7BFF", Value = 0x3A7BFF },
+            "notification" => new IslandActivity(ActivityKind.Notification) { Text = "Priya Sharma", Detail = "Are we still on for lunch at 1?", Source = "Teams", Image = logo, Value = 1 },
+            "notifications" => new IslandActivity(ActivityKind.Notification) { Text = "Design review", Detail = "Sam: the new icons look great", Source = "Teams", Image = logo, Value = 3 },
             _ => null,
         };
         return new IslandScene
@@ -87,8 +92,17 @@ internal static class IslandSamples
             Settings = new FluxKit.Tools.FluxIsland.FluxIslandSettings
             {
                 ClipboardHistory = name == "clips",
+                ShowNotifications = name is "notification" or "notifications" or "inbox",
                 Look = name == "glass" ? FluxKit.Tools.FluxIsland.IslandLook.Glass : FluxKit.Tools.FluxIsland.IslandLook.Onyx,
             },
+            Inbox = name == "inbox"
+                ?
+                [
+                    new ToastInfo(3, "Teams!App", "Teams", logo, "Priya Sharma", "Are we still on for lunch at 1?", now - TimeSpan.FromSeconds(20)),
+                    new ToastInfo(2, "Mail!App", "Mail", ReadOnlyMemory<byte>.Empty, "Invoice for November", "Your invoice is ready to view", now - TimeSpan.FromMinutes(12)),
+                    new ToastInfo(1, "Teams!App", "Teams", logo, "Design review", "Sam: the new icons look great", now - TimeSpan.FromMinutes(40)),
+                ]
+                : [],
             Notes = name == "notes"
                 ? [new IslandNote("Call Sam about the launch", now - TimeSpan.FromMinutes(5)), new IslandNote("Buy milk", now - TimeSpan.FromHours(2)), new IslandNote("#3A7BFF for the new icon", now - TimeSpan.FromDays(1))]
                 : [],

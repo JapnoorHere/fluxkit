@@ -1,9 +1,10 @@
+using FluxKit.Tools.FluxIsland.Abstractions;
 using FluxKit.Tools.FluxIsland.Activities;
 
 namespace FluxKit.App.Modules.FluxIsland;
 
 /// <summary>
-/// The three list pages: Notes (from the command bar), Rewind (recent moments worth a second look) and Clipboard
+/// The list pages: Notes (from the command bar), Rewind (recent moments worth a second look), Notifications and Clipboard
 /// (opt-in history of copied text). They share <see cref="ListPanel"/>; this only says what each one lists.
 /// </summary>
 public sealed partial class IslandPill
@@ -13,6 +14,8 @@ public sealed partial class IslandPill
     private const string ClipboardGlyph = "\xE77F";
     private const string RemoveGlyph = "\xE711";
     private const string PinGlyph = "\xE718";
+    private const string InboxGlyph = "\xE8BD";
+    private const string MuteGlyph = "\xE7ED";
 
     private void ConfigureLists()
     {
@@ -64,6 +67,46 @@ public sealed partial class IslandPill
                 ]))],
             () => Commands?.ClearClips(),
             () => Commands?.UndoClear()));
+
+        InboxView.Configure(new ListPageSpec(
+            InboxGlyph,
+            IslandPalette.Blue,
+            "Island_InboxTitle",
+            "Island_InboxNameFormat",
+            "Island_InboxEmpty",
+            (scene, now) => [.. Grouped(scene.Inbox).Select(toast => InboxItem(toast, now))],
+            () => Commands?.ClearInbox(),
+            () => Commands?.UndoClear()));
+    }
+
+    /// <summary>
+    /// Notifications grouped by app, as in Notification Center: the app with the newest one first, each app's own
+    /// notifications newest first.
+    /// </summary>
+    private static IEnumerable<ToastInfo> Grouped(IReadOnlyList<ToastInfo> inbox) =>
+        inbox.GroupBy(t => t.AppId, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(g => g.Max(t => t.Arrived))
+            .SelectMany(g => g.OrderByDescending(t => t.Arrived));
+
+    /// <summary>A notification as a row: the app logo, "Sender · message", how long ago, and Mute and Dismiss.</summary>
+    private ListItem InboxItem(ToastInfo toast, DateTimeOffset now)
+    {
+        string text = toast.Body.Length > 0 ? $"{toast.Title} · {toast.Body.ReplaceLineEndings(" ")}" : toast.Title;
+        return new ListItem(
+            toast.Id.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            text,
+            ListPanel.Age(toast.Arrived, now),
+            InboxGlyph,
+            IslandPalette.Blue,
+            () => Commands?.OpenNotification(toast.Id),
+            Strings.Format("Island_OpenAppFormat", toast.AppName),
+            [
+                new ListAction(MuteGlyph, Strings.Format("Island_MuteAppFormat", toast.AppName), () => Commands?.MuteNotificationApp(toast.AppId, TimeSpan.FromHours(1))),
+                new ListAction(RemoveGlyph, Strings.Get("Island_DismissNotification"), () => Commands?.DismissNotification(toast.Id), Removes: true),
+            ])
+        {
+            Image = _logos.Get(toast.AppId, toast.Logo),
+        };
     }
 
     /// <summary>A recent moment as a row: how it looked on the pill, when, and its action (open, show in folder…).</summary>

@@ -20,7 +20,11 @@ internal sealed record ListAction(string Glyph, string Name, Action Run, bool Ac
 /// One row of a list page. <see cref="Key"/> identifies it; <see cref="Open"/> runs when the row is clicked. A null
 /// <see cref="Glyph"/> uses the page's own badge.
 /// </summary>
-internal sealed record ListItem(string Key, string Text, string? Caption, string? Glyph, Color Accent, Action? Open, string? OpenName, IReadOnlyList<ListAction> Actions);
+internal sealed record ListItem(string Key, string Text, string? Caption, string? Glyph, Color Accent, Action? Open, string? OpenName, IReadOnlyList<ListAction> Actions)
+{
+    /// <summary>A picture shown in place of the glyph badge, such as the app logo on a notification.</summary>
+    public ImageSource? Image { get; init; }
+}
 
 /// <summary>What a list page shows and how: set once by the pill with <see cref="ListPanel.Configure"/>.</summary>
 internal sealed record ListPageSpec(
@@ -154,6 +158,18 @@ public sealed partial class ListPanel : UserControl, IIslandPage
 
         var badge = new IconBadge { BadgeSize = 28 };
         badge.Show(item.Glyph ?? _spec!.Glyph, item.Glyph is null ? _spec!.Accent : item.Accent);
+        FrameworkElement leading = badge;
+        if (item.Image is { } picture)
+        {
+            leading = new Border
+            {
+                Width = 28,
+                Height = 28,
+                CornerRadius = new CornerRadius(7),
+                Child = new Image { Source = picture, Stretch = Stretch.UniformToFill },
+            };
+        }
+
         var text = new TextBlock
         {
             Text = item.Text,
@@ -173,7 +189,7 @@ public sealed partial class ListPanel : UserControl, IIslandPage
         content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        content.Children.Add(badge);
+        content.Children.Add(leading);
         Grid.SetColumn(text, 1);
         content.Children.Add(text);
         Grid.SetColumn(caption, 2);

@@ -38,6 +38,7 @@ internal static class IslandPresenter
     private const string ConvertGlyph = "\xE8AB";
     private const string ResizeGlyph = "\xE740";
     private const string ErrorGlyph = "\xE783";
+    private const string MessageGlyph = "\xE8BD";
 
     public static CompactContent Describe(IslandActivity activity, DateTimeOffset now) => activity.Kind switch
     {
@@ -76,6 +77,12 @@ internal static class IslandPresenter
         ActivityKind.MicMuted when activity.Value == 1 => new(MicOffGlyph, Strings.Get("Island_SpeakingMuted"), Strings.Get("Island_SpeakingMutedDetail"), null, IslandPalette.Red),
         ActivityKind.MicMuted => new(MicGlyph, Strings.Get(activity.Flag ? "Island_MicMuted" : "Island_MicOn"), null, null, activity.Flag ? IslandPalette.Red : IslandPalette.Green),
         ActivityKind.FileReady => DescribeFile(activity),
+        ActivityKind.Notification => new(
+            MessageGlyph,
+            activity.Text ?? string.Empty,
+            activity.Detail ?? Strings.Get("Island_NotificationNew"),
+            activity.Value > 1 ? Strings.Format("Island_NotificationCountFormat", activity.Value) : null,
+            IslandPalette.Blue),
         ActivityKind.Call => new(
             PhoneGlyph,
             string.Empty,
@@ -103,6 +110,7 @@ internal static class IslandPresenter
     public static string? ActionLabel(IslandActivity activity) => activity.Kind switch
     {
         ActivityKind.MicMuted or ActivityKind.Call => Strings.Get(activity.Flag ? "Island_Action_Unmute" : "Island_Action_Mute"),
+        ActivityKind.Notification => Strings.Get("Island_Action_Open"),
         ActivityKind.DownloadDone when activity.Path is not null => Strings.Get("Island_Action_ShowInFolder"),
         ActivityKind.Screenshot when activity.Path is not null => Strings.Get("Island_Action_Open"),
         ActivityKind.FileReady when activity.Path is not null && activity.Value != (int)FileResult.PathCopied => Strings.Get("Island_Action_ShowInFolder"),

@@ -117,6 +117,7 @@
                 <local:ListPanel x:Name="NotesView" Visibility="Collapsed" />
                 <local:ListPanel x:Name="RewindView" Visibility="Collapsed" />
                 <local:ListPanel x:Name="ClipsView" Visibility="Collapsed" />
+                <local:ListPanel x:Name="InboxView" Visibility="Collapsed" />
                 <local:CommandBar x:Name="CommandView" Visibility="Collapsed" />
                 <local:DropZones x:Name="DropView" Visibility="Collapsed" />
 
@@ -148,6 +149,9 @@
                     </Button>
                     <Button x:Name="ClipsTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_ClipsTab">
                         <Border x:Name="ClipsDot" Height="6" CornerRadius="3" />
+                    </Button>
+                    <Button x:Name="InboxTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_InboxTab">
+                        <Border x:Name="InboxDot" Height="6" CornerRadius="3" />
                     </Button>
                 </StackPanel>
             </Grid>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -1622,5 +1622,32 @@
   </data>
   <data name="Island_ClipsEmpty" xml:space="preserve">
     <value>Copy some text and it shows here, ready to copy again.</value>
+  </data>
+  <data name="Island_NotificationNew" xml:space="preserve">
+    <value>New notification</value>
+  </data>
+  <data name="Island_NotificationCountFormat" xml:space="preserve">
+    <value>{0} new</value>
+  </data>
+  <data name="Island_InboxTitle" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="Island_InboxNameFormat" xml:space="preserve">
+    <value>{0} notifications</value>
+  </data>
+  <data name="Island_InboxEmpty" xml:space="preserve">
+    <value>Notifications from your apps show here while FluxKit is running.</value>
+  </data>
+  <data name="Island_InboxTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="Island_OpenAppFormat" xml:space="preserve">
+    <value>Open {0}</value>
+  </data>
+  <data name="Island_MuteAppFormat" xml:space="preserve">
+    <value>Quiet {0} for an hour</value>
+  </data>
+  <data name="Island_DismissNotification" xml:space="preserve">
+    <value>Dismiss</value>
   </data>
 </root>
