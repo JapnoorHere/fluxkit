@@ -18,6 +18,7 @@ public sealed partial class FluxIslandPage : Page
         InitializeComponent();
         BuildGallery();
         Load();
+        NotificationsView.Changed += (_, _) => Preview.Update(Current);
         Loaded += (_, _) => _host.StatusChanged += OnStatusChanged;
         Unloaded += (_, _) => _host.StatusChanged -= OnStatusChanged;
     }

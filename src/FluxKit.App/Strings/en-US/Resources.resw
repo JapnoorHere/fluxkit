@@ -1650,4 +1650,87 @@
   <data name="Island_DismissNotification" xml:space="preserve">
     <value>Dismiss</value>
   </data>
+  <data name="FluxIsland_NotificationsGroup.Header" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="FluxIsland_NotificationsGroup.Caption" xml:space="preserve">
+    <value>Windows notifications on the island, instead of the corner banner</value>
+  </data>
+  <data name="FluxIsland_Notifications.Header" xml:space="preserve">
+    <value>Show Windows notifications on Flux Island</value>
+  </data>
+  <data name="FluxIsland_Notifications.Description" xml:space="preserve">
+    <value>Messages, mail and reminders from your apps appear on the island. Read on this PC only, never saved or sent anywhere.</value>
+  </data>
+  <data name="FluxIsland_NotificationPrivacy.Header" xml:space="preserve">
+    <value>What notifications show</value>
+  </data>
+  <data name="FluxIsland_NotificationPrivacy.Description" xml:space="preserve">
+    <value>Open the Notifications page to read more.</value>
+  </data>
+  <data name="FluxIsland_NotificationPrivacyFull.Content" xml:space="preserve">
+    <value>Sender and message</value>
+  </data>
+  <data name="FluxIsland_NotificationPrivacySender.Content" xml:space="preserve">
+    <value>Sender only</value>
+  </data>
+  <data name="FluxIsland_NotificationPrivacyHidden.Content" xml:space="preserve">
+    <value>App name only</value>
+  </data>
+  <data name="FluxIsland_NotificationPresenting.Header" xml:space="preserve">
+    <value>Hide messages while presenting</value>
+  </data>
+  <data name="FluxIsland_NotificationPresenting.Description" xml:space="preserve">
+    <value>During a full-screen slideshow or video, only the app's name shows.</value>
+  </data>
+  <data name="FluxIsland_NotificationApps.Text" xml:space="preserve">
+    <value>Apps</value>
+  </data>
+  <data name="FluxIsland_NotificationNoApps.Text" xml:space="preserve">
+    <value>Apps appear here after they send their first notification.</value>
+  </data>
+  <data name="FluxIsland_NotificationAppShow" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="FluxIsland_NotificationAppBanner" xml:space="preserve">
+    <value>Hide Windows banner</value>
+  </data>
+  <data name="FluxIsland_NotificationAppPriority" xml:space="preserve">
+    <value>Priority</value>
+  </data>
+  <data name="FluxIsland_RestoreBanners.Content" xml:space="preserve">
+    <value>Give all apps their Windows banners back</value>
+  </data>
+  <data name="FluxIsland_NotificationSetupTitle" xml:space="preserve">
+    <value>Show notifications on Flux Island?</value>
+  </data>
+  <data name="FluxIsland_NotificationSetupText" xml:space="preserve">
+    <value>Windows only lets apps with an identity read notifications. FluxKit will register a small identity for your account (no admin rights, and you can remove it), then restart once and ask Windows for permission.
+
+While this is on, Windows' own banner is turned off for each app the island shows, and turned back on exactly as it was when you switch this off or close FluxKit. Notifications stay in Notification Center as usual.</value>
+  </data>
+  <data name="FluxIsland_NotificationSetupConfirm" xml:space="preserve">
+    <value>Set up and restart</value>
+  </data>
+  <data name="FluxIsland_NotificationSetupCancel" xml:space="preserve">
+    <value>Not now</value>
+  </data>
+  <data name="FluxIsland_NotificationStepRestart" xml:space="preserve">
+    <value>FluxKit needs to restart once to start reading notifications.</value>
+  </data>
+  <data name="FluxIsland_NotificationRestart" xml:space="preserve">
+    <value>Restart FluxKit</value>
+  </data>
+  <data name="FluxIsland_NotificationStepDenied" xml:space="preserve">
+    <value>Windows didn't allow FluxKit to read notifications. Turn on notification access for FluxKit in Windows Settings, then try again.</value>
+  </data>
+  <data name="FluxIsland_NotificationOpenWindows" xml:space="preserve">
+    <value>Open Windows Settings</value>
+  </data>
+  <data name="FluxIsland_NotificationStepUnavailable" xml:space="preserve">
+    <value>This build of FluxKit can't read notifications: it has no signed identity package, and Windows Developer Mode is off.</value>
+  </data>
+  <data name="FluxIsland_NotificationStepFailed" xml:space="preserve">
+    <value>Windows couldn't register FluxKit's identity. The log folder has the details.</value>
+  </data>
 </root>

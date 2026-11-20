@@ -29,6 +29,9 @@ public static class ShellLauncher
     /// <summary>Opens Windows' Notification Center.</summary>
     public static bool OpenNotificationCenter() => OpenSystemLink("ms-actioncenter:");
 
+    /// <summary>Opens Settings › Privacy › Notifications, where the user can allow FluxKit to read notifications.</summary>
+    public static bool OpenNotificationPrivacySettings() => OpenSystemLink("ms-settings:privacy-notifications");
+
     /// <summary>Opens File Explorer with <paramref name="path"/> selected, or just its folder if the file is gone.</summary>
     public static bool ShowInFolder(string path)
     {

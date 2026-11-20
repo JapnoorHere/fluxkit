@@ -350,11 +350,7 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
             ? () => makeHotkey(gesture)
             : null;
         _hotkey = Start(hotkey, s => s.Pressed += OnHotkeyPressed);
-        _notifications = Start(_options.ShowNotifications ? _factories.Notifications : null, s =>
-        {
-            s.Arrived += OnNotification;
-            s.Removed += OnNotificationRemoved;
-        });
+        StartNotifications();
         _files = Start(files, s =>
         {
             s.DownloadChanged += OnDownloadChanged;

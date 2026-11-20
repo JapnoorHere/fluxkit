@@ -158,6 +158,8 @@ public sealed class AppHost
                 () => _selector?.ShowPreview(Settings.Read<DragToSwitchSettings>(DragToSwitchSettings.Section)));
         }
 
+        _dispatcher.TryEnqueue(DispatcherQueuePriority.Low, () => _ = ResumeNotificationsAsync());
+
         if (args.Contains("--island-tour", StringComparer.OrdinalIgnoreCase))
         {
             _dispatcher.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => _island?.PlayTour());
@@ -240,6 +242,25 @@ public sealed class AppHost
     /// worked; FluxKit must then restart (<see cref="RestartAsync"/>).
     /// </summary>
     public Task<string?> RegisterNotificationIdentityAsync() => PackageIdentity.RegisterAsync(AppContext.BaseDirectory);
+
+    /// <summary>
+    /// Asks Windows to let FluxKit read notifications (Windows may show its own prompt). Must run on the UI thread, and
+    /// only works once FluxKit runs with its identity. Returns whether access is allowed.
+    /// </summary>
+    public async Task<bool> RequestNotificationAccessAsync() =>
+        PackageIdentity.IsActive && (Platform.Watchers.NotificationWatcher.IsAllowed || await Platform.Watchers.NotificationWatcher.RequestAccessAsync());
+
+    /// <summary>
+    /// After a start or restart with notifications turned on: gets Windows' permission, then lets the island start
+    /// reading. Without the identity or permission nothing happens and Windows keeps its own banners.
+    /// </summary>
+    private async Task ResumeNotificationsAsync()
+    {
+        if (Settings.Read<FluxIslandSettings>(FluxIslandSettings.Section).ShowNotifications && await RequestNotificationAccessAsync())
+        {
+            FluxIsland.ResumeNotifications();
+        }
+    }
 
     /// <summary>Starts a fresh FluxKit and closes this one, e.g. so a newly registered identity applies.</summary>
     public async Task RestartAsync()

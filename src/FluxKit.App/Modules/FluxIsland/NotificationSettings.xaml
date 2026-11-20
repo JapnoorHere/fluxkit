@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Settings › Flux Island › Notifications (ADR-014): the switch that runs the consent steps, how much text shows,
+    hiding while presenting, and each app that has sent a notification, with Show, Hide Windows banner and Priority.
+-->
+<UserControl
+    x:Class="FluxKit.App.Modules.FluxIsland.NotificationSettings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:c="using:FluxKit.App.Controls">
+    <c:SettingsGroup x:Uid="FluxIsland_NotificationsGroup">
+        <StackPanel>
+            <c:SettingRow x:Name="ShowRow" x:Uid="FluxIsland_Notifications" Glyph="&#xE8BD;">
+                <ToggleSwitch x:Name="ShowToggle" Toggled="OnShowToggled" />
+            </c:SettingRow>
+
+            <!-- Only when a step needs the user: restart, Windows said no, or this build can't read notifications. -->
+            <InfoBar
+                x:Name="StepBar"
+                Margin="16,0,16,12"
+                IsClosable="False"
+                IsOpen="False">
+                <InfoBar.ActionButton>
+                    <Button x:Name="StepButton" Click="OnStepClicked" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <StackPanel x:Name="Details">
+                <c:SettingRow x:Uid="FluxIsland_NotificationPrivacy" Glyph="&#xE72E;">
+                    <ComboBox x:Name="PrivacyCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
+                        <ComboBoxItem x:Uid="FluxIsland_NotificationPrivacyFull" />
+                        <ComboBoxItem x:Uid="FluxIsland_NotificationPrivacySender" />
+                        <ComboBoxItem x:Uid="FluxIsland_NotificationPrivacyHidden" />
+                    </ComboBox>
+                </c:SettingRow>
+                <c:SettingRow x:Uid="FluxIsland_NotificationPresenting" Glyph="&#xE7F4;">
+                    <ToggleSwitch x:Name="PresentingToggle" Toggled="OnChanged" />
+                </c:SettingRow>
+
+                <!-- One row per app that has sent a notification: built in code. -->
+                <StackPanel Padding="16,12" Spacing="8">
+                    <TextBlock x:Uid="FluxIsland_NotificationApps" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock
+                        x:Name="NoAppsText"
+                        x:Uid="FluxIsland_NotificationNoApps"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <StackPanel x:Name="AppsList" Spacing="4" />
+                    <Button
+                        x:Name="RestoreButton"
+                        Margin="0,4,0,0"
+                        x:Uid="FluxIsland_RestoreBanners"
+                        Click="OnRestoreClicked" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </c:SettingsGroup>
+</UserControl>

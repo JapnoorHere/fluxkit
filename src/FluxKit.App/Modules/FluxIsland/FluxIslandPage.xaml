@@ -142,6 +142,8 @@
                     </StackPanel>
                 </c:SettingsGroup>
 
+                <local:NotificationSettings x:Name="NotificationsView" />
+
                 <c:SettingsGroup x:Uid="FluxIsland_FocusGroup">
                     <StackPanel>
                         <c:SettingRow x:Uid="FluxIsland_FocusLength" Glyph="&#xE916;">

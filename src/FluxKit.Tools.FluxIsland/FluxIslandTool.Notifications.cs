@@ -70,6 +70,29 @@ public sealed partial class FluxIslandTool
         _undo = () => Change(() => _inbox.Restore(before));
     }
 
+    /// <summary>
+    /// Starts reading notifications if it is turned on but couldn't start before, because Windows' permission is asked
+    /// (on the UI thread) only after the island has started.
+    /// </summary>
+    public void ResumeNotifications()
+    {
+        if (_view is null || !_options.ShowNotifications || _notifications is not null)
+        {
+            return;
+        }
+
+        StartNotifications();
+        ApplyBanners();
+        Publish();
+    }
+
+    private void StartNotifications() =>
+        _notifications = Start(_options.ShowNotifications ? _factories.Notifications : null, s =>
+        {
+            s.Arrived += OnNotification;
+            s.Removed += OnNotificationRemoved;
+        });
+
     /// <summary>The inbox as the view may show it: trimmed by the privacy setting (and hidden while presenting).</summary>
     private IReadOnlyList<ToastInfo> InboxForScene()
     {
