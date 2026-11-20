@@ -37,6 +37,12 @@ public sealed class IslandSources
     /// <summary>Windows notifications from other apps (needs FluxKit's identity and the user's permission).</summary>
     public Func<INotificationSource>? Notifications { get; init; }
 
+    /// <summary>Windows' per-app banner switch; null leaves banners alone.</summary>
+    public IBannerSwitch? Banners { get; init; }
+
+    /// <summary>Where the banner values from before FluxKit changed them are kept; null keeps them in memory only.</summary>
+    public IBannerSnapshotStore? BannerStore { get; init; }
+
     /// <summary>Where the shelf is kept between runs; null keeps it in memory only.</summary>
     public IShelfStore? ShelfStore { get; init; }
 

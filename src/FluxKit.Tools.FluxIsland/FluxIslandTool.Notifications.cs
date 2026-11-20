@@ -14,6 +14,7 @@ public sealed partial class FluxIslandTool
     private readonly NotificationRules _notificationRules = new();
     private readonly NotificationInbox _inbox = new();
     private INotificationSource? _notifications;
+    private BannerControl? _bannerControl;
 
     public void OpenNotification(uint id)
     {
@@ -135,10 +136,54 @@ public sealed partial class FluxIslandTool
             s.NotificationApps.TryAdd(toast.AppId, added);
             return s;
         });
-        AppAdded?.Invoke(this, toast.AppId);
         return added;
     }
 
-    /// <summary>An app sent its first notification since the feature was turned on (the banner control listens).</summary>
-    internal event EventHandler<string>? AppAdded;
+    /// <summary>The apps whose Windows banner is off because the island shows their notifications.</summary>
+    internal IReadOnlyCollection<string> HiddenBanners => _bannerControl?.Hidden ?? [];
+
+    /// <summary>
+    /// Turns Windows' banner off for each app the island shows (and that the user left "Hide Windows banner" on for),
+    /// and back on for every other app FluxKit changed. Only while notifications are actually being read: without the
+    /// listener, hiding banners would lose notifications.
+    /// </summary>
+    private void ApplyBanners()
+    {
+        if (_factories.Banners is not { } banners)
+        {
+            return;
+        }
+
+        _bannerControl ??= new BannerControl(banners, _factories.BannerStore ?? new MemoryBannerStore());
+        IEnumerable<string> wanted = _options.ShowNotifications && _notifications is not null
+            ? _options.NotificationApps.Where(app => app.Value.Show && app.Value.HideBanner).Select(app => app.Key)
+            : [];
+        _bannerControl.Apply(wanted);
+    }
+
+    private void RestoreBanners() => _bannerControl?.RestoreAll();
+
+    private void OnNotificationSettingsChanged(FluxIslandSettings before)
+    {
+        if (before.ShowNotifications && !_options.ShowNotifications)
+        {
+            // Turning the feature off forgets what was read.
+            lock (_sync)
+            {
+                _inbox.Clear();
+            }
+        }
+
+        ApplyBanners();
+    }
+
+    /// <summary>Keeps the banner record in memory only (tests, or no store given).</summary>
+    private sealed class MemoryBannerStore : IBannerSnapshotStore
+    {
+        private Dictionary<string, int?> _saved = [];
+
+        public IReadOnlyDictionary<string, int?> Load() => _saved;
+
+        public void Save(IReadOnlyDictionary<string, int?> saved) => _saved = new(saved);
+    }
 }

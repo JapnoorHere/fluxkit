@@ -15,6 +15,9 @@ public static class FluxKitPaths
     /// <summary>The paths on the Flux Island shelf, kept only while "Keep the shelf after restart" is on.</summary>
     public static string ShelfFile => Path.Combine(Root, "shelf.json");
 
+    /// <summary>The Windows banner values FluxKit changed, so they can be put back exactly (ADR-014).</summary>
+    public static string BannersFile => Path.Combine(Root, "banners.json");
+
     /// <summary>Quick notes from the Flux Island command bar, kept only while "Keep notes" is on.</summary>
     public static string NotesFile => Path.Combine(Root, "notes.json");
 

@@ -126,6 +126,7 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
 
             _view = _viewFactory(this);
             StartSources();
+            ApplyBanners();
             Publish();
             SetState(ToolState.Running);
         }
@@ -141,6 +142,8 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
+        // Windows shows its own banners again while FluxKit isn't running to show them instead.
+        RestoreBanners();
         StopSources();
         _wake?.Dispose();
         _wake = null;
@@ -477,6 +480,8 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
             StopSources();
             StartSources();
         }
+
+        OnNotificationSettingsChanged(before);
 
         Publish();
     }
