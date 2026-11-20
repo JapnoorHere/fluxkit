@@ -24,9 +24,11 @@ FluxKit works entirely on your PC.
   - **Recent:** the last 30 moments (file names, copied link hosts, device names), in memory only.
   - **Drop to act:** files dropped on a zone are read to zip or convert them. The result is a new file next to the original; originals are never changed, moved or overwritten.
   - **Sounds (off by default):** Windows' own event sounds, so your Sound settings apply.
+  - **Notifications (off by default, ADR-014):** with your consent and Windows' own permission, FluxKit reads the notifications Windows shows (app name, logo and text) through Windows' notification listener. The text is shown on screen only, trimmed first by your privacy choice, kept in memory for the Notifications page (up to 50) and gone when FluxKit exits or the feature is turned off. It is never saved, sent or logged; logs record only app ids and counts. To turn off Windows' banner for the apps the island shows, FluxKit changes Windows' own per-app switch (`HKCU\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\<app>\ShowBanner`). It records the old value in `banners.json` first and puts it back exactly when the feature or that app is turned off, when FluxKit closes, or on the next start after a crash. Apps you didn't choose are never touched. Setup registers a per-user identity package, `FluxKit.Identity` (no admin rights); remove it with `scripts/make-identity.ps1 -Unregister` or `Remove-AppxPackage`.
 - **No code injection.** FluxKit doesn't load anything into other processes.
 - **What's stored**, in `%LOCALAPPDATA%\FluxKit` only:
   - `settings.json`: your preferences.
+  - `banners.json`: only while FluxKit has a Windows notification banner turned off, the value it had before.
   - `Logs\`: diagnostic logs. These contain the FluxKit and Windows version, desktop counts, process names of drag sources (e.g. `explorer`), timings and errors. They **never** contain file names, paths, file contents or window titles. Paths that appear in error messages are replaced by `<path>`.
 - **Startup.** If you turn on "Launch when I sign in", FluxKit adds one value under `HKCU\...\Run`. Turning it off removes it.
 

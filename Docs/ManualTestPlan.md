@@ -78,6 +78,12 @@ Environment for recorded runs: Windows 11 Home Single Language 26H2, build 26300
 | FI-35 | Scrubber | Hover the music scrubber, then drag it | Track thickens with a knob; a time bubble follows; release seeks | N | Not run | — | |
 | FI-36 | List details | Hover a note, remove it, clear the list, press Undo | Actions fade in; the row shrinks away; Undo brings the list back | N | Not run | — | Undo unit-tested |
 | FI-37 | Page ends | On the first or last page, swipe further | The page leans and springs back | N | Not run | — | |
+| FI-38 | Notification setup | Settings › Flux Island › Notifications: turn on | A dialog explains; after "Set up and restart" FluxKit restarts, Windows allows access, the switch stays on | N | Not run | — | Spike 2026-11-16: identity active, access Allowed |
+| FI-39 | Notification on the island | Send a toast (WhatsApp, Teams, or the PowerShell test toast in ADR-014) | The island shows the app logo and sender; hover shows the message and Open; no Windows banner appears | Y | PASS (dev) | 2026-11-16 | PowerShell test toast shown; ShowBanner set to 0 |
+| FI-40 | Banner restore | Turn notifications off, or close FluxKit, or kill it and start again | Each app's ShowBanner is back exactly as before; `banners.json` is gone | Y | PASS (kill and restart) | 2026-11-16 | |
+| FI-41 | Privacy | Set "App name only"; send a toast; also start a full-screen slideshow | Only the app name shows, on the pill and on the Notifications page | N | Not run | — | |
+| FI-42 | Notifications page | Open the island on Notifications; open, quiet, dismiss and clear with Undo | Rows grouped by app; Dismiss also removes it from Notification Center | N | Not run | — | |
+| FI-43 | Priority | Set "What can interrupt" to Important; mark one app Priority | Only that app's notifications take over the island; others go to the page | N | Not run | — | |
 
 ## Smoke checks executed during development
 

@@ -11,6 +11,13 @@ All notable changes to FluxKit are documented here. The format follows [Keep a C
 - The code says "tool" everywhere, the same as the app. Saved settings keep their old keys, so nothing is lost (ADR-013).
 
 ### Added
+- **Windows notifications on Flux Island** (opt-in, ADR-014). Messages, mail and reminders from your apps show on the island with the app's logo and colour, in place of Windows' corner banner:
+  - A burst from one app becomes one moment ("3 new").
+  - A Notifications page lists today's notifications grouped by app. Click one to open the app, quiet an app for an hour, dismiss one (it leaves Notification Center too), or clear all with Undo.
+  - Privacy: show the sender and message, the sender only, or the app name only. Messages hide automatically during a full-screen presentation or video.
+  - Per-app settings: Show on island, Hide Windows banner and Priority (lets it through when only important moments may interrupt).
+  - Windows' banners are turned off only for apps the island shows, and put back exactly when you turn this off, close FluxKit, or after a crash.
+  - Setup registers a small per-user identity package (no admin rights), restarts FluxKit once and asks Windows' permission. `scripts/make-identity.ps1` registers, packs and signs it.
 - **Flux Island**, a new tool: a live pill at the top of the screen. It shows what is playing (with controls, a seek bar and an album glow), timers and a focus cycle, charger and battery moments, going offline and back online, mic and camera dots, "Copied" moments, a file shelf you drop files on and drag them out of, and scroll-to-change volume. It hides when an app is full screen. It has its own settings page with a live preview.
 - Flux Island v2:
   - A second bubble beside the pill when two things happen at once (click to swap); right-click or middle-click waves a moment away.

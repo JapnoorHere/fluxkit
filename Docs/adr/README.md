@@ -64,3 +64,10 @@ The interop surface is about 40 functions. Hand-written `LibraryImport` declarat
 - A signing certificate is needed before release.
 - The identity can be removed with `Remove-AppxPackage FluxKit.Identity_…`.
 - Turning off banners leaves notifications in Notification Center.
+
+**As built (2026-11-16):**
+- **Platform:** `PackageIdentity` (state, register, unregister), `NotificationWatcher` (listener events, logo cache) and `NotificationBanners` (the registry switch).
+- **Tool:** `NotificationRules` (privacy, bursts, mute and priority), `NotificationInbox` (50, memory only) and `BannerControl` (record then restore, saved in `banners.json`).
+- **App:** the logo and its colour on the pill, Open while peeking, a grouped Notifications page in place of a separate card, and a settings group that runs setup and permission one step at a time.
+- **Restarts:** after a restart, permission is asked on the UI thread and the island then starts reading (`ResumeNotifications`).
+- **Verified live:** a real toast showed on the island, its banner was turned off, and after a forced kill the next start put the banner back.

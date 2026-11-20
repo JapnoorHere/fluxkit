@@ -73,6 +73,7 @@ A small black pill sits at the top centre of your screen. It shows the time when
 | Downloads and screenshots | A download while it arrives and when it's done, with a button to find it. A new screenshot shows a small preview and opens on click. |
 | Smart copy (opt-in) | A copied link, email address, phone number or colour, with a button to open it or a swatch. |
 | Brightness and battery saver | The brightness level when it changes, battery saver turning on or off, and the time left or until full. |
+| Notifications (opt-in) | Messages, mail and reminders from your apps, with the app's logo and colour, in place of Windows' corner banner. Bursts group into "3 new", a Notifications page groups today's by app, and you choose how much text shows. |
 | Caps Lock and Num Lock | A short note when they turn on or off. |
 | Bluetooth | When paired earbuds, a mouse or another device connects or disconnects. |
 | Stopwatch | A stopwatch with laps, beside the timers, and +1 min while a timer runs. |
@@ -134,6 +135,7 @@ For the full design, see [Docs/Architecture.md](Docs/Architecture.md).
 - No telemetry and no network connections.
 - FluxKit never reads, copies, moves or uploads your files. The Flux Island shelf keeps only the paths of files you drop on it (saved on this PC if you keep the shelf after restart).
 - Settings and logs stay on your PC. Logs never include file names, file contents or window titles.
+- Notifications (off by default) are read only with Windows' permission, shown on screen, kept in memory only, and never logged. Windows' banner switch is changed only for apps you choose, and put back exactly.
 
 Details: [Docs/Privacy.md](Docs/Privacy.md).
 

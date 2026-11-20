@@ -99,6 +99,10 @@ Section `utilities/flux-island`.
 | `interruptions` | `Everything`, `Important`, `Nothing` | `Everything` | Which quick moments may take over the island. Important: time's up, low battery, offline, talking while muted and your own file jobs. |
 | `sounds` | bool | `false` | Play Windows' reminder sound when a timer ends, and the default notification sound for low battery or talking while muted. |
 | `look` | `Onyx`, `Glass` | `Onyx` | True black, or the labs smoked-glass look. |
+| `showNotifications` | bool | `false` | Show Windows notifications on the island (ADR-014). Turn it on from Settings, which registers FluxKit's identity and asks Windows' permission first. |
+| `notificationPrivacy` | `Full`, `SenderOnly`, `Hidden` | `Full` | How much of a notification shows: sender and message, sender only, or the app name only. |
+| `hideNotificationsWhilePresenting` | bool | `true` | Show only the app name while a full-screen app is on the main screen (needs `hideInFullScreen`'s full-screen watcher, which is on by default). |
+| `notificationApps` | object | `{}` | Per app, keyed by its AppUserModelID: `name`, `show` (on the island), `hideBanner` (turn off Windows' banner while shown here) and `priority` (lets it through when `interruptions` is `Important`). Apps are added as their first notification arrives. |
 | `tourSeen` | bool | `false` | Set once the first-run tour has played. Set it to `false` to see the tour again (or use Settings › Try it). |
 | `seenHints` | flags | `None` | One-time gesture tips already shown: `Bubble`, `Dismiss`, `Volume`, `Pages`. |
 | `hideInFullScreen` | bool | `true` | Hide while a full-screen app covers the main screen. |
