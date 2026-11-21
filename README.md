@@ -88,6 +88,36 @@ New to it? The island gives a 30-second tour the first time it runs, shows a one
 
 It runs only on events: with nothing changing it uses no CPU, and everything stays on your PC.
 
+### Liquid: what no other island does
+
+Flux Island behaves like a drop of liquid (ADR-015):
+
+- A moment **drips in**: the island pulls a drop out of its underside and drinks it back.
+- A moment waved away **sheds** a drop that falls and fades.
+- The underside **ripples like ferrofluid** with your music, and when your pointer touches it.
+- **Mercury** (liquid metal with a highlight that follows the pointer) and a **light halo** that spills the island's colour onto the desktop are in labs.
+
+**Gestures:**
+
+- **Flick a moment:** throw it down to put it away (it stays in Recent), up to let it evaporate, or sideways to snooze it for 10 minutes.
+- **Tear it off:** pull music, a timer or the stopwatch down off the island. It becomes a floating droplet you can park anywhere and click to play, pause or resume. Drop it back on the island (or right-click it) to dock.
+- **Scrub today:** scroll sideways over the island and it steps back through today's moments; click one to open it.
+
+**Live Activities for anything (labs, ADR-016).** Any script, terminal, build or AI agent can put its own live progress on the island:
+
+```powershell
+FluxKit.exe island set  --id build --title "Build" --detail "Compiling" --progress 40 --glyph build | Out-Null
+FluxKit.exe island done --id build --detail "All tests passed" | Out-Null   # or: fail / clear
+```
+
+To have Claude Code tell you when it finishes, add a `Stop` hook to `.claude/settings.json`:
+
+```json
+{ "hooks": { "Stop": [ { "hooks": [ { "type": "command", "command": "FluxKit.exe island done --id claude --title \"Claude finished\" --glyph ai" } ] } ] } }
+```
+
+Glyphs: `spark`, `build`, `test`, `deploy`, `download`, `upload`, `ai`, `sync`, `terminal`, `music`. Updates are display only: they can never make FluxKit run anything.
+
 ## Install
 
 1. Download the latest `FluxKit-<version>-win-x64.zip` (or `win-arm64`) from [Releases](../../releases).

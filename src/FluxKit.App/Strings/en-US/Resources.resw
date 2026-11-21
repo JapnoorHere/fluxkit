@@ -1757,4 +1757,19 @@ While this is on, Windows' own banner is turned off for each app the island show
   <data name="Island_DropletHelp" xml:space="preserve">
     <value>Click to play or pause. Drag anywhere; drop it on the island or right-click to put it back.</value>
   </data>
+  <data name="Island_LiveDone" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Island_LiveFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="FluxIsland_LiveActivities.Header" xml:space="preserve">
+    <value>Live Activities from apps (labs)</value>
+  </data>
+  <data name="Island_LiveMoreFormat" xml:space="preserve">
+    <value>+{0} more running</value>
+  </data>
+  <data name="FluxIsland_LiveActivities.Description" xml:space="preserve">
+    <value>Scripts, terminals, builds and AI agents on this PC can show live progress on the island with fluxkit-island. Display only: they can never make FluxKit run anything.</value>
+  </data>
 </root>

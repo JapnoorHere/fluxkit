@@ -102,6 +102,7 @@ Section `utilities/flux-island`.
 | `soundRipples` | bool | `true` | The liquid edge: the underside ripples like ferrofluid with the music, and when the pointer touches it (ADR-015). Off with reduced motion and high contrast. |
 | `lightHalo` | bool | `false` | Labs: the island's colour spills onto the desktop under it like a lamp. A separate click-through window; hidden with the island. |
 | `droplets` | list | `[]` | Activities torn off the island into floating droplets (`kind`: `Media`, `Timer` or `Stopwatch`; `x`, `y`: screen pixels). Managed by FluxKit; a droplet docks itself when its activity ends. |
+| `liveActivities` | bool | `false` | Labs: scripts, terminals, builds and AI agents on this PC can show live progress on the island with `FluxKit.exe island …` (ADR-016). Display only. |
 | `showNotifications` | bool | `false` | Show Windows notifications on the island (ADR-014). Turn it on from Settings, which registers FluxKit's identity and asks Windows' permission first. |
 | `notificationPrivacy` | `Full`, `SenderOnly`, `Hidden` | `Full` | How much of a notification shows: sender and message, sender only, or the app name only. |
 | `hideNotificationsWhilePresenting` | bool | `true` | Show only the app name while a full-screen app is on the main screen (needs `hideInFullScreen`'s full-screen watcher, which is on by default). |

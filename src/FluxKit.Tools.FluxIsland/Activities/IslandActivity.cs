@@ -39,6 +39,12 @@ public enum ActivityKind
     /// <summary>A notification from another app (WhatsApp, Teams, mail…), shown in place of Windows' banner.</summary>
     Notification,
 
+    /// <summary>A Live Activity from a script, terminal, build or AI agent: still going (plan B).</summary>
+    Live,
+
+    /// <summary>A Live Activity that just finished (Flag: it failed).</summary>
+    LiveDone,
+
     /// <summary>A call is going on (a call app is using the microphone): its length and the mute state.</summary>
     Call,
 }
@@ -87,5 +93,5 @@ public sealed record IslandActivity(ActivityKind Kind)
     /// <summary>An image to show with the moment, such as the sending app's logo.</summary>
     public ReadOnlyMemory<byte> Image { get; init; }
 
-    public bool IsAlert => Kind is not (ActivityKind.Media or ActivityKind.Timer or ActivityKind.Shelf or ActivityKind.Download or ActivityKind.MicMuted or ActivityKind.Stopwatch or ActivityKind.Call);
+    public bool IsAlert => Kind is not (ActivityKind.Media or ActivityKind.Timer or ActivityKind.Shelf or ActivityKind.Download or ActivityKind.MicMuted or ActivityKind.Stopwatch or ActivityKind.Call or ActivityKind.Live);
 }

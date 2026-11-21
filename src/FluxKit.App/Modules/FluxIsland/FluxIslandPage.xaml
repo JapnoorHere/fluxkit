@@ -220,6 +220,9 @@
                         <c:SettingRow x:Uid="FluxIsland_LightHalo" Glyph="&#xE781;">
                             <ToggleSwitch x:Name="HaloToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_LiveActivities" Glyph="&#xE756;">
+                            <ToggleSwitch x:Name="LiveToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                     </StackPanel>
                 </c:SettingsGroup>
             </StackPanel>

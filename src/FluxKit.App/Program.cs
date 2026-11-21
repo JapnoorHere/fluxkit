@@ -12,6 +12,12 @@ public static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        // FluxKit.exe island …: send a Live Activity update to the running FluxKit, then exit (no window).
+        if (args.Length > 0 && string.Equals(args[0], "island", StringComparison.OrdinalIgnoreCase))
+        {
+            return LiveActivityCommand.Run(args[1..]);
+        }
+
         WinRT.ComWrappersSupport.InitializeComWrappers();
 
         AppInstance instance = AppInstance.FindOrRegisterForKey(InstanceKey);

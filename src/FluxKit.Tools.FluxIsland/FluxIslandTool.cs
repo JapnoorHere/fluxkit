@@ -357,6 +357,7 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
             : null;
         _hotkey = Start(hotkey, s => s.Pressed += OnHotkeyPressed);
         StartNotifications();
+        StartLive();
         _files = Start(files, s =>
         {
             s.DownloadChanged += OnDownloadChanged;
@@ -511,7 +512,8 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
         s.ShowLockKeys,
         s.ShowDevices,
         s.Hotkey,
-        s.ShowNotifications);
+        s.ShowNotifications,
+        s.LiveActivities);
 
     private void OnMediaChanged(object? sender, EventArgs e) => Publish();
 
@@ -785,6 +787,8 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
         bool listening = privacy.MicrophoneInUse && !inCall;
         _arbiter.SetLasting(ActivityKind.MicMuted, _options.ShowMicMute && _micMuted && listening ? new IslandActivity(ActivityKind.MicMuted) { Flag = true } : null);
 
+        SyncLive();
+
         // Torn-off activities live in their droplets, not on the pill.
         SyncDetached();
 
@@ -818,7 +822,7 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
         DateTimeOffset? next;
         lock (_sync)
         {
-            next = new[] { _arbiter.NextChangeAt, _timer.DueAt, _snoozes.NextDueAt }.Where(t => t is not null).Min();
+            next = new[] { _arbiter.NextChangeAt, _timer.DueAt, _snoozes.NextDueAt, _live.NextEndAt }.Where(t => t is not null).Min();
         }
 
         TimeSpan due = next is { } at ? at - _time.GetUtcNow() : Timeout.InfiniteTimeSpan;

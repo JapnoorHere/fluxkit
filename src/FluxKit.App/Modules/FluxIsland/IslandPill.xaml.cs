@@ -512,7 +512,15 @@ public sealed partial class IslandPill : UserControl
                 IslandMotion.Nudge(Stage, Springs);
                 IslandMotion.Pop(CompactGlyph, Springs);
                 break;
+            case ActivityKind.LiveDone when alert.Flag:
+                // A job that failed shakes no, like a file action that failed.
+                IslandMotion.Nudge(Stage, Springs);
+                IslandMotion.Pop(CompactGlyph, Springs);
+                break;
             case ActivityKind.FileReady:
+                CompactGlyph.DrawCheck(IslandPalette.Green, Springs);
+                break;
+            case ActivityKind.LiveDone:
                 CompactGlyph.DrawCheck(IslandPalette.Green, Springs);
                 break;
             case ActivityKind.Copied:

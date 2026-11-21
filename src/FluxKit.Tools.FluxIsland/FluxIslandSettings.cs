@@ -159,6 +159,9 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// <summary>Labs: the island's colour spills onto the desktop under it like a lamp (ADR-015).</summary>
     public bool LightHalo { get; set; }
 
+    /// <summary>Labs: scripts, terminals, builds and AI agents can show live progress on the island (ADR-016). Off by default.</summary>
+    public bool LiveActivities { get; set; }
+
     /// <summary>Activities torn off into floating droplets, and where each sits (screen pixels).</summary>
     public List<DropletPlace> Droplets { get; set; } = [];
 

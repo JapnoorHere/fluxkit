@@ -25,6 +25,7 @@ public static class SystemSources
         Devices = () => new BluetoothSource(log),
         Hotkey = gesture => new HotkeySource(gesture, log),
         Notifications = () => new NotificationSource(log),
+        Live = () => new LiveActivitySource(log),
         Banners = new RegistryBannerSwitch(log),
         BannerStore = new JsonBannerStore(FluxKitPaths.BannersFile, log),
         ShelfStore = new JsonShelfStore(FluxKitPaths.ShelfFile, log),

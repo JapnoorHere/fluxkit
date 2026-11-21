@@ -37,6 +37,9 @@ public sealed class IslandSources
     /// <summary>Windows notifications from other apps (needs FluxKit's identity and the user's permission).</summary>
     public Func<INotificationSource>? Notifications { get; init; }
 
+    /// <summary>Live Activities from scripts and apps on this PC, through a current-user-only pipe.</summary>
+    public Func<ILiveActivitySource>? Live { get; init; }
+
     /// <summary>Windows' per-app banner switch; null leaves banners alone.</summary>
     public IBannerSwitch? Banners { get; init; }
 

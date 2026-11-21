@@ -76,6 +76,7 @@ public sealed partial class FluxIslandPage : Page
         SoundsToggle.IsOn = s.Sounds;
         RipplesToggle.IsOn = s.SoundRipples;
         HaloToggle.IsOn = s.LightHalo;
+        LiveToggle.IsOn = s.LiveActivities;
         ClockToggle.IsOn = s.ShowClockWhenIdle;
         ShelfToggle.IsOn = s.ShelfEnabled;
         KeepShelfToggle.IsOn = s.KeepShelf;
@@ -208,6 +209,7 @@ public sealed partial class FluxIslandPage : Page
             s.Sounds = SoundsToggle.IsOn;
             s.SoundRipples = RipplesToggle.IsOn;
             s.LightHalo = HaloToggle.IsOn;
+            s.LiveActivities = LiveToggle.IsOn;
             s.ShowClockWhenIdle = ClockToggle.IsOn;
             s.ShelfEnabled = ShelfToggle.IsOn;
             s.KeepShelf = KeepShelfToggle.IsOn;

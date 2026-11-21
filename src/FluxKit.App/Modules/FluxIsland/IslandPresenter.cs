@@ -77,6 +77,7 @@ internal static class IslandPresenter
         ActivityKind.MicMuted when activity.Value == 1 => new(MicOffGlyph, Strings.Get("Island_SpeakingMuted"), Strings.Get("Island_SpeakingMutedDetail"), null, IslandPalette.Red),
         ActivityKind.MicMuted => new(MicGlyph, Strings.Get(activity.Flag ? "Island_MicMuted" : "Island_MicOn"), null, null, activity.Flag ? IslandPalette.Red : IslandPalette.Green),
         ActivityKind.FileReady => DescribeFile(activity),
+        ActivityKind.Live or ActivityKind.LiveDone => DescribeLive(activity),
         ActivityKind.Notification => new(
             MessageGlyph,
             activity.Text ?? string.Empty,
@@ -189,6 +190,48 @@ internal static class IslandPresenter
     }
 
     /// <summary>What a drop zone did: "Zipped 3 files", "Converted to PNG", "Path copied", or that it failed.</summary>
+    /// <summary>
+    /// A Live Activity from a script or app (ADR-016): its own icon, title and detail, and its progress in a ring. One that
+    /// finished shows a green check or a red mark.
+    /// </summary>
+    private static CompactContent DescribeLive(IslandActivity activity)
+    {
+        string glyph = LiveGlyph(activity.Source);
+        if (activity.Kind == ActivityKind.LiveDone)
+        {
+            return new(
+                activity.Flag ? ErrorGlyph : DoneGlyph,
+                activity.Text ?? string.Empty,
+                activity.Detail ?? Strings.Get(activity.Flag ? "Island_LiveFailed" : "Island_LiveDone"),
+                null,
+                activity.Flag ? IslandPalette.Red : IslandPalette.Green);
+        }
+
+        bool progress = activity.Value >= 0;
+        string? more = activity.Total > 1 ? Strings.Format("Island_LiveMoreFormat", activity.Total - 1) : null;
+        return new(
+            glyph,
+            activity.Text ?? string.Empty,
+            activity.Detail ?? more,
+            progress ? Percent(activity.Value) : more,
+            IslandPalette.Blue,
+            progress ? activity.Value / 100.0 : null);
+    }
+
+    /// <summary>The named icons a Live Activity may ask for (LiveProtocol.Glyphs); anything else is a spark.</summary>
+    private static string LiveGlyph(string? name) => name switch
+    {
+        "build" => "\xE90F",
+        "test" => "\xE9D5",
+        "deploy" or "upload" => "\xE898",
+        "download" => DownloadGlyph,
+        "ai" => "\xE99A",
+        "sync" => "\xE895",
+        "terminal" => "\xE756",
+        "music" => MusicGlyph,
+        _ => "\xE734",
+    };
+
     private static CompactContent DescribeFile(IslandActivity activity) => (FileResult)activity.Value switch
     {
         FileResult.PathCopied => new(CopyGlyph, Strings.Get(activity.Total > 1 ? "Island_PathsCopied" : "Island_PathCopied"), activity.Text, activity.Total > 1 ? activity.Total.ToString(CultureInfo.CurrentCulture) : null, IslandPalette.Cyan),

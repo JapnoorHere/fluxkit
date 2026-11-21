@@ -87,3 +87,17 @@ The interop surface is about 40 functions. Hand-written `LibraryImport` declarat
 **Consequences:**
 - Reduced motion and "light" effects skip the liquid entirely.
 - In very bright screenshots the drop is small (14 px). It is meant to be felt, not to steal attention.
+
+## ADR-016 — Live Activities for any script or app (2026-11-16)
+**Context:** builds, deployments, test runs and AI agents (such as Claude Code) take minutes, and people switch away while they wait. No island lets other software put its own live progress on it.
+**Decision:**
+- **Transport:** a named pipe, `\.\pipe\FluxKit.Island.<user SID>`, created with `PipeOptions.CurrentUserOnly`, so only the signed-in user's processes can connect.
+  - The server (`Platform/Watchers/LiveActivityServer.cs`) waits for connections without polling.
+  - It reads at most 16 KB per connection and gives each connection 3 s.
+- **Protocol:** one JSON object per line: `id`, `title`, `detail`, `progress` (0–100), `state` (`running`, `done`, `failed`, `clear`), `glyph` (a few named icons) and `ttl` (seconds).
+  - `LiveProtocol` drops malformed or oversize lines, strips control characters, and cuts titles to 60 and details to 120 characters.
+  - `LiveActivityModel` keeps at most 5 activities; each ends after its ttl (default 30 min, at most 8 h).
+- **Display only:** an update can never make FluxKit open, run or fetch anything.
+- **Sending:** `FluxKit.exe island set|done|fail|clear --id … [--title …] [--detail …] [--progress N] [--glyph G] [--ttl S]` sends one update and exits without a window. In PowerShell, pipe it to `Out-Null` so calls stay in order.
+- **Off by default** (Settings › Flux Island › Labs). Logs record ids and states only.
+**Consequences:** any process running as the user can show text on the island while this is on. That is the same trust level as the user's own scripts, so it's labs and opt-in.
