@@ -1736,4 +1736,10 @@ While this is on, Windows' own banner is turned off for each app the island show
   <data name="FluxIsland_LookMercury.Content" xml:space="preserve">
     <value>Mercury (labs)</value>
   </data>
+  <data name="FluxIsland_SoundRipples.Description" xml:space="preserve">
+    <value>The island&apos;s underside ripples like ferrofluid with your music, and when the pointer touches it.</value>
+  </data>
+  <data name="FluxIsland_SoundRipples.Header" xml:space="preserve">
+    <value>Liquid edge</value>
+  </data>
 </root>

@@ -86,7 +86,7 @@ internal sealed class PillShape
         _body = _compositor.CreateColorBrush(IslandPalette.Surface);
         _mercury = MercuryBrush();
         _specular = SpecularBrush();
-        _liquid = new LiquidShape(body, body.Shapes.Count, _body);
+        _liquid = new LiquidShape(body, body.Shapes.Count, _body, _geometry, _stageWidth);
 
         _fill = _compositor.CreateSpriteShape(_geometry);
         _fill.FillBrush = _body;
@@ -253,6 +253,18 @@ internal sealed class PillShape
         if (springs)
         {
             _liquid.Gulp(_stageWidth / 2, _top + Target.Y);
+        }
+    }
+
+    /// <summary>The ferrofluid edge rising with the sound (see LiquidShape.Ripple); 0 settles it.</summary>
+    public void Ripple(float level) => _liquid.Ripple(level);
+
+    /// <summary>A ripple across the underside, as the pointer touches the island (see LiquidShape.Wave).</summary>
+    public void Wave(bool springs)
+    {
+        if (springs)
+        {
+            _liquid.Wave();
         }
     }
 

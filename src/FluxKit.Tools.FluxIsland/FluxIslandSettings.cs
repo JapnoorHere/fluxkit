@@ -153,6 +153,9 @@ public sealed class FluxIslandSettings : ISettingsSection
 
     public bool ShowClockWhenIdle { get; set; } = true;
 
+    /// <summary>The ferrofluid edge: the underside ripples with the music, and when the pointer touches it (ADR-015).</summary>
+    public bool SoundRipples { get; set; } = true;
+
     public IslandEffects Effects { get; set; } = IslandEffects.Full;
 
     public IslandLook Look { get; set; } = IslandLook.Onyx;

@@ -16,12 +16,20 @@ internal sealed class LiquidShape
     private readonly CompositionRoundedRectangleGeometry _sideNeck;
     private readonly CompositionRoundedRectangleGeometry _neck;
     private readonly CompositionEllipseGeometry _drop;
+    private const int BumpCount = 7;
+    private const float BumpWidth = 5;
+    private const float BumpHeight = 11;
+
     private readonly List<CompositionSpriteShape> _shapes = [];
+    private readonly List<CompositionEllipseGeometry> _bumps = [];
+    private int _tick;
 
     /// <param name="layer">The shape visual the island's body is drawn in; the liquid goes just under the body.</param>
     /// <param name="index">Where in <paramref name="layer"/> to insert the liquid (under the body, over its shadow).</param>
     /// <param name="surface">The body's brush, shared so the liquid always matches the island's look.</param>
-    public LiquidShape(ShapeVisual layer, int index, CompositionBrush surface)
+    /// <param name="body">The pill's geometry: the ferrofluid edge rides along its underside.</param>
+    /// <param name="stageWidth">The width the pill is centred in.</param>
+    public LiquidShape(ShapeVisual layer, int index, CompositionBrush surface, CompositionRoundedRectangleGeometry body, float stageWidth)
     {
         _compositor = layer.Compositor;
         _sideNeck = RoundBar();
@@ -31,6 +39,24 @@ internal sealed class LiquidShape
         foreach (CompositionGeometry geometry in new CompositionGeometry[] { _sideNeck, _neck, _drop })
         {
             CompositionSpriteShape shape = _compositor.CreateSpriteShape(geometry);
+            shape.FillBrush = surface;
+            _shapes.Add(shape);
+            layer.Shapes.Insert(index++, shape);
+        }
+
+        // The ferrofluid edge: bumps centred on the pill's bottom edge, spread over its middle. Half of each bump is
+        // inside the body and invisible, so at rest there is nothing to see; as a bump grows it rises out of the edge.
+        for (int i = 0; i < BumpCount; i++)
+        {
+            CompositionEllipseGeometry bump = _compositor.CreateEllipseGeometry();
+            bump.Radius = new Vector2(BumpWidth, 0);
+            ExpressionAnimation place = _compositor.CreateExpressionAnimation("Vector2((w - g.Size.X) / 2 + g.Size.X * f, g.Offset.Y + g.Size.Y)");
+            place.SetReferenceParameter("g", body);
+            place.SetScalarParameter("w", stageWidth);
+            place.SetScalarParameter("f", 0.2f + (0.6f * i / (BumpCount - 1)));
+            bump.StartAnimation("Center", place);
+            _bumps.Add(bump);
+            CompositionSpriteShape shape = _compositor.CreateSpriteShape(bump);
             shape.FillBrush = surface;
             _shapes.Add(shape);
             layer.Shapes.Insert(index++, shape);
@@ -126,6 +152,45 @@ internal sealed class LiquidShape
         _drop.StartAnimation("Radius", radius);
 
         Stretch(centreX, bottom, duration, snaps: true);
+    }
+
+    /// <summary>How far the ferrofluid edge can rise below the pill, so the window region can leave room.</summary>
+    public static float RippleReach => BumpHeight + 2;
+
+    /// <summary>
+    /// The ferrofluid edge following sound (0 silent, 1 loud): the middle bumps rise highest, and each one wobbles a
+    /// little on its own so the edge looks alive rather than like a bar chart. Called about 30 times a second while
+    /// music plays; 0 settles every bump back into the edge.
+    /// </summary>
+    public void Ripple(float level)
+    {
+        level = Math.Clamp(level, 0, 1);
+        _tick++;
+        for (int i = 0; i < _bumps.Count; i++)
+        {
+            // A bell across the edge, times a slow, per-bump wobble.
+            float across = (i / (float)(_bumps.Count - 1)) - 0.5f;
+            float bell = MathF.Exp(-across * across * 4);
+            float wobble = 0.6f + (0.4f * MathF.Sin((_tick * 0.9f) + (i * 1.7f)));
+            Vector2KeyFrameAnimation rise = _compositor.CreateVector2KeyFrameAnimation();
+            rise.InsertKeyFrame(1, new Vector2(BumpWidth, BumpHeight * level * bell * wobble));
+            rise.Duration = TimeSpan.FromMilliseconds(level > 0 ? 70 : 240);
+            _bumps[i].StartAnimation("Radius", rise);
+        }
+    }
+
+    /// <summary>A ripple running across the edge from left to right, as when a finger touches liquid (hover).</summary>
+    public void Wave()
+    {
+        for (int i = 0; i < _bumps.Count; i++)
+        {
+            Vector2KeyFrameAnimation wave = _compositor.CreateVector2KeyFrameAnimation();
+            wave.InsertKeyFrame(0.4f, new Vector2(BumpWidth, 3.5f), IslandSprings.EaseOut(_compositor));
+            wave.InsertKeyFrame(1, new Vector2(BumpWidth, 0), IslandSprings.EaseIn(_compositor));
+            wave.Duration = TimeSpan.FromMilliseconds(340);
+            wave.DelayTime = TimeSpan.FromMilliseconds(i * 24);
+            _bumps[i].StartAnimation("Radius", wave);
+        }
     }
 
     /// <summary>The vertical neck between the pill and the drop: it follows the drop down and thins (and snaps, when shed).</summary>

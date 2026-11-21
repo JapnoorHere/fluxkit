@@ -196,6 +196,9 @@
                                 <ComboBoxItem x:Uid="FluxIsland_InterruptNothing" />
                             </ComboBox>
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_SoundRipples" Glyph="&#xE9E9;">
+                            <ToggleSwitch x:Name="RipplesToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_Sounds" Glyph="&#xE767;">
                             <ToggleSwitch x:Name="SoundsToggle" Toggled="OnChanged" />
                         </c:SettingRow>

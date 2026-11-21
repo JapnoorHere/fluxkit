@@ -98,7 +98,8 @@ Section `utilities/flux-island`.
 | `clipboardHistory` | bool | `false` | Keep the last 25 pieces of copied text (memory only) for the Clipboard page. Turning it off forgets them, pins too. |
 | `interruptions` | `Everything`, `Important`, `Nothing` | `Everything` | Which quick moments may take over the island. Important: time's up, low battery, offline, talking while muted and your own file jobs. |
 | `sounds` | bool | `false` | Play Windows' reminder sound when a timer ends, and the default notification sound for low battery or talking while muted. |
-| `look` | `Onyx`, `Glass` | `Onyx` | True black, or the labs smoked-glass look. |
+| `look` | `Onyx`, `Glass`, `Mercury` | `Onyx` | True black, the labs smoked-glass look, or labs liquid metal with a highlight that follows the pointer. |
+| `soundRipples` | bool | `true` | The liquid edge: the underside ripples like ferrofluid with the music, and when the pointer touches it (ADR-015). Off with reduced motion and high contrast. |
 | `showNotifications` | bool | `false` | Show Windows notifications on the island (ADR-014). Turn it on from Settings, which registers FluxKit's identity and asks Windows' permission first. |
 | `notificationPrivacy` | `Full`, `SenderOnly`, `Hidden` | `Full` | How much of a notification shows: sender and message, sender only, or the app name only. |
 | `hideNotificationsWhilePresenting` | bool | `true` | Show only the app name while a full-screen app is on the main screen (needs `hideInFullScreen`'s full-screen watcher, which is on by default). |

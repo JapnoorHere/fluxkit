@@ -263,6 +263,7 @@ public sealed partial class IslandPill : UserControl
 
     public void Render(IslandScene scene)
     {
+        _previewRipple = false;
         if (_previewDrop)
         {
             _previewDrop = false;
@@ -294,8 +295,14 @@ public sealed partial class IslandPill : UserControl
         }
 
         _dragging = dropping;
+        _previewRipple = sample == "ferro";
         _previewDrop = dropping;
         Show(scene);
+        if (_previewRipple)
+        {
+            // Previews play no sound, so the ferrofluid edge is shown at a fixed level.
+            _shape.Ripple(0.9f);
+        }
     }
 
     private void Show(IslandScene scene)
@@ -307,7 +314,6 @@ public sealed partial class IslandPill : UserControl
         _logo.Set(scene.Primary is { Kind: ActivityKind.Notification } note ? note.Image : ReadOnlyMemory<byte>.Empty);
         Update();
     }
-
 
     /// <summary>Starts or stops the clock and timers, e.g. while the window is hidden for a full-screen app.</summary>
     public void SetActive(bool active)
@@ -773,6 +779,10 @@ public sealed partial class IslandPill : UserControl
         if (_liquidRoom)
         {
             region.Union(new Rect(bounds.X, bounds.Bottom, bounds.Width, LiquidShape.Reach + 4));
+        }
+        else if (_rippling)
+        {
+            region.Union(new Rect(bounds.X, bounds.Bottom, bounds.Width, LiquidShape.RippleReach));
         }
 
         TargetBounds = bounds;

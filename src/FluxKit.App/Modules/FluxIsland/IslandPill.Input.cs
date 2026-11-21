@@ -171,6 +171,12 @@ public sealed partial class IslandPill
         {
             _shape.ScaleTo(HoverScale, Springs);
             _peekTimer.Start();
+            if (_scene.Settings.SoundRipples && !HighContrast)
+            {
+                MakeLiquidRoom();
+                _shape.Wave(Springs);
+            }
+
         }
     }
 
