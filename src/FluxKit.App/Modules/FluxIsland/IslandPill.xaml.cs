@@ -56,6 +56,8 @@ public sealed partial class IslandPill : UserControl
     private readonly LevelMeter _meter;
     private readonly DispatcherQueueTimer _peekTimer;
     private readonly DispatcherQueueTimer _closeTimer;
+    private readonly DispatcherQueueTimer _liquidTimer;
+    private bool _liquidRoom;
     private readonly DispatcherQueueTimer _clockTimer;
     private readonly DispatcherQueueTimer _tickTimer;
     private readonly DispatcherQueueTimer _dragLeaveTimer;
@@ -77,7 +79,7 @@ public sealed partial class IslandPill : UserControl
     private ImageSource? _thumb;
     private bool _held;
     private Vector3 _lean;
-    private bool _glass;
+    private FluxKit.Tools.FluxIsland.IslandLook _look;
     private bool _highContrast;
     private bool _struck;
     private int _pageSlide;
@@ -133,6 +135,11 @@ public sealed partial class IslandPill : UserControl
         };
 
         _peekTimer = OneShot(PeekDelay, () => SetMode(PillMode.Peek));
+        _liquidTimer = OneShot(TimeSpan.FromMilliseconds(760), () =>
+        {
+            _liquidRoom = false;
+            MorphTo(_size);
+        });
         _closeTimer = OneShot(CloseDelay, () =>
         {
             if (!_held && !_keyboard)
@@ -295,7 +302,7 @@ public sealed partial class IslandPill : UserControl
     {
         _scene = scene;
         Surface.AllowDrop = scene.Settings.ShelfEnabled;
-        ApplyLook(scene.Settings.Look == FluxKit.Tools.FluxIsland.IslandLook.Glass);
+        ApplyLook(scene.Settings.Look);
         _art.Set(scene.Media?.Thumbnail ?? ReadOnlyMemory<byte>.Empty);
         _logo.Set(scene.Primary is { Kind: ActivityKind.Notification } note ? note.Image : ReadOnlyMemory<byte>.Empty);
         Update();
@@ -431,11 +438,40 @@ public sealed partial class IslandPill : UserControl
         }
     }
 
+    /// <summary>Waves the alert on screen away: a drop of it falls off the island's underside (ADR-015), then it goes.</summary>
+    private void WaveAway()
+    {
+        MakeLiquidRoom();
+        _shape.Shed(Springs);
+        Commands?.DismissAlert();
+    }
+
+    /// <summary>
+    /// Lets a drop hanging under the pill be seen: the window region reaches a little lower for as long as the liquid
+    /// moves, then shrinks back, so clicks under the island go through again.
+    /// </summary>
+    private void MakeLiquidRoom()
+    {
+        if (!Springs)
+        {
+            return;
+        }
+
+        _liquidRoom = true;
+        _liquidTimer.Stop();
+        _liquidTimer.Start();
+        MorphTo(_size);
+    }
+
     /// <summary>Each kind of alert arrives with its own small signature, so moments feel distinct, not generic.</summary>
     private void PlayArrival(IslandActivity alert)
     {
         Announce(alert);
         PlaySound(alert);
+
+        // Every arrival starts the same way: the island drinks a drop of it in (ADR-015).
+        MakeLiquidRoom();
+        _shape.Gulp(Springs);
         switch (alert.Kind)
         {
             case ActivityKind.PluggedIn:
@@ -732,6 +768,11 @@ public sealed partial class IslandPill : UserControl
         {
             PlaceHint();
             region.Union(HintBounds());
+        }
+
+        if (_liquidRoom)
+        {
+            region.Union(new Rect(bounds.X, bounds.Bottom, bounds.Width, LiquidShape.Reach + 4));
         }
 
         TargetBounds = bounds;

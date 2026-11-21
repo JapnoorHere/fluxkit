@@ -1733,4 +1733,7 @@ While this is on, Windows' own banner is turned off for each app the island show
   <data name="FluxIsland_NotificationStepFailed" xml:space="preserve">
     <value>Windows couldn't register FluxKit's identity. The log folder has the details.</value>
   </data>
+  <data name="FluxIsland_LookMercury.Content" xml:space="preserve">
+    <value>Mercury (labs)</value>
+  </data>
 </root>

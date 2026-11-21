@@ -211,6 +211,7 @@
                             <ComboBox x:Name="LookCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
                                 <ComboBoxItem x:Uid="FluxIsland_LookOnyx" />
                                 <ComboBoxItem x:Uid="FluxIsland_LookGlass" />
+                                <ComboBoxItem x:Uid="FluxIsland_LookMercury" />
                             </ComboBox>
                         </c:SettingRow>
                     </StackPanel>

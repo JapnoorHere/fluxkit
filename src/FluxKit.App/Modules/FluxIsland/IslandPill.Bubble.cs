@@ -64,17 +64,30 @@ public sealed partial class IslandPill
         IslandMotion.Exit(Bubble, () => !_bubbleShown, shrink: false);
     }
 
-    /// <summary>Switches the pill and the bubble between Onyx and Glass when the setting changes.</summary>
-    private void ApplyLook(bool glass)
+    /// <summary>Switches the pill and the bubble between Onyx, Glass and Mercury when the setting changes.</summary>
+    private void ApplyLook(FluxKit.Tools.FluxIsland.IslandLook look)
     {
-        if (glass == _glass)
+        if (look == _look)
         {
             return;
         }
 
-        _glass = glass;
-        _shape.SetGlass(glass);
-        BubbleFill.Fill = new SolidColorBrush(glass ? IslandPalette.GlassSurface : IslandPalette.Surface);
+        _look = look;
+        _shape.SetSurface(look);
+        bool glass = look == FluxKit.Tools.FluxIsland.IslandLook.Glass;
+        BubbleFill.Fill = look == FluxKit.Tools.FluxIsland.IslandLook.Mercury
+            ? new LinearGradientBrush
+            {
+                StartPoint = new Windows.Foundation.Point(0, 0),
+                EndPoint = new Windows.Foundation.Point(0, 1),
+                GradientStops =
+                {
+                    new GradientStop { Color = IslandPalette.MercuryTop, Offset = 0 },
+                    new GradientStop { Color = IslandPalette.MercuryMid, Offset = 0.42 },
+                    new GradientStop { Color = IslandPalette.Surface, Offset = 1 },
+                },
+            }
+            : new SolidColorBrush(glass ? IslandPalette.GlassSurface : IslandPalette.Surface);
         BubbleEdge.Stroke = new SolidColorBrush(glass ? IslandPalette.GlassRim : IslandPalette.Highlight);
     }
 

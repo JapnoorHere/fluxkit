@@ -19,6 +19,13 @@ internal static class IslandPalette
     /// <summary>The Glass look's brighter rim.</summary>
     public static readonly Color GlassRim = Color.FromArgb(0x7A, 0xFF, 0xFF, 0xFF);
 
+    /// <summary>Mercury's gunmetal top, its middle, and its rim (ADR-015).</summary>
+    public static readonly Color MercuryTop = Color.FromArgb(0xFF, 0x5A, 0x5E, 0x69);
+
+    public static readonly Color MercuryMid = Color.FromArgb(0xFF, 0x1F, 0x21, 0x26);
+
+    public static readonly Color MercuryRim = Color.FromArgb(0x9A, 0xFF, 0xFF, 0xFF);
+
     /// <summary>Raised tiles inside the panel (iOS secondary system background, dark).</summary>
     public static readonly Color Raised = Color.FromArgb(0xFF, 0x1C, 0x1C, 0x1E);
 

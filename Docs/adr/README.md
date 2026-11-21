@@ -71,3 +71,19 @@ The interop surface is about 40 functions. Hand-written `LibraryImport` declarat
 - **App:** the logo and its colour on the pill, Open while peeking, a grouped Notifications page in place of a separate card, and a settings group that runs setup and permission one step at a time.
 - **Restarts:** after a restart, permission is asked on the UI thread and the island then starts reading (`ResumeNotifications`).
 - **Verified live:** a real toast showed on the island, its banner was turned off, and after a forced kill the next start put the banner back.
+
+## ADR-015 — "Liquid": the island behaves like a drop of liquid (2026-11-16)
+**Context:** every island on the market, on any platform, is a black pill that grows and shrinks. Flux Island wants a look of its own that is still calm, light and readable.
+**Decision:**
+- The island is treated as liquid:
+  - Moments are *drunk in* on arrival: a drop is pulled out of the underside on a neck, then drawn back.
+  - Moments waved away *shed* a drop that falls and fades.
+  - The second bubble *buds* off sideways.
+  - Later phases add tear-off droplets and a ferrofluid edge that follows sound.
+- **How it's drawn:** drops are circles and necks are round-ended bars, in the island's own surface brush (`Design/LiquidShape.cs`). They are drawn in the same shape visual as the body, so they read as one piece.
+- **Cost:** everything is compositor keyframes, with no Win2D, no blur and no per-frame UI work.
+- **Window region:** while a drop hangs, the region reaches `LiquidShape.Reach` px lower for about 0.8 s, then shrinks back so clicks under the island pass through again.
+- **Mercury:** a new labs surface, liquid metal. It is a vertical gunmetal gradient, a brighter rim, and a soft specular spot that eases toward the pointer (one property animation per pointer move).
+**Consequences:**
+- Reduced motion and "light" effects skip the liquid entirely.
+- In very bright screenshots the drop is small (14 px). It is meant to be felt, not to steal attention.

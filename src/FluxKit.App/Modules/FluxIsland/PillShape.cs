@@ -29,9 +29,12 @@ internal sealed class PillShape
 
     private readonly Compositor _compositor;
     private readonly CompositionRoundedRectangleGeometry _geometry;
-    private readonly CompositionRoundedRectangleGeometry _neck;
     private readonly CompositionColorBrush _body;
+    private readonly CompositionLinearGradientBrush _mercury;
+    private readonly CompositionRadialGradientBrush _specular;
     private readonly CompositionSpriteShape _fill;
+    private readonly CompositionSpriteShape _shine;
+    private readonly LiquidShape _liquid;
     private CompositionColorGradientStop? _rim;
     private readonly ShapeVisual _glow;
     private readonly List<(CompositionColorBrush Brush, byte Alpha)> _glowBrushes = [];
@@ -79,21 +82,21 @@ internal sealed class PillShape
             body.Shapes.Add(Halo(spread, drop, _compositor.CreateColorBrush(Color.FromArgb(alpha, 0, 0, 0))));
         }
 
-        // The neck that joins the pill and the second bubble while one buds off the other (see Bud).
-        _neck = _compositor.CreateRoundedRectangleGeometry();
-        ExpressionAnimation neckRound = _compositor.CreateExpressionAnimation("Vector2(n.Size.Y / 2, n.Size.Y / 2)");
-        neckRound.SetReferenceParameter("n", _neck);
-        _neck.StartAnimation("CornerRadius", neckRound);
-        CompositionSpriteShape neck = _compositor.CreateSpriteShape(_neck);
+        // Drops and necks of the same liquid sit just under the body (see LiquidShape, ADR-015).
         _body = _compositor.CreateColorBrush(IslandPalette.Surface);
-        neck.FillBrush = _body;
-        body.Shapes.Add(neck);
+        _mercury = MercuryBrush();
+        _specular = SpecularBrush();
+        _liquid = new LiquidShape(body, body.Shapes.Count, _body);
 
         _fill = _compositor.CreateSpriteShape(_geometry);
         _fill.FillBrush = _body;
         _fill.StrokeBrush = EdgeLight();
         _fill.StrokeThickness = 1;
         body.Shapes.Add(_fill);
+
+        // Mercury's highlight: a soft spot of light on the metal that slides toward the pointer (see SetLight).
+        _shine = _compositor.CreateSpriteShape(_geometry);
+        body.Shapes.Add(_shine);
         root.Children.InsertAtTop(body);
         ElementCompositionPreview.SetElementChildVisual(shapeHost, root);
 
@@ -206,18 +209,59 @@ internal sealed class PillShape
     }
 
     /// <summary>
-    /// Switches the body between Onyx (true black) and Glass (dark smoked glass with a brighter rim). Content keeps
-    /// its contrast either way; the change cross-fades.
+    /// Switches the body between Onyx (true black), Glass (dark smoked glass with a brighter rim) and Mercury (dark
+    /// liquid metal with a moving highlight). Content keeps its contrast in all three; Onyx and Glass cross-fade.
     /// </summary>
-    public void SetGlass(bool glass)
+    public void SetSurface(FluxKit.Tools.FluxIsland.IslandLook look)
     {
+        bool glass = look == FluxKit.Tools.FluxIsland.IslandLook.Glass;
+        bool mercury = look == FluxKit.Tools.FluxIsland.IslandLook.Mercury;
         ColorKeyFrameAnimation fade = _compositor.CreateColorKeyFrameAnimation();
         fade.InsertKeyFrame(1, glass ? IslandPalette.GlassSurface : IslandPalette.Surface);
         fade.Duration = TimeSpan.FromMilliseconds(300);
         _body.StartAnimation("Color", fade);
+        CompositionBrush surface = mercury ? _mercury : _body;
+        _fill.FillBrush = surface;
+        _liquid.SetSurface(surface);
+        _shine.FillBrush = mercury ? _specular : null;
         if (_rim is not null)
         {
-            _rim.Color = glass ? IslandPalette.GlassRim : IslandPalette.EdgeLight;
+            _rim.Color = glass ? IslandPalette.GlassRim : mercury ? IslandPalette.MercuryRim : IslandPalette.EdgeLight;
+        }
+    }
+
+    /// <summary>
+    /// Where the light falls on Mercury, from 0 (left edge) to 1 (right edge): the highlight drifts toward the pointer
+    /// with a short ease. Costs one property write per pointer move, and nothing on the other looks.
+    /// </summary>
+    public void SetLight(float across)
+    {
+        if (_shine.FillBrush is null)
+        {
+            return;
+        }
+
+        Vector2KeyFrameAnimation drift = _compositor.CreateVector2KeyFrameAnimation();
+        drift.InsertKeyFrame(1, new Vector2(Math.Clamp(across, 0.1f, 0.9f), 0.05f), IslandSprings.EaseOut(_compositor));
+        drift.Duration = TimeSpan.FromMilliseconds(260);
+        _specular.StartAnimation("EllipseCenter", drift);
+    }
+
+    /// <summary>A moment arriving: the island pulls a drop out of its underside and drinks it back (see LiquidShape.Gulp).</summary>
+    public void Gulp(bool springs)
+    {
+        if (springs)
+        {
+            _liquid.Gulp(_stageWidth / 2, _top + Target.Y);
+        }
+    }
+
+    /// <summary>A moment waved away: a drop falls off the island's underside and fades (see LiquidShape.Shed).</summary>
+    public void Shed(bool springs)
+    {
+        if (springs)
+        {
+            _liquid.Shed(_stageWidth / 2, _top + Target.Y);
         }
     }
 
@@ -246,34 +290,10 @@ internal sealed class PillShape
     /// <param name="splitting">True as the bubble buds off, false as it merges back.</param>
     public void Bud(float pillWidth, float centreY, float gap, bool splitting, bool springs)
     {
-        if (!springs)
+        if (springs)
         {
-            return;
+            _liquid.Bud((_stageWidth / 2) + (pillWidth / 2) - 10, centreY, gap + 22, splitting);
         }
-
-        float left = (_stageWidth / 2) + (pillWidth / 2) - 10;
-        float width = gap + 22;
-        ExpressionAnimation offset = _compositor.CreateExpressionAnimation("Vector2(x, y - n.Size.Y / 2)");
-        offset.SetReferenceParameter("n", _neck);
-        offset.SetScalarParameter("x", left);
-        offset.SetScalarParameter("y", centreY);
-        _neck.StartAnimation("Offset", offset);
-
-        Vector2KeyFrameAnimation thin = _compositor.CreateVector2KeyFrameAnimation();
-        if (splitting)
-        {
-            thin.InsertKeyFrame(0, new Vector2(width, 22));
-            thin.InsertKeyFrame(0.35f, new Vector2(width, 14), IslandSprings.EaseOut(_compositor));
-        }
-        else
-        {
-            thin.InsertKeyFrame(0, new Vector2(width, 0));
-            thin.InsertKeyFrame(0.45f, new Vector2(width, 16), IslandSprings.EaseOut(_compositor));
-        }
-
-        thin.InsertKeyFrame(1, new Vector2(width, 0), IslandSprings.EaseIn(_compositor));
-        thin.Duration = TimeSpan.FromMilliseconds(splitting ? 320 : 300);
-        _neck.StartAnimation("Size", thin);
     }
 
     /// <summary>One happy bounce of the whole island: up to 106 % and back, settling on a spring.</summary>
@@ -330,6 +350,30 @@ internal sealed class PillShape
         light.ColorStops.Add(_compositor.CreateColorGradientStop(0.45f, IslandPalette.WithAlpha(IslandPalette.EdgeLight, 0x0C)));
         light.ColorStops.Add(_compositor.CreateColorGradientStop(1, IslandPalette.WithAlpha(IslandPalette.EdgeLight, 0x06)));
         return light;
+    }
+
+    /// <summary>Mercury: gunmetal catching light at the top, deepening to black, like a bead of liquid metal.</summary>
+    private CompositionLinearGradientBrush MercuryBrush()
+    {
+        CompositionLinearGradientBrush metal = _compositor.CreateLinearGradientBrush();
+        metal.StartPoint = Vector2.Zero;
+        metal.EndPoint = new Vector2(0, 1);
+        metal.ColorStops.Add(_compositor.CreateColorGradientStop(0, IslandPalette.MercuryTop));
+        metal.ColorStops.Add(_compositor.CreateColorGradientStop(0.42f, IslandPalette.MercuryMid));
+        metal.ColorStops.Add(_compositor.CreateColorGradientStop(1, IslandPalette.Surface));
+        return metal;
+    }
+
+    /// <summary>Mercury's specular spot: a soft white ellipse along the top that fades to nothing.</summary>
+    private CompositionRadialGradientBrush SpecularBrush()
+    {
+        CompositionRadialGradientBrush spot = _compositor.CreateRadialGradientBrush();
+        spot.EllipseCenter = new Vector2(0.5f, 0.05f);
+        spot.EllipseRadius = new Vector2(0.38f, 0.55f);
+        spot.ColorStops.Add(_compositor.CreateColorGradientStop(0, IslandPalette.WithAlpha(Microsoft.UI.Colors.White, 0x55)));
+        spot.ColorStops.Add(_compositor.CreateColorGradientStop(0.6f, IslandPalette.WithAlpha(Microsoft.UI.Colors.White, 0x12)));
+        spot.ColorStops.Add(_compositor.CreateColorGradientStop(1, IslandPalette.WithAlpha(Microsoft.UI.Colors.White, 0)));
+        return spot;
     }
 
     private void Follow(CompositionGeometry target, string property, string expression, float spread, float drop = 0)

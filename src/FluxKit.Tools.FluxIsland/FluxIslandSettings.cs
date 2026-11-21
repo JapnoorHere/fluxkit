@@ -53,6 +53,9 @@ public enum IslandLook
 
     /// <summary>Labs: dark smoked glass that lets a hint of the desktop through, with a brighter rim.</summary>
     Glass,
+
+    /// <summary>Liquid metal: dark chrome with a highlight that follows the pointer (ADR-015).</summary>
+    Mercury,
 }
 
 public enum IslandEffects

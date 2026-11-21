@@ -146,7 +146,7 @@ public sealed partial class IslandPill
         }
         else if (_scene.Primary is { IsAlert: true })
         {
-            Commands?.DismissAlert();
+            WaveAway();
         }
     }
 
@@ -180,12 +180,18 @@ public sealed partial class IslandPill
     /// </summary>
     private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
     {
-        if (!Springs || IsOpen || Surface.ActualWidth <= 0)
+        if (Surface.ActualWidth <= 0)
         {
             return;
         }
 
         Point at = e.GetCurrentPoint(Surface).Position;
+        _shape.SetLight((float)(at.X / Surface.ActualWidth));
+        if (!Springs || IsOpen)
+        {
+            return;
+        }
+
         float x = (float)Math.Clamp((at.X / Surface.ActualWidth) - 0.5, -0.5, 0.5) * 2 * MaxLean;
         float y = (float)Math.Clamp((at.Y / Surface.ActualHeight) - 0.5, -0.5, 0.5) * MaxLean;
         LeanTo(new Vector3(x, y, 0));
@@ -223,7 +229,7 @@ public sealed partial class IslandPill
             // Middle-click waves an alert away, like closing a tab.
             if (_scene.Primary is { IsAlert: true })
             {
-                Commands?.DismissAlert();
+                WaveAway();
             }
 
             e.Handled = true;

@@ -15,7 +15,7 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "notification", "notifications", "inbox",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "mercury", "notification", "notifications", "inbox",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
@@ -43,7 +43,7 @@ internal static class IslandSamples
             "volume" => new IslandActivity(ActivityKind.Volume) { Value = 64 },
             "shelf" => new IslandActivity(ActivityKind.Shelf) { Value = 4 },
             "split" => new IslandActivity(ActivityKind.Timer) { Timer = timer },
-            "glass" => new IslandActivity(ActivityKind.Media) { Media = media },
+            "glass" or "mercury" => new IslandActivity(ActivityKind.Media) { Media = media },
             "download" => new IslandActivity(ActivityKind.Download) { Text = "Holiday photos.zip", Value = 148 },
             "downloaded" => new IslandActivity(ActivityKind.DownloadDone) { Text = "Holiday photos.zip", Path = @"C:\Windows\Web\Wallpaper\Windows\img0.jpg" },
             "screenshot" => new IslandActivity(ActivityKind.Screenshot) { Text = "Screenshot 2026-10-30 101500.png", Path = @"C:\Windows\Web\Wallpaper\Windows\img0.jpg" },
@@ -75,7 +75,7 @@ internal static class IslandSamples
                 "both" => new IslandActivity(ActivityKind.Stopwatch) { Stopwatch = stopwatch },
                 _ => null,
             },
-            Media = name is "music" or "split" or "glass" ? media : null,
+            Media = name is "music" or "split" or "glass" or "mercury" ? media : null,
             Timer = name is "timer" or "split" or "both" ? timer : FocusTimerSnapshot.Idle,
             Stopwatch = name is "stopwatch" or "both" ? stopwatch : StopwatchSnapshot.Idle,
             Rewind = name == "rewind"
@@ -93,7 +93,7 @@ internal static class IslandSamples
             {
                 ClipboardHistory = name == "clips",
                 ShowNotifications = name is "notification" or "notifications" or "inbox",
-                Look = name == "glass" ? FluxKit.Tools.FluxIsland.IslandLook.Glass : FluxKit.Tools.FluxIsland.IslandLook.Onyx,
+                Look = name switch { "glass" => FluxKit.Tools.FluxIsland.IslandLook.Glass, "mercury" => FluxKit.Tools.FluxIsland.IslandLook.Mercury, _ => FluxKit.Tools.FluxIsland.IslandLook.Onyx },
             },
             Inbox = name == "inbox"
                 ?
