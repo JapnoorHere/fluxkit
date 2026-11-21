@@ -38,6 +38,7 @@ public sealed partial class IslandWindow : Window
     private Rect _region;
     private double _scale = 1;
     private HaloWindow? _halo;
+    private readonly Dictionary<ActivityKind, DropletWindow> _droplets = [];
     private PixelRect _placement;
     private (Windows.UI.Color Accent, float Strength) _haloGlow;
     private bool _visible;
@@ -193,6 +194,7 @@ public sealed partial class IslandWindow : Window
         RenderCore(scene);
         _previewUntil = Environment.TickCount64 + (long)PreviewHold.TotalMilliseconds;
         Pill.Preview(scene, open, dropping: sample == IslandSamples.Drop, sample: sample);
+        ShowDroplets(scene);
         _log.Information("Island preview {Sample} (open={Open})", sample, open);
     }
 
@@ -219,12 +221,14 @@ public sealed partial class IslandWindow : Window
         if (scene.Hidden)
         {
             HideCore();
+            ShowDroplets(null);
             return;
         }
 
         bool settingChanged = _monitorSetting != scene.Settings.Monitor;
         _monitorSetting = scene.Settings.Monitor;
         Pill.Render(scene);
+        ShowDroplets(scene);
         if (!_visible)
         {
             ShowCore();
@@ -252,6 +256,7 @@ public sealed partial class IslandWindow : Window
         _closed = true;
         _halo?.Close();
         _halo = null;
+        ShowDroplets(null);
         _shrinkTimer.Stop();
         Close();
     }
@@ -336,6 +341,31 @@ public sealed partial class IslandWindow : Window
         ApplyRegion(union);
         _shrinkTimer.Stop();
         _shrinkTimer.Start();
+    }
+
+    /// <summary>
+    /// Keeps one droplet window per torn-off activity (plan A): new ones pop in, docked ones close. Null closes them
+    /// all, e.g. while the island hides for a full-screen app.
+    /// </summary>
+    private void ShowDroplets(IslandScene? scene)
+    {
+        IReadOnlyList<DropletPlace> places = scene?.Droplets ?? [];
+        foreach (ActivityKind gone in _droplets.Keys.Where(kind => places.All(p => p.Kind != kind)).ToList())
+        {
+            _droplets[gone].Close();
+            _droplets.Remove(gone);
+        }
+
+        foreach (DropletPlace place in places)
+        {
+            if (!_droplets.TryGetValue(place.Kind, out DropletWindow? droplet))
+            {
+                droplet = new DropletWindow(place.Kind, () => Pill.Commands, () => ((_placement.Left + _placement.Right) / 2, _placement.Top + (int)(48 * _scale)));
+                _droplets[place.Kind] = droplet;
+            }
+
+            droplet.Show(scene!, place, Pill.Springs);
+        }
     }
 
     /// <summary>

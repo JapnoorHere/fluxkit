@@ -63,6 +63,14 @@ public interface IIslandCommands
 
     void ClearClips();
 
+    /// <summary>Tears music, a timer or a stopwatch off the island into a floating droplet at the given screen point.</summary>
+    void DetachActivity(ActivityKind kind, int x, int y);
+
+    void MoveDroplet(ActivityKind kind, int x, int y);
+
+    /// <summary>Puts a torn-off activity back on the island.</summary>
+    void DockActivity(ActivityKind kind);
+
     /// <summary>Snoozes the moment on screen: it goes away and comes back in ten minutes (a sideways flick).</summary>
     void SnoozeAlert();
 

@@ -124,6 +124,11 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
                 }
             }
 
+            lock (_sync)
+            {
+                _detached.Restore(_options.Droplets);
+            }
+
             _view = _viewFactory(this);
             StartSources();
             ApplyBanners();
@@ -309,6 +314,7 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
                 Rewind = _rewind.Items,
                 Clips = _options.ClipboardHistory ? _clips.Items : [],
                 Inbox = InboxForScene(),
+                Droplets = _detached.Places,
                 Power = _power?.Current ?? default,
                 Privacy = _options.ShowPrivacy ? _privacy?.Current ?? default : default,
                 MicMuted = _micMuted,
@@ -778,6 +784,9 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
         // mute state itself, so the separate reminder steps aside then.
         bool listening = privacy.MicrophoneInUse && !inCall;
         _arbiter.SetLasting(ActivityKind.MicMuted, _options.ShowMicMute && _micMuted && listening ? new IslandActivity(ActivityKind.MicMuted) { Flag = true } : null);
+
+        // Torn-off activities live in their droplets, not on the pill.
+        SyncDetached();
 
         // The newest download that is still arriving; one that stalls drops off by itself.
         DateTimeOffset now = _time.GetUtcNow();

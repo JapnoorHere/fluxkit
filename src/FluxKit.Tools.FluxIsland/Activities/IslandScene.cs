@@ -34,6 +34,9 @@ public sealed record IslandScene
     /// <summary>Recent Windows notifications for the Notifications page, already trimmed to what may be shown.</summary>
     public IReadOnlyList<ToastInfo> Inbox { get; init; } = [];
 
+    /// <summary>Activities torn off the island into floating droplets, and where they sit.</summary>
+    public IReadOnlyList<DropletPlace> Droplets { get; init; } = [];
+
     public PowerSnapshot Power { get; init; }
 
     public PrivacySnapshot Privacy { get; init; }

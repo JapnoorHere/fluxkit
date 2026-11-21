@@ -24,6 +24,9 @@ public sealed partial class IslandPill
     /// <summary>How far the pill follows the pointer while a moment is held, before it resists.</summary>
     private const double Leash = 14;
 
+    /// <summary>How far down a lasting activity must be pulled before it tears off into a droplet.</summary>
+    private const double TearDistance = 36;
+
     private static readonly TimeSpan ScrubLinger = TimeSpan.FromMilliseconds(1600);
 
     private bool _flickArmed;
@@ -39,7 +42,9 @@ public sealed partial class IslandPill
     /// <summary>On press: a moment showing on the compact pill can be grabbed and thrown.</summary>
     private void ArmFlick(PointerRoutedEventArgs e)
     {
-        _flickArmed = _mode == PillMode.Compact && _scrub is null && _scene.Primary is { IsAlert: true };
+        // Alerts can be thrown; music, a timer or a stopwatch can be pulled down and torn off into a droplet.
+        _flickArmed = _mode == PillMode.Compact && _scrub is null
+            && _scene.Primary is { } held && (held.IsAlert || DetachedActivities.CanDetach(held.Kind));
         _flicking = false;
         if (_flickArmed)
         {
@@ -103,6 +108,20 @@ public sealed partial class IslandPill
         Vector2 speed = Environment.TickCount64 - _flickLastTick > 80 ? Vector2.Zero : _flickSpeed;
         Flick flick = FlickRules.Classify(at.X - _flickFrom.X, at.Y - _flickFrom.Y, speed.X, speed.Y);
         _shape.ScaleTo(_hovering ? HoverScale : 1, Springs);
+        if (_scene.Primary is { IsAlert: false } lasting && DetachedActivities.CanDetach(lasting.Kind))
+        {
+            if (at.Y - _flickFrom.Y >= TearDistance)
+            {
+                TearOff(lasting.Kind);
+            }
+            else
+            {
+                SpringStageBack();
+            }
+
+            return true;
+        }
+
         if (flick == Flick.None || _scene.Primary is not { IsAlert: true } moment)
         {
             SpringStageBack();
@@ -174,6 +193,23 @@ public sealed partial class IslandPill
             content.Scale = Vector3.One;
             SpringStageBack();
         };
+    }
+
+    /// <summary>
+    /// Pulled far enough down: a drop of the island breaks off under the pointer and becomes a floating droplet that
+    /// holds <paramref name="kind"/> (the droplet window pops in where the pointer is).
+    /// </summary>
+    private void TearOff(ActivityKind kind)
+    {
+        MakeLiquidRoom();
+        _shape.Shed(Springs);
+        SpringStageBack();
+        (int x, int y) = FluxKit.Platform.Windows.WindowHelpers.GetCursorPosition();
+        double scale = XamlRoot?.RasterizationScale ?? 1;
+        Commands?.DetachActivity(
+            kind,
+            x - (int)((DropletWindow.DropletWidth / 2) * scale),
+            y - (int)((DropletWindow.DropletHeight / 2) * scale));
     }
 
     /// <summary>

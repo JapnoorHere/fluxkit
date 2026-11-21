@@ -15,7 +15,7 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "mercury", "ferro", "halo", "scrub", "notification", "notifications", "inbox",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "mercury", "ferro", "halo", "scrub", "droplet", "notification", "notifications", "inbox",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
@@ -76,7 +76,8 @@ internal static class IslandSamples
                 _ => null,
             },
             Media = name is "music" or "split" or "glass" or "mercury" or "ferro" or "halo" ? media : null,
-            Timer = name is "timer" or "split" or "both" ? timer : FocusTimerSnapshot.Idle,
+            Timer = name is "timer" or "split" or "both" or "droplet" ? timer : FocusTimerSnapshot.Idle,
+            Droplets = name == "droplet" ? [new DropletPlace(ActivityKind.Timer, 1180, 120)] : [],
             Stopwatch = name is "stopwatch" or "both" ? stopwatch : StopwatchSnapshot.Idle,
             Rewind = name is "rewind" or "scrub"
                 ?

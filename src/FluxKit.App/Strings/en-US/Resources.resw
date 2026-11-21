@@ -1751,4 +1751,10 @@ While this is on, Windows' own banner is turned off for each app the island show
   <data name="Island_ScrubPositionFormat" xml:space="preserve">
     <value>{0} of {1}</value>
   </data>
+  <data name="Island_DropletName" xml:space="preserve">
+    <value>Torn-off island droplet</value>
+  </data>
+  <data name="Island_DropletHelp" xml:space="preserve">
+    <value>Click to play or pause. Drag anywhere; drop it on the island or right-click to put it back.</value>
+  </data>
 </root>
