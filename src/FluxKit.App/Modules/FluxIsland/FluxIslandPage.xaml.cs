@@ -75,6 +75,7 @@ public sealed partial class FluxIslandPage : Page
         InterruptionsCombo.SelectedIndex = (int)s.Interruptions;
         SoundsToggle.IsOn = s.Sounds;
         RipplesToggle.IsOn = s.SoundRipples;
+        HaloToggle.IsOn = s.LightHalo;
         ClockToggle.IsOn = s.ShowClockWhenIdle;
         ShelfToggle.IsOn = s.ShelfEnabled;
         KeepShelfToggle.IsOn = s.KeepShelf;
@@ -206,6 +207,7 @@ public sealed partial class FluxIslandPage : Page
             s.Interruptions = (IslandInterruptions)Math.Max(0, InterruptionsCombo.SelectedIndex);
             s.Sounds = SoundsToggle.IsOn;
             s.SoundRipples = RipplesToggle.IsOn;
+            s.LightHalo = HaloToggle.IsOn;
             s.ShowClockWhenIdle = ClockToggle.IsOn;
             s.ShelfEnabled = ShelfToggle.IsOn;
             s.KeepShelf = KeepShelfToggle.IsOn;

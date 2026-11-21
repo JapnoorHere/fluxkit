@@ -37,6 +37,9 @@ public sealed partial class IslandWindow : Window
     private readonly DispatcherQueueTimer _shrinkTimer;
     private Rect _region;
     private double _scale = 1;
+    private HaloWindow? _halo;
+    private PixelRect _placement;
+    private (Windows.UI.Color Accent, float Strength) _haloGlow;
     private bool _visible;
     private bool _pinned;
     private bool _closed;
@@ -72,6 +75,7 @@ public sealed partial class IslandWindow : Window
         _commands = commands;
         Pill.Commands = commands;
         Pill.TargetChanged += OnTargetChanged;
+        Pill.HaloChanged += (_, glow) => ShowHalo(glow.Accent, glow.Strength);
         Pill.HintSeen += (_, hint) => HintSeen?.Invoke(this, hint);
         Pill.ShareRequested += (_, files) => ShareSheet.Show(_hwnd, files, Strings.Get("Island_ShareTitle"));
         Pill.KeyboardReleased += (_, _) =>
@@ -246,6 +250,8 @@ public sealed partial class IslandWindow : Window
 
         HideCore();
         _closed = true;
+        _halo?.Close();
+        _halo = null;
         _shrinkTimer.Stop();
         Close();
     }
@@ -264,6 +270,7 @@ public sealed partial class IslandWindow : Window
             _ = PinAsync();
         }
 
+        ShowHalo(_haloGlow.Accent, _haloGlow.Strength);
         _log.Debug("Island shown at {Placement} (scale {Scale})", placement, _scale);
     }
 
@@ -277,6 +284,7 @@ public sealed partial class IslandWindow : Window
         _visible = false;
         Pill.SetActive(false);
         WindowHelpers.Hide(_hwnd);
+        _halo?.Hide();
     }
 
     /// <summary>
@@ -292,6 +300,8 @@ public sealed partial class IslandWindow : Window
             ApplyRegion(Pill.RegionBounds);
             WindowHelpers.ShowNoActivate(_hwnd, placement);
             WindowHelpers.RemoveBorder(_hwnd);
+            _halo?.Hide();
+            ShowHalo(_haloGlow.Accent, _haloGlow.Strength);
         }
     }
 
@@ -305,6 +315,7 @@ public sealed partial class IslandWindow : Window
         int height = (int)Math.Ceiling(IslandPill.StageHeight * scale);
         int left = monitor.Left + ((monitor.Width - width) / 2);
         var placement = new PixelRect(left, monitor.Top, left + width, monitor.Top + height);
+        _placement = placement;
         AppWindow.MoveAndResize(new RectInt32(placement.Left, placement.Top, width, height));
         return placement;
     }
@@ -325,6 +336,28 @@ public sealed partial class IslandWindow : Window
         ApplyRegion(union);
         _shrinkTimer.Stop();
         _shrinkTimer.Start();
+    }
+
+    /// <summary>
+    /// Spreads the glow onto the desktop under the island (the light halo, ADR-015). The halo window is made the first
+    /// time it is needed, sits just under the island, and moves with it between screens.
+    /// </summary>
+    private void ShowHalo(Windows.UI.Color accent, float strength)
+    {
+        _haloGlow = (accent, strength);
+        if (_halo is null && strength <= 0)
+        {
+            return;
+        }
+
+        if (!_visible || _closed)
+        {
+            return;
+        }
+
+        _halo ??= new HaloWindow();
+        int centreX = (_placement.Left + _placement.Right) / 2;
+        _halo.Show(_hwnd, centreX, _placement.Top, _scale, accent, strength, springs: true);
     }
 
     private void ApplyRegion(Rect bounds)

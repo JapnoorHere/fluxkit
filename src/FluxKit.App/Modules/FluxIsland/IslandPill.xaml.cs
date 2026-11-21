@@ -252,6 +252,9 @@ public sealed partial class IslandPill : UserControl
 
     public event EventHandler<Rect>? TargetChanged;
 
+    /// <summary>The glow's colour and strength changed; the light halo (when on) follows it. Strength is 0 when the halo is off.</summary>
+    public event EventHandler<(Windows.UI.Color Accent, float Strength)>? HaloChanged;
+
     /// <summary>Files the user asked to share; the window opens the share sheet, which needs its handle.</summary>
     public event EventHandler<IReadOnlyList<string>>? ShareRequested;
 
@@ -526,18 +529,26 @@ public sealed partial class IslandPill : UserControl
     /// Tints the glow around the pill with the identity colour of what it shows: the album's colour for music,
     /// a moment's own colour otherwise. Alerts flare as they arrive; quiet status moments and the idle clock don't glow.
     /// </summary>
+    /// <summary>Sets the glow around the pill, and tells the light halo (which spreads it onto the desktop, when on).</summary>
+    private void SetGlow(Windows.UI.Color accent, float intensity)
+    {
+        _shape.SetAccent(accent, intensity, Springs);
+        bool halo = _scene.Settings.LightHalo && Springs && !HighContrast;
+        HaloChanged?.Invoke(this, (accent, halo ? Math.Max(intensity, 0) : 0));
+    }
+
     private void UpdateGlow(DateTimeOffset now, bool flare)
     {
         if (HighContrast)
         {
             // High contrast: no colour glow, just the solid outline.
-            _shape.SetAccent(IslandPalette.TextPrimary, 0, Springs);
+            SetGlow(IslandPalette.TextPrimary, 0);
             return;
         }
 
         if (_mode == PillMode.Command)
         {
-            _shape.SetAccent(IslandPalette.Blue, 0.4f, Springs);
+            SetGlow(IslandPalette.Blue, 0.4f);
             return;
         }
 
@@ -550,13 +561,13 @@ public sealed partial class IslandPill : UserControl
                 PanelPage.Timer when _scene.Timer?.IsActive == true || _scene.Stopwatch?.IsActive == true => (IslandPalette.Orange, 0.35f),
                 _ => (IslandPalette.TextPrimary, 0f),
             };
-            _shape.SetAccent(pageAccent, pageGlow, Springs);
+            SetGlow(pageAccent, pageGlow);
             return;
         }
 
         if (_scene.Primary is not { } shown)
         {
-            _shape.SetAccent(IslandPalette.TextPrimary, 0, Springs);
+            SetGlow(IslandPalette.TextPrimary, 0);
             return;
         }
 
@@ -567,7 +578,7 @@ public sealed partial class IslandPill : UserControl
             _ => IslandPresenter.Describe(shown, now).Accent,
         };
         float intensity = accent == IslandPalette.TextPrimary ? 0 : IslandPalette.GlowFor(shown);
-        _shape.SetAccent(accent, intensity, Springs);
+        SetGlow(accent, intensity);
         if (flare)
         {
             _shape.Flare(Springs);

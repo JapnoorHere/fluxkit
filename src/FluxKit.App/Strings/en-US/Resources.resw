@@ -1742,4 +1742,10 @@ While this is on, Windows' own banner is turned off for each app the island show
   <data name="FluxIsland_SoundRipples.Header" xml:space="preserve">
     <value>Liquid edge</value>
   </data>
+  <data name="FluxIsland_LightHalo.Header" xml:space="preserve">
+    <value>Light halo</value>
+  </data>
+  <data name="FluxIsland_LightHalo.Description" xml:space="preserve">
+    <value>The island&apos;s colour spills onto the desktop under it, like a lamp. Clicks pass straight through.</value>
+  </data>
 </root>

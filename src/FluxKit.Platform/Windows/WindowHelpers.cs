@@ -16,6 +16,9 @@ public static partial class WindowHelpers
     private const long WsExToolWindow = 0x80;
     private const long WsExAppWindow = 0x40000;
     private const long WsExNoActivate = 0x08000000;
+    private const long WsExLayered = 0x80000;
+    private const long WsExTransparent = 0x20;
+    private const uint LwaAlpha = 0x2;
     private const uint SwpNoSize = 0x1;
     private const uint SwpNoMove = 0x2;
     private const uint SwpNoActivate = 0x10;
@@ -37,6 +40,21 @@ public static partial class WindowHelpers
         _ = SetWindowLongPtr(hwnd, GwlExStyle, (nint)style);
         RemoveBorder(hwnd);
     }
+
+    /// <summary>
+    /// Makes an overlay ignore the mouse completely: every click and hover goes to the windows under it. For purely
+    /// decorative windows, such as the island's light halo.
+    /// </summary>
+    public static void MakeClickThrough(nint hwnd)
+    {
+        long style = GetWindowLongPtr(hwnd, GwlExStyle);
+        _ = SetWindowLongPtr(hwnd, GwlExStyle, (nint)(style | WsExLayered | WsExTransparent));
+        _ = SetLayeredWindowAttributes(hwnd, 0, 255, LwaAlpha);
+    }
+
+    /// <summary>Shows and positions a window without activating it, just under <paramref name="above"/> in the z-order.</summary>
+    public static void ShowBelow(nint hwnd, nint above, PixelRect bounds) =>
+        _ = SetWindowPos(hwnd, above, bounds.Left, bounds.Top, bounds.Width, bounds.Height, SwpNoActivate | SwpShowWindow);
 
     /// <summary>
     /// Turns off Windows 11's own corner rounding and 1 px window outline for an overlay that shapes itself with a
@@ -339,6 +357,10 @@ public static partial class WindowHelpers
 
     [LibraryImport("user32.dll", EntryPoint = "LoadCursorW")]
     private static partial nint LoadCursor(nint instance, nint cursorId);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetLayeredWindowAttributes(nint hwnd, uint key, byte alpha, uint flags);
 
     [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
     private static partial long GetWindowLongPtr(nint hwnd, int index);

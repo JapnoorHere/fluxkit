@@ -217,6 +217,9 @@
                                 <ComboBoxItem x:Uid="FluxIsland_LookMercury" />
                             </ComboBox>
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_LightHalo" Glyph="&#xE781;">
+                            <ToggleSwitch x:Name="HaloToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                     </StackPanel>
                 </c:SettingsGroup>
             </StackPanel>

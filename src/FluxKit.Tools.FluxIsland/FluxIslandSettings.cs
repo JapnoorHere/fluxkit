@@ -156,6 +156,9 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// <summary>The ferrofluid edge: the underside ripples with the music, and when the pointer touches it (ADR-015).</summary>
     public bool SoundRipples { get; set; } = true;
 
+    /// <summary>Labs: the island's colour spills onto the desktop under it like a lamp (ADR-015).</summary>
+    public bool LightHalo { get; set; }
+
     public IslandEffects Effects { get; set; } = IslandEffects.Full;
 
     public IslandLook Look { get; set; } = IslandLook.Onyx;
