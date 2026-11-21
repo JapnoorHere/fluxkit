@@ -23,7 +23,14 @@ public sealed partial class IslandPill
         if (sideways)
         {
             // Tilt the wheel, swipe sideways on a touchpad or Shift+scroll: on the open panel that turns the page, on
-            // the pill it swaps the pill and the bubble. A gesture sends a stream of events; act once per gesture.
+            // the pill it swaps the pill and the bubble, or (with nothing beside it) scrubs through today's moments.
+            // A gesture sends a stream of events; page turns and swaps act once per gesture, a scrub follows it.
+            if (Scrub(properties.MouseWheelDelta, properties.IsHorizontalMouseWheel))
+            {
+                e.Handled = true;
+                return;
+            }
+
             long tick = Environment.TickCount64;
             if (tick - _lastSwap > 450)
             {
@@ -193,6 +200,11 @@ public sealed partial class IslandPill
 
         Point at = e.GetCurrentPoint(Surface).Position;
         _shape.SetLight((float)(at.X / Surface.ActualWidth));
+        if (MoveFlick(e))
+        {
+            return;
+        }
+
         if (!Springs || IsOpen)
         {
             return;
@@ -249,6 +261,7 @@ public sealed partial class IslandPill
 
         _pressed = true;
         _shape.ScaleTo(PressScale, Springs);
+        ArmFlick(e);
     }
 
     private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -260,6 +273,11 @@ public sealed partial class IslandPill
 
         _pressed = false;
         _peekTimer.Stop();
+        if (EndFlick(e) || ClickScrub())
+        {
+            return;
+        }
+
         SetMode(PillMode.Panel);
     }
 

@@ -63,6 +63,9 @@ public interface IIslandCommands
 
     void ClearClips();
 
+    /// <summary>Snoozes the moment on screen: it goes away and comes back in ten minutes (a sideways flick).</summary>
+    void SnoozeAlert();
+
     /// <summary>Opens the app a notification came from (or Notification Center if that fails).</summary>
     void OpenNotification(uint id);
 

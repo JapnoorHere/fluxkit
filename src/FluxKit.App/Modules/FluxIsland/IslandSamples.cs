@@ -15,7 +15,7 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "mercury", "ferro", "halo", "notification", "notifications", "inbox",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "mercury", "ferro", "halo", "scrub", "notification", "notifications", "inbox",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
@@ -78,7 +78,7 @@ internal static class IslandSamples
             Media = name is "music" or "split" or "glass" or "mercury" or "ferro" or "halo" ? media : null,
             Timer = name is "timer" or "split" or "both" ? timer : FocusTimerSnapshot.Idle,
             Stopwatch = name is "stopwatch" or "both" ? stopwatch : StopwatchSnapshot.Idle,
-            Rewind = name == "rewind"
+            Rewind = name is "rewind" or "scrub"
                 ?
                 [
                     new RewindEntry(new IslandActivity(ActivityKind.Screenshot) { Text = "Screenshot 2026-11-14.png", Path = @"C:\Windows\Web\Wallpaper\Windows\img0.jpg" }, now - TimeSpan.FromMinutes(2)),

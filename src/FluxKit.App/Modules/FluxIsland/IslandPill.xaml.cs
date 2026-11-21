@@ -267,6 +267,12 @@ public sealed partial class IslandPill : UserControl
     public void Render(IslandScene scene)
     {
         _previewRipple = false;
+        if (_previewScrub)
+        {
+            _previewScrub = false;
+            EndScrub();
+        }
+
         if (_previewDrop)
         {
             _previewDrop = false;
@@ -301,6 +307,14 @@ public sealed partial class IslandPill : UserControl
         _previewRipple = sample == "ferro";
         _previewDrop = dropping;
         Show(scene);
+        if (sample == "scrub")
+        {
+            // Shows the scrub one step back in time, as a sideways scroll would.
+            Scrub(-120, horizontal: false);
+            _scrubTimer?.Stop();
+            _previewScrub = true;
+        }
+
         if (_previewRipple)
         {
             // Previews play no sound, so the ferrofluid edge is shown at a fixed level.
@@ -631,6 +645,11 @@ public sealed partial class IslandPill : UserControl
     {
         bool peek = _mode == PillMode.Peek;
         PanelRail.Visibility = Visibility.Collapsed;
+        if (BuildScrub(now) is { } scrubbing)
+        {
+            return scrubbing;
+        }
+
         if (_scene.Primary is not { } primary)
         {
             if (!peek)

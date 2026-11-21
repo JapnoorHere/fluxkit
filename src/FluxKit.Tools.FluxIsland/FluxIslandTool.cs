@@ -657,6 +657,7 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
                 RaiseMoment(new IslandActivity(ActivityKind.TimerDone) { Timer = _timer.Snapshot with { Mode = finished } });
             }
 
+            ReturnSnoozed();
             _arbiter.Expire();
         });
     }
@@ -808,7 +809,7 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
         DateTimeOffset? next;
         lock (_sync)
         {
-            next = new[] { _arbiter.NextChangeAt, _timer.DueAt }.Where(t => t is not null).Min();
+            next = new[] { _arbiter.NextChangeAt, _timer.DueAt, _snoozes.NextDueAt }.Where(t => t is not null).Min();
         }
 
         TimeSpan due = next is { } at ? at - _time.GetUtcNow() : Timeout.InfiniteTimeSpan;
