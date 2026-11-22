@@ -104,6 +104,7 @@ Section `utilities/flux-island`.
 | `droplets` | list | `[]` | Activities torn off the island into floating droplets (`kind`: `Media`, `Timer` or `Stopwatch`; `x`, `y`: screen pixels). Managed by FluxKit; a droplet docks itself when its activity ends. |
 | `liveActivities` | bool | `false` | Labs: scripts, terminals, builds and AI agents on this PC can show live progress on the island with `FluxKit.exe island …` (ADR-016). Display only. |
 | `windowPeek` | bool | `false` | Labs: a Peek page showing a live view (DWM thumbnail) of any window you pick. The choice lasts until FluxKit closes; titles are shown on screen only. |
+| `windowStash` | bool | `false` | Labs: drag a window by its title bar onto the island to tuck it away (put back where it was and minimised); bring it back from the Stash page. Kept in memory only. |
 | `showNotifications` | bool | `false` | Show Windows notifications on the island (ADR-014). Turn it on from Settings, which registers FluxKit's identity and asks Windows' permission first. |
 | `notificationPrivacy` | `Full`, `SenderOnly`, `Hidden` | `Full` | How much of a notification shows: sender and message, sender only, or the app name only. |
 | `hideNotificationsWhilePresenting` | bool | `true` | Show only the app name while a full-screen app is on the main screen (needs `hideInFullScreen`'s full-screen watcher, which is on by default). |

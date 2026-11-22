@@ -226,6 +226,9 @@
                         <c:SettingRow x:Uid="FluxIsland_WindowPeek" Glyph="&#xE7B3;">
                             <ToggleSwitch x:Name="PeekToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_WindowStash" Glyph="&#xE7B8;">
+                            <ToggleSwitch x:Name="StashToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                     </StackPanel>
                 </c:SettingsGroup>
             </StackPanel>

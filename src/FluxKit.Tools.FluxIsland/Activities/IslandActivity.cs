@@ -45,6 +45,9 @@ public enum ActivityKind
     /// <summary>A Live Activity that just finished (Flag: it failed).</summary>
     LiveDone,
 
+    /// <summary>A window was dragged onto the island and tucked away (Value: how many are tucked away now).</summary>
+    Stashed,
+
     /// <summary>A call is going on (a call app is using the microphone): its length and the mute state.</summary>
     Call,
 }

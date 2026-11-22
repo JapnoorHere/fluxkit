@@ -56,6 +56,7 @@ public sealed partial class IslandPill
         PanelPage.Clips => ClipsView,
         PanelPage.Inbox => InboxView,
         PanelPage.Peek => PeekView,
+        PanelPage.Stash => StashView,
         _ => TimerView,
     };
 
@@ -108,6 +109,11 @@ public sealed partial class IslandPill
             pages.Add(PanelPage.Peek);
         }
 
+        if (_scene.Stash.Count > 0 || _page == PanelPage.Stash)
+        {
+            pages.Add(PanelPage.Stash);
+        }
+
         return pages;
     }
 
@@ -136,7 +142,7 @@ public sealed partial class IslandPill
     private void ShowRail(List<PanelPage> pages, PanelPage selected)
     {
         PanelRail.Visibility = pages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
-        (Button Tab, Border Dot, PanelPage Page)[] tabs = [(MediaTab, MediaDot, PanelPage.Media), (TimerTab, TimerDot, PanelPage.Timer), (ShelfTab, ShelfDot, PanelPage.Shelf), (GlanceTab, GlanceDot, PanelPage.Glance), (NotesTab, NotesDot, PanelPage.Notes), (RewindTab, RewindDot, PanelPage.Rewind), (ClipsTab, ClipsDot, PanelPage.Clips), (InboxTab, InboxDot, PanelPage.Inbox), (PeekTab, PeekDot, PanelPage.Peek)];
+        (Button Tab, Border Dot, PanelPage Page)[] tabs = [(MediaTab, MediaDot, PanelPage.Media), (TimerTab, TimerDot, PanelPage.Timer), (ShelfTab, ShelfDot, PanelPage.Shelf), (GlanceTab, GlanceDot, PanelPage.Glance), (NotesTab, NotesDot, PanelPage.Notes), (RewindTab, RewindDot, PanelPage.Rewind), (ClipsTab, ClipsDot, PanelPage.Clips), (InboxTab, InboxDot, PanelPage.Inbox), (PeekTab, PeekDot, PanelPage.Peek), (StashTab, StashDot, PanelPage.Stash)];
         foreach ((Button tab, Border dot, PanelPage tabPage) in tabs)
         {
             bool isSelected = tabPage == selected;

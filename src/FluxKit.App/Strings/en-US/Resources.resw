@@ -1802,4 +1802,37 @@ While this is on, Windows' own banner is turned off for each app the island show
   <data name="Island_PeekEmpty" xml:space="preserve">
     <value>No other windows are open.</value>
   </data>
+  <data name="Island_StashDrop" xml:space="preserve">
+    <value>Drop to tuck it away</value>
+  </data>
+  <data name="Island_StashTitle" xml:space="preserve">
+    <value>Stash</value>
+  </data>
+  <data name="Island_StashNameFormat" xml:space="preserve">
+    <value>{0} windows tucked away</value>
+  </data>
+  <data name="Island_StashEmpty" xml:space="preserve">
+    <value>Drag a window by its title bar onto the island to tuck it away here.</value>
+  </data>
+  <data name="Island_StashCountFormat" xml:space="preserve">
+    <value>{0} tucked away</value>
+  </data>
+  <data name="Island_StashUntitled" xml:space="preserve">
+    <value>Window</value>
+  </data>
+  <data name="Island_StashTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Stash</value>
+  </data>
+  <data name="Island_StashBringBack" xml:space="preserve">
+    <value>Bring it back</value>
+  </data>
+  <data name="FluxIsland_WindowStash.Header" xml:space="preserve">
+    <value>Window stash (labs)</value>
+  </data>
+  <data name="Island_Stashed" xml:space="preserve">
+    <value>Tucked away</value>
+  </data>
+  <data name="FluxIsland_WindowStash.Description" xml:space="preserve">
+    <value>Drag any window by its title bar onto the island to tuck it away. Bring it back, right where it was, from the Stash page.</value>
+  </data>
 </root>

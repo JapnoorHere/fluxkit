@@ -39,6 +39,9 @@ public sealed partial class IslandWindow : Window
     private double _scale = 1;
     private HaloWindow? _halo;
     private readonly FluxKit.Platform.Windows.WindowThumbnail _peek = new();
+    private FluxKit.Platform.Watchers.WindowMoveWatcher? _moves;
+    private FluxKit.Platform.Watchers.WindowMove? _dragged;
+    private DispatcherQueueTimer? _dragTimer;
     private readonly Dictionary<ActivityKind, DropletWindow> _droplets = [];
     private PixelRect _placement;
     private (Windows.UI.Color Accent, float Strength) _haloGlow;
@@ -231,6 +234,7 @@ public sealed partial class IslandWindow : Window
         _monitorSetting = scene.Settings.Monitor;
         Pill.Render(scene);
         ShowDroplets(scene);
+        UpdateStashWatcher(scene.Settings.WindowStash);
         if (!_visible)
         {
             ShowCore();
@@ -259,6 +263,7 @@ public sealed partial class IslandWindow : Window
         _halo?.Close();
         _halo = null;
         _peek.Dispose();
+        UpdateStashWatcher(false);
         ShowDroplets(null);
         _shrinkTimer.Stop();
         Close();
@@ -345,6 +350,73 @@ public sealed partial class IslandWindow : Window
         ApplyRegion(union);
         _shrinkTimer.Stop();
         _shrinkTimer.Start();
+    }
+
+    /// <summary>
+    /// Window stash (plan D): watches window drags while the setting is on. During a drag the pointer is checked a few
+    /// times a second (only then); over the island the pill shows its lip, and letting go there tucks the window away.
+    /// </summary>
+    private void UpdateStashWatcher(bool on)
+    {
+        if (on == (_moves is not null))
+        {
+            return;
+        }
+
+        if (!on)
+        {
+            _moves!.Dispose();
+            _moves = null;
+            _dragTimer?.Stop();
+            return;
+        }
+
+        _moves = new FluxKit.Platform.Watchers.WindowMoveWatcher(_log);
+        _moves.Started += (_, move) => DispatcherQueue.TryEnqueue(() =>
+        {
+            _dragged = move;
+            _dragTimer ??= CreateDragTimer();
+            _dragTimer.Start();
+        });
+        _moves.Ended += (_, move) => DispatcherQueue.TryEnqueue(() => EndWindowDrag(move));
+        _moves.Start();
+    }
+
+    private DispatcherQueueTimer CreateDragTimer()
+    {
+        DispatcherQueueTimer timer = DispatcherQueue.CreateTimer();
+        timer.Interval = TimeSpan.FromMilliseconds(70);
+        timer.Tick += (_, _) => Pill.SetStashLip(_dragged is not null && PointerOverIsland());
+        return timer;
+    }
+
+    private void EndWindowDrag(FluxKit.Platform.Watchers.WindowMove move)
+    {
+        _dragTimer?.Stop();
+        _dragged = null;
+        bool over = PointerOverIsland();
+        Pill.SetStashLip(false);
+        if (over && _visible && FluxKit.Platform.Windows.WindowThumbnail.Exists(move.Window))
+        {
+            string title = FluxKit.Platform.Windows.WindowThumbnail.TitleOf(move.Window);
+            FluxKit.Platform.Windows.WindowThumbnail.TuckAway(move.Window, move.Before);
+            _commands?.StashWindow(move.Window, title.Length > 0 ? title : Strings.Get("Island_StashUntitled"));
+        }
+    }
+
+    /// <summary>Whether the pointer is over the island (with a little room around it), in screen pixels.</summary>
+    private bool PointerOverIsland()
+    {
+        if (!_visible)
+        {
+            return false;
+        }
+
+        (int x, int y) = WindowHelpers.GetCursorPosition();
+        Rect region = Pill.RegionBounds;
+        double slack = 18 * _scale;
+        return x >= _placement.Left + (region.Left * _scale) - slack && x <= _placement.Left + (region.Right * _scale) + slack
+            && y >= _placement.Top && y <= _placement.Top + (region.Bottom * _scale) + slack;
     }
 
     /// <summary>

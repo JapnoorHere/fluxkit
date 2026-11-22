@@ -37,6 +37,9 @@ public sealed record IslandScene
     /// <summary>Activities torn off the island into floating droplets, and where they sit.</summary>
     public IReadOnlyList<DropletPlace> Droplets { get; init; } = [];
 
+    /// <summary>Windows tucked away on the island, newest first.</summary>
+    public IReadOnlyList<StashedWindow> Stash { get; init; } = [];
+
     public PowerSnapshot Power { get; init; }
 
     public PrivacySnapshot Privacy { get; init; }

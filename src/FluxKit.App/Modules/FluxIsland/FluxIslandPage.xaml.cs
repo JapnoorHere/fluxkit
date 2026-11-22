@@ -78,6 +78,7 @@ public sealed partial class FluxIslandPage : Page
         HaloToggle.IsOn = s.LightHalo;
         LiveToggle.IsOn = s.LiveActivities;
         PeekToggle.IsOn = s.WindowPeek;
+        StashToggle.IsOn = s.WindowStash;
         ClockToggle.IsOn = s.ShowClockWhenIdle;
         ShelfToggle.IsOn = s.ShelfEnabled;
         KeepShelfToggle.IsOn = s.KeepShelf;
@@ -212,6 +213,7 @@ public sealed partial class FluxIslandPage : Page
             s.LightHalo = HaloToggle.IsOn;
             s.LiveActivities = LiveToggle.IsOn;
             s.WindowPeek = PeekToggle.IsOn;
+            s.WindowStash = StashToggle.IsOn;
             s.ShowClockWhenIdle = ClockToggle.IsOn;
             s.ShelfEnabled = ShelfToggle.IsOn;
             s.KeepShelf = KeepShelfToggle.IsOn;

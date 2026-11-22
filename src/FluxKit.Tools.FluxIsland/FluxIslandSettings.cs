@@ -165,6 +165,9 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// <summary>Labs: a Peek page that shows a live view of any window you pick (plan C).</summary>
     public bool WindowPeek { get; set; }
 
+    /// <summary>Labs: drag a window onto the island to tuck it away, and bring it back from the Stash page (plan D).</summary>
+    public bool WindowStash { get; set; }
+
     /// <summary>Activities torn off into floating droplets, and where each sits (screen pixels).</summary>
     public List<DropletPlace> Droplets { get; set; } = [];
 

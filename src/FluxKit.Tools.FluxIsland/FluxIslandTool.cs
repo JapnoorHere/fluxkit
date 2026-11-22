@@ -315,6 +315,7 @@ public sealed partial class FluxIslandTool : IFluxTool, IIslandCommands
                 Clips = _options.ClipboardHistory ? _clips.Items : [],
                 Inbox = InboxForScene(),
                 Droplets = _detached.Places,
+                Stash = _options.WindowStash ? _stash.Items : [],
                 Power = _power?.Current ?? default,
                 Privacy = _options.ShowPrivacy ? _privacy?.Current ?? default : default,
                 MicMuted = _micMuted,

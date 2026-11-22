@@ -40,6 +40,9 @@ internal static class IslandPresenter
     private const string ErrorGlyph = "\xE783";
     private const string MessageGlyph = "\xE8BD";
 
+    /// <summary>Window stash: a box that windows are tucked into.</summary>
+    internal const string StashGlyph = "\xE7B8";
+
     public static CompactContent Describe(IslandActivity activity, DateTimeOffset now) => activity.Kind switch
     {
         ActivityKind.Media => new(
@@ -78,6 +81,7 @@ internal static class IslandPresenter
         ActivityKind.MicMuted => new(MicGlyph, Strings.Get(activity.Flag ? "Island_MicMuted" : "Island_MicOn"), null, null, activity.Flag ? IslandPalette.Red : IslandPalette.Green),
         ActivityKind.FileReady => DescribeFile(activity),
         ActivityKind.Live or ActivityKind.LiveDone => DescribeLive(activity),
+        ActivityKind.Stashed => new(StashGlyph, Strings.Get("Island_Stashed"), activity.Text, activity.Value > 1 ? Strings.Format("Island_StashCountFormat", activity.Value) : null, IslandPalette.Cyan),
         ActivityKind.Notification => new(
             MessageGlyph,
             activity.Text ?? string.Empty,

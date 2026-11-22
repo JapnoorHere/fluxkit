@@ -80,6 +80,54 @@ public sealed partial class IslandPill
     }
 
     /// <summary>
+    /// The Stash page (plan D): windows dragged onto the island, newest first. Click one to bring it back where it was;
+    /// "Clear" brings them all back. Windows closed in the meantime drop off by themselves.
+    /// </summary>
+    private void ConfigureStash() =>
+        StashView.Configure(new ListPageSpec(
+            IslandPresenter.StashGlyph,
+            IslandPalette.Cyan,
+            "Island_StashTitle",
+            "Island_StashNameFormat",
+            "Island_StashEmpty",
+            (scene, now) =>
+            {
+                if (scene.Stash.Any(w => !FluxKit.Platform.Windows.WindowThumbnail.Exists((nint)w.Handle)))
+                {
+                    DispatcherQueue.TryEnqueue(() => Commands?.PruneStash(h => FluxKit.Platform.Windows.WindowThumbnail.Exists((nint)h)));
+                }
+
+                return [.. scene.Stash.Where(w => FluxKit.Platform.Windows.WindowThumbnail.Exists((nint)w.Handle)).Select(w => new ListItem(
+                    w.Handle.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    w.Title,
+                    ListPanel.Age(w.At, now),
+                    null,
+                    IslandPalette.Cyan,
+                    () => BringBack(w.Handle),
+                    Strings.Get("Island_StashBringBack"),
+                    []))];
+            },
+            () =>
+            {
+                foreach (StashedWindow window in _scene.Stash)
+                {
+                    BringBack(window.Handle);
+                }
+            },
+            () => { }));
+
+    /// <summary>Brings a tucked-away window back where it was, and takes it off the Stash page.</summary>
+    private void BringBack(long handle)
+    {
+        if (FluxKit.Platform.Windows.WindowThumbnail.Exists((nint)handle))
+        {
+            FluxKit.Platform.Windows.WindowThumbnail.Activate((nint)handle);
+        }
+
+        Commands?.UnstashWindow(handle);
+    }
+
+    /// <summary>
     /// Notifications grouped by app, as in Notification Center: the app with the newest one first, each app's own
     /// notifications newest first.
     /// </summary>

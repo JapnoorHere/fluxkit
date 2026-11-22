@@ -124,6 +124,23 @@ public sealed partial class WindowThumbnail : IDisposable
 
     public static bool Exists(nint window) => window != 0 && IsWindow(window);
 
+    /// <summary>
+    /// Tucks a window away (window stash, plan D): puts it back where it was before it was dragged, then minimises it.
+    /// Minimised, not hidden, so it stays on the taskbar and nothing is lost if FluxKit closes.
+    /// </summary>
+    public static void TuckAway(nint window, PixelRect before)
+    {
+        _ = SetWindowPos(window, 0, before.Left, before.Top, before.Width, before.Height, 0x0004 | 0x0010); // SWP_NOZORDER | SWP_NOACTIVATE
+        _ = ShowWindow(window, 6); // SW_MINIMIZE
+    }
+
+    /// <summary>The window's title, or empty.</summary>
+    public static string TitleOf(nint window)
+    {
+        int length = GetWindowTextLength(window);
+        return length == 0 ? string.Empty : ReadTitle(window, Math.Min(length + 1, 512));
+    }
+
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static int Collect(nint window, nint state)
     {
@@ -231,6 +248,10 @@ public sealed partial class WindowThumbnail : IDisposable
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool SetForegroundWindow(nint window);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetWindowPos(nint window, nint insertAfter, int x, int y, int width, int height, uint flags);
 
     [LibraryImport("user32.dll")]
     private static partial nint GetWindow(nint window, uint command);

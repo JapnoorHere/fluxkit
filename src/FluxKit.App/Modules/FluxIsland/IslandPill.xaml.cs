@@ -179,12 +179,14 @@ public sealed partial class IslandPill : UserControl
         ClipsTab.Click += (_, _) => ShowPage(PanelPage.Clips);
         InboxTab.Click += (_, _) => ShowPage(PanelPage.Inbox);
         PeekTab.Click += (_, _) => ShowPage(PanelPage.Peek);
+        StashTab.Click += (_, _) => ShowPage(PanelPage.Stash);
         PeekView.PinChanged += (_, _) => DispatcherQueue.TryEnqueue(() =>
         {
             _shownKey = null;
             Update();
         });
         ConfigureLists();
+        ConfigureStash();
         WireCommandBar();
         GlanceView.CloseRequested += (_, _) => SetMode(PillMode.Compact);
         TimerView.SwitchChanged += (_, _) => Update();
@@ -233,6 +235,7 @@ public sealed partial class IslandPill : UserControl
         Clips,
         Inbox,
         Peek,
+        Stash,
     }
 
     /// <summary>What buttons on the island call. Unset in previews, where nothing should happen.</summary>
@@ -294,7 +297,7 @@ public sealed partial class IslandPill : UserControl
     public void Preview(IslandScene scene, bool open, bool dropping = false, string? sample = null)
     {
         _mode = sample == "command" ? PillMode.Command
-            : open || dropping || sample is "glance" or "notes" or "rewind" or "clips" or "inbox" or "peek" or "peek-live" ? PillMode.Panel
+            : open || dropping || sample is "glance" or "notes" or "rewind" or "clips" or "inbox" or "peek" or "peek-live" or "stash" ? PillMode.Panel
             : PillMode.Compact;
         _page = sample switch
         {
@@ -304,6 +307,7 @@ public sealed partial class IslandPill : UserControl
             "clips" => PanelPage.Clips,
             "inbox" => PanelPage.Inbox,
             "peek" or "peek-live" => PanelPage.Peek,
+            "stash" => PanelPage.Stash,
             _ => null,
         };
         if (sample == "command")
@@ -667,6 +671,11 @@ public sealed partial class IslandPill : UserControl
     {
         bool peek = _mode == PillMode.Peek;
         PanelRail.Visibility = Visibility.Collapsed;
+        if (BuildStashLip() is { } lip)
+        {
+            return lip;
+        }
+
         if (BuildScrub(now) is { } scrubbing)
         {
             return scrubbing;

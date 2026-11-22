@@ -71,6 +71,15 @@ public interface IIslandCommands
     /// <summary>Puts a torn-off activity back on the island.</summary>
     void DockActivity(ActivityKind kind);
 
+    /// <summary>A window was dragged onto the island and tucked away (minimised by the view).</summary>
+    void StashWindow(long handle, string title);
+
+    /// <summary>Takes a window off the Stash page (it was brought back, or closed).</summary>
+    void UnstashWindow(long handle);
+
+    /// <summary>Forgets tucked-away windows that no longer exist.</summary>
+    void PruneStash(Func<long, bool> exists);
+
     /// <summary>Snoozes the moment on screen: it goes away and comes back in ten minutes (a sideways flick).</summary>
     void SnoozeAlert();
 

@@ -54,6 +54,7 @@ internal sealed class ActivityArbiter(TimeProvider time)
         ActivityKind.DesktopSwitched => 48,
         ActivityKind.Volume or ActivityKind.Brightness => 45,
         ActivityKind.CapsLock or ActivityKind.NumLock => 44,
+        ActivityKind.Stashed => 42,
         ActivityKind.Copied => 40,
         ActivityKind.MicMuted => 35,
         ActivityKind.Call => 32,
