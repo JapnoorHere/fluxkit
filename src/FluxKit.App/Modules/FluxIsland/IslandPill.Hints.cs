@@ -70,6 +70,11 @@ public sealed partial class IslandPill
             PillMode.Compact when _scene.Primary is { IsAlert: true } && !seen.HasFlag(IslandHints.Dismiss) => (IslandHints.Dismiss, "Island_HintDismiss"),
             PillMode.Peek when _scene.Settings.ScrollForVolume && !seen.HasFlag(IslandHints.Volume) => (IslandHints.Volume, "Island_HintVolume"),
             PillMode.Panel when PanelRail.Visibility == Visibility.Visible && !seen.HasFlag(IslandHints.Pages) => (IslandHints.Pages, "Island_HintPages"),
+
+            // The Liquid gestures, each once it is useful and after the simpler tip for the same moment.
+            PillMode.Compact when _scene.Primary is { IsAlert: true } && seen.HasFlag(IslandHints.Dismiss) && !seen.HasFlag(IslandHints.Flick) => (IslandHints.Flick, "Island_HintFlick"),
+            PillMode.Compact when _scene.Primary is { } lasting && Tools.FluxIsland.Activities.DetachedActivities.CanDetach(lasting.Kind) && !seen.HasFlag(IslandHints.TearOff) => (IslandHints.TearOff, "Island_HintTearOff"),
+            PillMode.Peek when _scene.Rewind.Count >= 2 && _scene.Secondary is null && seen.HasFlag(IslandHints.Volume) && !seen.HasFlag(IslandHints.Scrub) => (IslandHints.Scrub, "Island_HintScrub"),
             _ => null,
         };
 

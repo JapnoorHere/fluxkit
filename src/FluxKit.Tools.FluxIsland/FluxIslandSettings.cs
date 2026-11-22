@@ -43,6 +43,15 @@ public enum IslandHints
 
     /// <summary>"Swipe sideways for more pages."</summary>
     Pages = 8,
+
+    /// <summary>"Flick it down to keep it, up to let it go, sideways to snooze."</summary>
+    Flick = 16,
+
+    /// <summary>"Pull it down to tear it off."</summary>
+    TearOff = 32,
+
+    /// <summary>"Scroll sideways to rewind today."</summary>
+    Scrub = 64,
 }
 
 /// <summary>The island's material.</summary>

@@ -84,6 +84,15 @@ Environment for recorded runs: Windows 11 Home Single Language 26H2, build 26300
 | FI-41 | Privacy | Set "App name only"; send a toast; also start a full-screen slideshow | Only the app name shows, on the pill and on the Notifications page | N | Not run | — | |
 | FI-42 | Notifications page | Open the island on Notifications; open, quiet, dismiss and clear with Undo | Rows grouped by app; Dismiss also removes it from Notification Center | N | Not run | — | |
 | FI-43 | Priority | Set "What can interrupt" to Important; mark one app Priority | Only that app's notifications take over the island; others go to the page | N | Not run | — | |
+| FI-44 | Liquid arrival | Copy some text | A drop is pulled out under the pill and drawn back in | Y | PASS | 2026-11-16 | Frames captured |
+| FI-45 | Ferrofluid edge | Play music | Beads rise and fall under the pill with the sound; hovering sends a ripple across | Y | PASS (sample) | 2026-11-16 | `ferro` sample |
+| FI-46 | Mercury and halo | Settings: Look Mercury; Light halo on | Chrome body with a pointer-following highlight; a pool of colour under the island; clicks pass through it | Y | PASS | 2026-11-16 | Click-through checked with WindowFromPoint |
+| FI-47 | Flick | On an alert: throw it down, up, and sideways | Down: put away (in Recent); up: gone; sideways: back in 10 min | N | Not run | — | |
+| FI-48 | Tear off | Start a timer; pull the pill down; drag the droplet; click it; drop it on the island | A droplet appears under the pointer, pauses on click, docks back | N | Not run | — | Droplet rendering checked with the `droplet` sample |
+| FI-49 | Scrub | Scroll sideways over the idle island | Today's moments step by; "2 of 3"; click opens one | Y | PASS (sample) | 2026-11-16 | |
+| FI-50 | Live Activities | Labs on; run `FluxKit.exe island set --id b --title Build --progress 40 --glyph build | Out-Null`, then `--progress 70`, then `fail` | Ring at 40 %, then 70 %, then a red shake | Y | PASS | 2026-11-16 | |
+| FI-51 | Window peek | Labs on; open the Peek page; pick a window | A live view of it; "Switch to it" brings it forward | Y | PASS | 2026-11-16 | `peek-live` sample |
+| FI-52 | Window stash | Labs on; drag a window by its title bar onto the island | "Drop to tuck it away", then "Tucked away"; the window is minimised; Bring it back restores it where it was | Y | PASS | 2026-11-16 | Scripted drag of a WinForms window |
 
 ## Smoke checks executed during development
 

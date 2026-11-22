@@ -40,6 +40,12 @@ public sealed partial class FluxIslandPage : Page
         ("glance", false, "FluxIsland_TryGlance"),
         ("rewind", false, "FluxIsland_TryRecent"),
         ("glass", true, "FluxIsland_TryGlass"),
+        ("ferro", false, "FluxIsland_TryLiquid"),
+        ("mercury", false, "FluxIsland_TryMercury"),
+        ("halo", false, "FluxIsland_TryHalo"),
+        ("scrub", false, "FluxIsland_TryScrub"),
+        ("droplet", false, "FluxIsland_TryDroplet"),
+        ("peek", false, "FluxIsland_TryPeek"),
     ];
 
     private FluxIslandSettings Current => _host.Settings.Read<FluxIslandSettings>(FluxIslandSettings.Section);

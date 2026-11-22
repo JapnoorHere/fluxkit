@@ -1835,4 +1835,31 @@ While this is on, Windows' own banner is turned off for each app the island show
   <data name="FluxIsland_WindowStash.Description" xml:space="preserve">
     <value>Drag any window by its title bar onto the island to tuck it away. Bring it back, right where it was, from the Stash page.</value>
   </data>
+  <data name="FluxIsland_TryHalo" xml:space="preserve">
+    <value>Light halo</value>
+  </data>
+  <data name="Island_HintTearOff" xml:space="preserve">
+    <value>Pull it down to tear it off and park it anywhere</value>
+  </data>
+  <data name="FluxIsland_TryPeek" xml:space="preserve">
+    <value>Window peek</value>
+  </data>
+  <data name="FluxIsland_TryDroplet" xml:space="preserve">
+    <value>Torn-off droplet</value>
+  </data>
+  <data name="FluxIsland_TryLiquid" xml:space="preserve">
+    <value>Liquid edge</value>
+  </data>
+  <data name="Island_HintScrub" xml:space="preserve">
+    <value>Scroll sideways to rewind through today</value>
+  </data>
+  <data name="FluxIsland_TryMercury" xml:space="preserve">
+    <value>Mercury</value>
+  </data>
+  <data name="Island_HintFlick" xml:space="preserve">
+    <value>Flick it down to keep it, up to let it go, or sideways to snooze</value>
+  </data>
+  <data name="FluxIsland_TryScrub" xml:space="preserve">
+    <value>Rewind today</value>
+  </data>
 </root>

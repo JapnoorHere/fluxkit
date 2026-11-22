@@ -11,6 +11,21 @@ All notable changes to FluxKit are documented here. The format follows [Keep a C
 - The code says "tool" everywhere, the same as the app. Saved settings keep their old keys, so nothing is lost (ADR-013).
 
 ### Added
+- **Flux Island "Liquid"** (ADR-015, ADR-016), a look and gestures no other island has:
+  - The island behaves like liquid:
+    - A moment drips in: the island pulls a drop out of its underside and drinks it back.
+    - Waved away, it sheds a drop that falls and fades.
+    - The underside ripples like ferrofluid with the music and when the pointer touches it.
+  - New looks (labs):
+    - **Mercury**, liquid metal whose highlight follows the pointer.
+    - A **light halo** that spills the island's colour onto the desktop. Clicks pass through it.
+  - **Flick** a moment: down to put it away, up to let it evaporate, sideways to snooze it for 10 minutes.
+  - **Tear off** music, a timer or the stopwatch into a floating droplet: park it anywhere, click to play or pause, drop it back to dock. Its place survives a restart.
+  - **Scrub today:** scroll sideways over the island to step back through today's moments.
+  - **Live Activities** (labs): any script, terminal, build or AI agent can show live progress with `FluxKit.exe island set|done|fail|clear …`. It uses a pipe that only you can reach, and is display only. The README has a Claude Code hook example.
+  - **Window peek** (labs): a Peek page with a live view of any window, drawn by Windows itself.
+  - **Window stash** (labs): drag a window onto the island to tuck it away, and bring it back exactly where it was from the Stash page.
+  - New samples and "Try it" buttons, plus one-time tips for flick, tear-off and scrub.
 - **Windows notifications on Flux Island** (opt-in, ADR-014). Messages, mail and reminders from your apps show on the island with the app's logo and colour, in place of Windows' corner banner:
   - A burst from one app becomes one moment ("3 new").
   - A Notifications page lists today's notifications grouped by app. Click one to open the app, quiet an app for an hour, dismiss one (it leaves Notification Center too), or clear all with Undo.
