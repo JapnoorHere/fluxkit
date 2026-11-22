@@ -223,6 +223,9 @@
                         <c:SettingRow x:Uid="FluxIsland_LiveActivities" Glyph="&#xE756;">
                             <ToggleSwitch x:Name="LiveToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_WindowPeek" Glyph="&#xE7B3;">
+                            <ToggleSwitch x:Name="PeekToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                     </StackPanel>
                 </c:SettingsGroup>
             </StackPanel>

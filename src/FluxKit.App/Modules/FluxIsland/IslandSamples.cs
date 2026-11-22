@@ -15,7 +15,7 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "mercury", "ferro", "halo", "scrub", "droplet", "notification", "notifications", "inbox",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "mercury", "ferro", "halo", "scrub", "droplet", "peek", "peek-live", "notification", "notifications", "inbox",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
@@ -95,6 +95,7 @@ internal static class IslandSamples
                 ClipboardHistory = name == "clips",
                 ShowNotifications = name is "notification" or "notifications" or "inbox",
                 LightHalo = name == "halo",
+                WindowPeek = name is "peek" or "peek-live",
                 Look = name switch { "glass" => FluxKit.Tools.FluxIsland.IslandLook.Glass, "mercury" => FluxKit.Tools.FluxIsland.IslandLook.Mercury, _ => FluxKit.Tools.FluxIsland.IslandLook.Onyx },
             },
             Inbox = name == "inbox"

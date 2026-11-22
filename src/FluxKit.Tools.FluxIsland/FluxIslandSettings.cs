@@ -162,6 +162,9 @@ public sealed class FluxIslandSettings : ISettingsSection
     /// <summary>Labs: scripts, terminals, builds and AI agents can show live progress on the island (ADR-016). Off by default.</summary>
     public bool LiveActivities { get; set; }
 
+    /// <summary>Labs: a Peek page that shows a live view of any window you pick (plan C).</summary>
+    public bool WindowPeek { get; set; }
+
     /// <summary>Activities torn off into floating droplets, and where each sits (screen pixels).</summary>
     public List<DropletPlace> Droplets { get; set; } = [];
 

@@ -178,6 +178,12 @@ public sealed partial class IslandPill : UserControl
         RewindTab.Click += (_, _) => ShowPage(PanelPage.Rewind);
         ClipsTab.Click += (_, _) => ShowPage(PanelPage.Clips);
         InboxTab.Click += (_, _) => ShowPage(PanelPage.Inbox);
+        PeekTab.Click += (_, _) => ShowPage(PanelPage.Peek);
+        PeekView.PinChanged += (_, _) => DispatcherQueue.TryEnqueue(() =>
+        {
+            _shownKey = null;
+            Update();
+        });
         ConfigureLists();
         WireCommandBar();
         GlanceView.CloseRequested += (_, _) => SetMode(PillMode.Compact);
@@ -226,6 +232,7 @@ public sealed partial class IslandPill : UserControl
         Rewind,
         Clips,
         Inbox,
+        Peek,
     }
 
     /// <summary>What buttons on the island call. Unset in previews, where nothing should happen.</summary>
@@ -287,7 +294,7 @@ public sealed partial class IslandPill : UserControl
     public void Preview(IslandScene scene, bool open, bool dropping = false, string? sample = null)
     {
         _mode = sample == "command" ? PillMode.Command
-            : open || dropping || sample is "glance" or "notes" or "rewind" or "clips" or "inbox" ? PillMode.Panel
+            : open || dropping || sample is "glance" or "notes" or "rewind" or "clips" or "inbox" or "peek" or "peek-live" ? PillMode.Panel
             : PillMode.Compact;
         _page = sample switch
         {
@@ -296,6 +303,7 @@ public sealed partial class IslandPill : UserControl
             "rewind" => PanelPage.Rewind,
             "clips" => PanelPage.Clips,
             "inbox" => PanelPage.Inbox,
+            "peek" or "peek-live" => PanelPage.Peek,
             _ => null,
         };
         if (sample == "command")
@@ -307,6 +315,11 @@ public sealed partial class IslandPill : UserControl
         _previewRipple = sample == "ferro";
         _previewDrop = dropping;
         Show(scene);
+        if (sample == "peek-live")
+        {
+            PeekView.PinFirst();
+        }
+
         if (sample == "scrub")
         {
             // Shows the scrub one step back in time, as a sideways scroll would.
@@ -395,6 +408,7 @@ public sealed partial class IslandPill : UserControl
         GlanceView.SetLive(_active && _mode == PillMode.Panel && _page == PanelPage.Glance);
         UpdateMeter(view);
         UpdateCallListener();
+        UpdatePeek();
         OfferHint();
     }
 

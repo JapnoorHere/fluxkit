@@ -1772,4 +1772,34 @@ While this is on, Windows' own banner is turned off for each app the island show
   <data name="FluxIsland_LiveActivities.Description" xml:space="preserve">
     <value>Scripts, terminals, builds and AI agents on this PC can show live progress on the island with fluxkit-island. Display only: they can never make FluxKit run anything.</value>
   </data>
+  <data name="Island_PeekChange" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="Island_PeekTitle" xml:space="preserve">
+    <value>Peek</value>
+  </data>
+  <data name="FluxIsland_WindowPeek.Description" xml:space="preserve">
+    <value>A Peek page shows a live view of any window you pick, drawn by Windows itself, so you can watch a build, a render or a waiting call without switching.</value>
+  </data>
+  <data name="Island_PeekAtFormat" xml:space="preserve">
+    <value>Peek at {0}</value>
+  </data>
+  <data name="Island_PeekNameFormat" xml:space="preserve">
+    <value>Peeking at {0}</value>
+  </data>
+  <data name="FluxIsland_WindowPeek.Header" xml:space="preserve">
+    <value>Window peek (labs)</value>
+  </data>
+  <data name="Island_PeekTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Peek</value>
+  </data>
+  <data name="Island_PeekPick" xml:space="preserve">
+    <value>Pick a window to keep an eye on</value>
+  </data>
+  <data name="Island_PeekSwitch" xml:space="preserve">
+    <value>Switch to it</value>
+  </data>
+  <data name="Island_PeekEmpty" xml:space="preserve">
+    <value>No other windows are open.</value>
+  </data>
 </root>

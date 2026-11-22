@@ -38,6 +38,7 @@ public sealed partial class IslandWindow : Window
     private Rect _region;
     private double _scale = 1;
     private HaloWindow? _halo;
+    private readonly FluxKit.Platform.Windows.WindowThumbnail _peek = new();
     private readonly Dictionary<ActivityKind, DropletWindow> _droplets = [];
     private PixelRect _placement;
     private (Windows.UI.Color Accent, float Strength) _haloGlow;
@@ -77,6 +78,7 @@ public sealed partial class IslandWindow : Window
         Pill.Commands = commands;
         Pill.TargetChanged += OnTargetChanged;
         Pill.HaloChanged += (_, glow) => ShowHalo(glow.Accent, glow.Strength);
+        Pill.PeekChanged += (_, peek) => ShowPeek(peek.Window, peek.Area);
         Pill.HintSeen += (_, hint) => HintSeen?.Invoke(this, hint);
         Pill.ShareRequested += (_, files) => ShareSheet.Show(_hwnd, files, Strings.Get("Island_ShareTitle"));
         Pill.KeyboardReleased += (_, _) =>
@@ -256,6 +258,7 @@ public sealed partial class IslandWindow : Window
         _closed = true;
         _halo?.Close();
         _halo = null;
+        _peek.Dispose();
         ShowDroplets(null);
         _shrinkTimer.Stop();
         Close();
@@ -290,6 +293,7 @@ public sealed partial class IslandWindow : Window
         Pill.SetActive(false);
         WindowHelpers.Hide(_hwnd);
         _halo?.Hide();
+        _peek.Place(default, visible: false);
     }
 
     /// <summary>
@@ -341,6 +345,29 @@ public sealed partial class IslandWindow : Window
         ApplyRegion(union);
         _shrinkTimer.Stop();
         _shrinkTimer.Start();
+    }
+
+    /// <summary>
+    /// Shows the watched window's live view (a DWM thumbnail) over the Peek page's frame, or hides it (plan C).
+    /// <paramref name="area"/> is in view pixels of this window.
+    /// </summary>
+    private void ShowPeek(nint window, Rect? area)
+    {
+        if (window == 0)
+        {
+            _peek.Detach();
+            return;
+        }
+
+        if (_peek.Source != window && !_peek.Attach(_hwnd, window))
+        {
+            return;
+        }
+
+        PixelRect pixels = area is { } a
+            ? new PixelRect((int)(a.Left * _scale), (int)(a.Top * _scale), (int)(a.Right * _scale), (int)(a.Bottom * _scale))
+            : default;
+        _peek.Place(pixels, visible: area is not null && _visible);
     }
 
     /// <summary>
