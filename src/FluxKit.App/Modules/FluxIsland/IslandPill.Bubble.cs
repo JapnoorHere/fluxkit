@@ -1,5 +1,5 @@
-using FluxKit.App.Modules.FluxIsland.Design;
 using System.Numerics;
+using FluxKit.App.Modules.FluxIsland.Design;
 using FluxKit.Tools.FluxIsland.Activities;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
