@@ -167,16 +167,19 @@ public sealed partial class HomePanel : UserControl, IIslandPage
     {
         var root = new Grid();
         root.Children.Add(_wash);
-        var shade = new Border { Background = new LinearGradientBrush
+        var shade = new Border
         {
-            StartPoint = new Point(0, 0),
-            EndPoint = new Point(1, 0),
-            GradientStops =
+            Background = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 0),
+                GradientStops =
             {
                 new GradientStop { Color = Color.FromArgb(0xB0, 0, 0, 0), Offset = 0 },
                 new GradientStop { Color = Color.FromArgb(0x40, 0, 0, 0), Offset = 1 },
             },
-        }, };
+            },
+        };
         root.Children.Add(shade);
 
         var content = new Grid { Padding = new Thickness(12), RowSpacing = 8 };
