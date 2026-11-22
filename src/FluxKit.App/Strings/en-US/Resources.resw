@@ -1471,10 +1471,10 @@
     <value>Labs</value>
   </data>
   <data name="FluxIsland_Look.Header" xml:space="preserve">
-    <value>Look</value>
+    <value>Theme</value>
   </data>
   <data name="FluxIsland_Look.Description" xml:space="preserve">
-    <value>Onyx is true black, like a phone. Glass (experimental) is dark smoked glass with a brighter rim.</value>
+    <value>Colours the island, its cards and its glow. Pure black keeps unused OLED pixels off; Rosé, Lavender, Peach and Sakura are soft tints; Mercury is liquid metal.</value>
   </data>
   <data name="FluxIsland_LookOnyx.Content" xml:space="preserve">
     <value>Onyx</value>
@@ -1861,5 +1861,83 @@ While this is on, Windows' own banner is turned off for each app the island show
   </data>
   <data name="FluxIsland_TryScrub" xml:space="preserve">
     <value>Rewind today</value>
+  </data>
+  <data name="Island_HomeMoreFormat" xml:space="preserve">
+    <value>  +{0}</value>
+  </data>
+  <data name="Island_HomePause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="Island_HomeMemory" xml:space="preserve">
+    <value>RAM</value>
+  </data>
+  <data name="Island_HomeTimerIdle" xml:space="preserve">
+    <value>TIMER</value>
+  </data>
+  <data name="Island_HomeBreak" xml:space="preserve">
+    <value>Break</value>
+  </data>
+  <data name="Island_HomeFocus" xml:space="preserve">
+    <value>Focus</value>
+  </data>
+  <data name="Island_HomePlay" xml:space="preserve">
+    <value>Play</value>
+  </data>
+  <data name="Island_HomeToday" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Island_HomeNothingPlaying" xml:space="preserve">
+    <value>Nothing playing</value>
+  </data>
+  <data name="Island_HomeMusic" xml:space="preserve">
+    <value>Music</value>
+  </data>
+  <data name="Island_HomeTab.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Island_HomeTimer" xml:space="preserve">
+    <value>Timer</value>
+  </data>
+  <data name="Island_HomeCpu" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Island_HomeName" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Island_HomeFocusing" xml:space="preserve">
+    <value>Focus</value>
+  </data>
+  <data name="Island_HomeAllQuiet" xml:space="preserve">
+    <value>All quiet</value>
+  </data>
+  <data name="Island_HomeNothingPlayingHint" xml:space="preserve">
+    <value>Play music in any app</value>
+  </data>
+  <data name="Island_HomeLatest" xml:space="preserve">
+    <value>Latest</value>
+  </data>
+  <data name="Island_HomeFive" xml:space="preserve">
+    <value>5 min</value>
+  </data>
+  <data name="Island_HomeSystem" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="FluxIsland_LookPeach.Content" xml:space="preserve">
+    <value>Peach</value>
+  </data>
+  <data name="FluxIsland_LookGraphite.Content" xml:space="preserve">
+    <value>Graphite</value>
+  </data>
+  <data name="FluxIsland_LookRose.Content" xml:space="preserve">
+    <value>Rosé</value>
+  </data>
+  <data name="FluxIsland_LookPureBlack.Content" xml:space="preserve">
+    <value>Pure black (OLED)</value>
+  </data>
+  <data name="FluxIsland_LookSakura.Content" xml:space="preserve">
+    <value>Sakura</value>
+  </data>
+  <data name="FluxIsland_LookLavender.Content" xml:space="preserve">
+    <value>Lavender</value>
   </data>
 </root>

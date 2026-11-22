@@ -38,16 +38,17 @@ public sealed partial class IslandPill
 
         AutomationProperties.SetName(Surface, view.Update(_scene, now, Springs));
 
-        // Leave room under the content for the page dots.
-        double dots = pages.Count > 1 ? PageDotsRoom : 0;
+        // Leave room above the content for the icon bar.
+        double bar = pages.Count > 1 ? IconBarRoom : 0;
         var element = (FrameworkElement)view;
-        element.Margin = new Thickness(0, 0, 0, dots);
+        element.Margin = new Thickness(0, bar, 0, 0);
         Size size = view.PreferredSize;
-        return (element, $"panel-{page}-{view.State}", new Size(size.Width, size.Height + dots));
+        return (element, $"panel-{page}-{view.State}", new Size(Math.Max(size.Width, IconBarMinWidth), size.Height + bar));
     }
 
     private IIslandPage PageView(PanelPage page) => page switch
     {
+        PanelPage.Home => HomeView,
         PanelPage.Media => MediaView,
         PanelPage.Shelf => ShelfView,
         PanelPage.Glance => GlanceView,
@@ -66,7 +67,8 @@ public sealed partial class IslandPill
     /// </summary>
     private List<PanelPage> AvailablePages()
     {
-        List<PanelPage> pages = [];
+        // Home, the dashboard, always comes first.
+        List<PanelPage> pages = [PanelPage.Home];
         if (_scene.Settings.ShowMedia || _scene.Media is not null)
         {
             pages.Add(PanelPage.Media);
@@ -124,7 +126,8 @@ public sealed partial class IslandPill
         ActivityKind.Timer or ActivityKind.TimerDone or ActivityKind.Stopwatch => PanelPage.Timer,
         ActivityKind.Shelf when pages.Contains(PanelPage.Shelf) => PanelPage.Shelf,
         ActivityKind.Notification when pages.Contains(PanelPage.Inbox) => PanelPage.Inbox,
-        _ => _scene.Media is not null && pages.Contains(PanelPage.Media) ? PanelPage.Media : PanelPage.Timer,
+        ActivityKind.Media when pages.Contains(PanelPage.Media) => PanelPage.Media,
+        _ => PanelPage.Home,
     };
 
     private void ShowPage(PanelPage page)
@@ -138,17 +141,60 @@ public sealed partial class IslandPill
         }
     }
 
-    /// <summary>The page dots: the current page is a short bar, the others small dots.</summary>
+    /// <summary>A Home tile was clicked: open its full page (the newest notification opens the inbox, else Recent).</summary>
+    private void OpenFromHome(string name)
+    {
+        List<PanelPage> pages = AvailablePages();
+        PanelPage? target = name switch
+        {
+            "media" => PanelPage.Media,
+            "timer" => PanelPage.Timer,
+            "glance" => PanelPage.Glance,
+            "latest" when _scene.Inbox.Count > 0 => PanelPage.Inbox,
+            "latest" => PanelPage.Rewind,
+            _ => null,
+        };
+        if (target is { } page && pages.Contains(page))
+        {
+            ShowPage(page);
+        }
+    }
+
+    /// <summary>The icon for each page in the icon bar.</summary>
+    private static string PageGlyph(PanelPage page) => page switch
+    {
+        PanelPage.Home => "\xE80F",
+        PanelPage.Media => "\xE8D6",
+        PanelPage.Timer => "\xE916",
+        PanelPage.Shelf => "\xE8B7",
+        PanelPage.Glance => "\xE9D9",
+        PanelPage.Notes => "\xE70B",
+        PanelPage.Rewind => "\xE81C",
+        PanelPage.Clips => "\xE77F",
+        PanelPage.Inbox => "\xE8BD",
+        PanelPage.Peek => "\xE7B3",
+        _ => "\xE7B8",
+    };
+
+    /// <summary>
+    /// The icon bar across the top of the open panel (like a phone's tab bar, at the top): one icon per page, the
+    /// current one white on a soft pill, the others dimmed. Click one, or swipe sideways.
+    /// </summary>
     private void ShowRail(List<PanelPage> pages, PanelPage selected)
     {
         PanelRail.Visibility = pages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
-        (Button Tab, Border Dot, PanelPage Page)[] tabs = [(MediaTab, MediaDot, PanelPage.Media), (TimerTab, TimerDot, PanelPage.Timer), (ShelfTab, ShelfDot, PanelPage.Shelf), (GlanceTab, GlanceDot, PanelPage.Glance), (NotesTab, NotesDot, PanelPage.Notes), (RewindTab, RewindDot, PanelPage.Rewind), (ClipsTab, ClipsDot, PanelPage.Clips), (InboxTab, InboxDot, PanelPage.Inbox), (PeekTab, PeekDot, PanelPage.Peek), (StashTab, StashDot, PanelPage.Stash)];
+        (Button Tab, Border Dot, PanelPage Page)[] tabs = [(HomeTab, HomeDot, PanelPage.Home), (MediaTab, MediaDot, PanelPage.Media), (TimerTab, TimerDot, PanelPage.Timer), (ShelfTab, ShelfDot, PanelPage.Shelf), (GlanceTab, GlanceDot, PanelPage.Glance), (NotesTab, NotesDot, PanelPage.Notes), (RewindTab, RewindDot, PanelPage.Rewind), (ClipsTab, ClipsDot, PanelPage.Clips), (InboxTab, InboxDot, PanelPage.Inbox), (PeekTab, PeekDot, PanelPage.Peek), (StashTab, StashDot, PanelPage.Stash)];
         foreach ((Button tab, Border dot, PanelPage tabPage) in tabs)
         {
             bool isSelected = tabPage == selected;
             tab.Visibility = pages.Contains(tabPage) ? Visibility.Visible : Visibility.Collapsed;
-            dot.Width = isSelected ? 16 : 6;
-            dot.Background = new SolidColorBrush(isSelected ? IslandPalette.TextPrimary : IslandPalette.WithAlpha(IslandPalette.TextPrimary, 0x55));
+            dot.Width = 34;
+            dot.Height = 26;
+            dot.CornerRadius = new CornerRadius(13);
+            dot.Child ??= new FontIcon { Glyph = PageGlyph(tabPage), FontSize = 13 };
+            ((FontIcon)dot.Child).Foreground = new SolidColorBrush(isSelected ? IslandPalette.TextPrimary : IslandPalette.TextTertiary);
+            dot.Background = new SolidColorBrush(isSelected ? IslandTheme.Current.Chip : Microsoft.UI.Colors.Transparent);
+            ToolTipService.SetToolTip(tab, AutomationProperties.GetName(tab));
         }
     }
 

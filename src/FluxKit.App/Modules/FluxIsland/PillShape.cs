@@ -29,7 +29,6 @@ internal sealed class PillShape
 
     private readonly Compositor _compositor;
     private readonly CompositionRoundedRectangleGeometry _geometry;
-    private readonly CompositionColorBrush _body;
     private readonly CompositionLinearGradientBrush _mercury;
     private readonly CompositionRadialGradientBrush _specular;
     private readonly CompositionSpriteShape _fill;
@@ -83,13 +82,12 @@ internal sealed class PillShape
         }
 
         // Drops and necks of the same liquid sit just under the body (see LiquidShape, ADR-015).
-        _body = _compositor.CreateColorBrush(IslandPalette.Surface);
         _mercury = MercuryBrush();
         _specular = SpecularBrush();
-        _liquid = new LiquidShape(body, body.Shapes.Count, _body, _geometry, _stageWidth);
+        _liquid = new LiquidShape(body, body.Shapes.Count, _mercury, _geometry, _stageWidth);
 
         _fill = _compositor.CreateSpriteShape(_geometry);
-        _fill.FillBrush = _body;
+        _fill.FillBrush = _mercury;
         _fill.StrokeBrush = EdgeLight();
         _fill.StrokeThickness = 1;
         body.Shapes.Add(_fill);
@@ -209,26 +207,36 @@ internal sealed class PillShape
     }
 
     /// <summary>
-    /// Switches the body between Onyx (true black), Glass (dark smoked glass with a brighter rim) and Mercury (dark
-    /// liquid metal with a moving highlight). Content keeps its contrast in all three; Onyx and Glass cross-fade.
+    /// Paints the body in <paramref name="theme"/>: a vertical gradient from its top colour to its bottom colour (the
+    /// change cross-fades), its rim light, and, for Mercury, the moving highlight. Drops and necks share the brush.
     /// </summary>
-    public void SetSurface(FluxKit.Tools.FluxIsland.IslandLook look)
+    public void SetSurface(IslandTheme theme)
     {
-        bool glass = look == FluxKit.Tools.FluxIsland.IslandLook.Glass;
-        bool mercury = look == FluxKit.Tools.FluxIsland.IslandLook.Mercury;
-        ColorKeyFrameAnimation fade = _compositor.CreateColorKeyFrameAnimation();
-        fade.InsertKeyFrame(1, glass ? IslandPalette.GlassSurface : IslandPalette.Surface);
-        fade.Duration = TimeSpan.FromMilliseconds(300);
-        _body.StartAnimation("Color", fade);
-        CompositionBrush surface = mercury ? _mercury : _body;
-        _fill.FillBrush = surface;
-        _liquid.SetSurface(surface);
+        bool mercury = theme.Look == FluxKit.Tools.FluxIsland.IslandLook.Mercury;
+        Color middle = mercury ? IslandPalette.MercuryMid : Mix(theme.Top, theme.Bottom);
+        Color[] colors = [theme.Top, middle, theme.Bottom];
+        for (int i = 0; i < colors.Length; i++)
+        {
+            ColorKeyFrameAnimation fade = _compositor.CreateColorKeyFrameAnimation();
+            fade.InsertKeyFrame(1, colors[i]);
+            fade.Duration = TimeSpan.FromMilliseconds(360);
+            _mercury.ColorStops[i].StartAnimation("Color", fade);
+        }
+
+        _fill.FillBrush = _mercury;
+        _liquid.SetSurface(_mercury);
         _shine.FillBrush = mercury ? _specular : null;
         if (_rim is not null)
         {
-            _rim.Color = glass ? IslandPalette.GlassRim : mercury ? IslandPalette.MercuryRim : IslandPalette.EdgeLight;
+            _rim.Color = theme.Rim;
         }
     }
+
+    private static Color Mix(Color a, Color b) => Color.FromArgb(
+        (byte)((a.A + b.A) / 2),
+        (byte)((a.R + b.R) / 2),
+        (byte)((a.G + b.G) / 2),
+        (byte)((a.B + b.B) / 2));
 
     /// <summary>
     /// Where the light falls on Mercury, from 0 (left edge) to 1 (right edge): the highlight drifts toward the pointer
@@ -364,15 +372,15 @@ internal sealed class PillShape
         return light;
     }
 
-    /// <summary>Mercury: gunmetal catching light at the top, deepening to black, like a bead of liquid metal.</summary>
+    /// <summary>The body: a vertical gradient of three stops, recoloured by SetSurface for each theme.</summary>
     private CompositionLinearGradientBrush MercuryBrush()
     {
         CompositionLinearGradientBrush metal = _compositor.CreateLinearGradientBrush();
         metal.StartPoint = Vector2.Zero;
         metal.EndPoint = new Vector2(0, 1);
-        metal.ColorStops.Add(_compositor.CreateColorGradientStop(0, IslandPalette.MercuryTop));
-        metal.ColorStops.Add(_compositor.CreateColorGradientStop(0.42f, IslandPalette.MercuryMid));
-        metal.ColorStops.Add(_compositor.CreateColorGradientStop(1, IslandPalette.Surface));
+        metal.ColorStops.Add(_compositor.CreateColorGradientStop(0, IslandTheme.Onyx.Top));
+        metal.ColorStops.Add(_compositor.CreateColorGradientStop(0.42f, Mix(IslandTheme.Onyx.Top, IslandTheme.Onyx.Bottom)));
+        metal.ColorStops.Add(_compositor.CreateColorGradientStop(1, IslandTheme.Onyx.Bottom));
         return metal;
     }
 

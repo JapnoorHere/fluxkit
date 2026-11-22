@@ -15,7 +15,7 @@ internal static class IslandSamples
     public static readonly string[] Names =
     [
         "clock", "music", "timer", "done", "charging", "copied", "offline", "volume", "shelf", Drop,
-        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "mercury", "ferro", "halo", "scrub", "droplet", "peek", "peek-live", "stash", "notification", "notifications", "inbox",
+        "split", "download", "downloaded", "screenshot", "desktop", "headphones", "micmuted", "brightness", "caps", "saver", "device", "stopwatch", "link", "colour", "numlock", "disconnected", "both", "glance", "command", "notes", "call", "zipped", "rewind", "clips", "glass", "home", "rose", "lavender", "peach", "sakura", "graphite", "pureblack", "mercury", "ferro", "halo", "scrub", "droplet", "peek", "peek-live", "stash", "notification", "notifications", "inbox",
     ];
 
     public static IslandScene Create(string name, DateTimeOffset now)
@@ -75,11 +75,11 @@ internal static class IslandSamples
                 "both" => new IslandActivity(ActivityKind.Stopwatch) { Stopwatch = stopwatch },
                 _ => null,
             },
-            Media = name is "music" or "split" or "glass" or "mercury" or "ferro" or "halo" ? media : null,
-            Timer = name is "timer" or "split" or "both" or "droplet" ? timer : FocusTimerSnapshot.Idle,
+            Media = name is "music" or "split" or "glass" or "mercury" or "ferro" or "halo" or "home" or "rose" or "lavender" or "peach" or "sakura" or "graphite" or "pureblack" ? media : null,
+            Timer = name is "timer" or "split" or "both" or "droplet" or "home" or "rose" or "lavender" or "peach" or "sakura" or "graphite" or "pureblack" ? timer : FocusTimerSnapshot.Idle,
             Droplets = name == "droplet" ? [new DropletPlace(ActivityKind.Timer, 1180, 120)] : [],
             Stopwatch = name is "stopwatch" or "both" ? stopwatch : StopwatchSnapshot.Idle,
-            Rewind = name is "rewind" or "scrub"
+            Rewind = name is "rewind" or "scrub" or "home"
                 ?
                 [
                     new RewindEntry(new IslandActivity(ActivityKind.Screenshot) { Text = "Screenshot 2026-11-14.png", Path = @"C:\Windows\Web\Wallpaper\Windows\img0.jpg" }, now - TimeSpan.FromMinutes(2)),
@@ -97,12 +97,23 @@ internal static class IslandSamples
                 LightHalo = name == "halo",
                 WindowPeek = name is "peek" or "peek-live",
                 WindowStash = name == "stash",
-                Look = name switch { "glass" => FluxKit.Tools.FluxIsland.IslandLook.Glass, "mercury" => FluxKit.Tools.FluxIsland.IslandLook.Mercury, _ => FluxKit.Tools.FluxIsland.IslandLook.Onyx },
+                Look = name switch
+                {
+                    "glass" => FluxKit.Tools.FluxIsland.IslandLook.Glass,
+                    "mercury" => FluxKit.Tools.FluxIsland.IslandLook.Mercury,
+                    "rose" => FluxKit.Tools.FluxIsland.IslandLook.Rose,
+                    "lavender" => FluxKit.Tools.FluxIsland.IslandLook.Lavender,
+                    "peach" => FluxKit.Tools.FluxIsland.IslandLook.Peach,
+                    "sakura" => FluxKit.Tools.FluxIsland.IslandLook.Sakura,
+                    "graphite" => FluxKit.Tools.FluxIsland.IslandLook.Graphite,
+                    "pureblack" => FluxKit.Tools.FluxIsland.IslandLook.PureBlack,
+                    _ => FluxKit.Tools.FluxIsland.IslandLook.Onyx,
+                },
             },
             Stash = name == "stash"
                 ? [.. FluxKit.Platform.Windows.WindowThumbnail.ListWindows().Take(3).Select((w, i) => new StashedWindow(w.Handle, w.Title, now - TimeSpan.FromMinutes(4 + (i * 9))))]
                 : [],
-            Inbox = name == "inbox"
+            Inbox = name is "inbox" or "home" or "rose" or "lavender" or "peach" or "sakura" or "graphite" or "pureblack"
                 ?
                 [
                     new ToastInfo(3, "Teams!App", "Teams", logo, "Priya Sharma", "Are we still on for lunch at 1?", now - TimeSpan.FromSeconds(20)),

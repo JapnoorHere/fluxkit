@@ -1,3 +1,4 @@
+using FluxKit.App.Modules.FluxIsland.Design;
 using System.Numerics;
 using FluxKit.Tools.FluxIsland.Activities;
 using Microsoft.UI.Composition;
@@ -64,31 +65,30 @@ public sealed partial class IslandPill
         IslandMotion.Exit(Bubble, () => !_bubbleShown, shrink: false);
     }
 
-    /// <summary>Switches the pill and the bubble between Onyx, Glass and Mercury when the setting changes.</summary>
+    /// <summary>Paints the pill and the bubble in the chosen theme when the setting changes.</summary>
     private void ApplyLook(FluxKit.Tools.FluxIsland.IslandLook look)
     {
-        if (look == _look)
+        if (look == _look && IslandTheme.Current.Look == look)
         {
             return;
         }
 
         _look = look;
-        _shape.SetSurface(look);
-        bool glass = look == FluxKit.Tools.FluxIsland.IslandLook.Glass;
-        BubbleFill.Fill = look == FluxKit.Tools.FluxIsland.IslandLook.Mercury
-            ? new LinearGradientBrush
+        IslandTheme.Use(look);
+        IslandTheme theme = IslandTheme.Current;
+        _shape.SetSurface(theme);
+        BubbleFill.Fill = new LinearGradientBrush
+        {
+            StartPoint = new Windows.Foundation.Point(0, 0),
+            EndPoint = new Windows.Foundation.Point(0, 1),
+            GradientStops =
             {
-                StartPoint = new Windows.Foundation.Point(0, 0),
-                EndPoint = new Windows.Foundation.Point(0, 1),
-                GradientStops =
-                {
-                    new GradientStop { Color = IslandPalette.MercuryTop, Offset = 0 },
-                    new GradientStop { Color = IslandPalette.MercuryMid, Offset = 0.42 },
-                    new GradientStop { Color = IslandPalette.Surface, Offset = 1 },
-                },
-            }
-            : new SolidColorBrush(glass ? IslandPalette.GlassSurface : IslandPalette.Surface);
-        BubbleEdge.Stroke = new SolidColorBrush(glass ? IslandPalette.GlassRim : IslandPalette.Highlight);
+                new GradientStop { Color = theme.Top, Offset = 0 },
+                new GradientStop { Color = theme.Bottom, Offset = 1 },
+            },
+        };
+        BubbleEdge.Stroke = new SolidColorBrush(theme.Rim);
+        HomeView.ApplyTheme(theme);
     }
 
     private void Spring(Visual visual, string property, Vector3 to)

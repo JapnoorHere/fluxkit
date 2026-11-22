@@ -110,6 +110,7 @@
                     </StackPanel>
                 </Grid>
 
+                <local:HomePanel x:Name="HomeView" Visibility="Collapsed" />
                 <local:MediaPanel x:Name="MediaView" Visibility="Collapsed" />
                 <local:TimerPanel x:Name="TimerView" Visibility="Collapsed" />
                 <local:ShelfPanel x:Name="ShelfView" Visibility="Collapsed" />
@@ -123,14 +124,18 @@
                 <local:CommandBar x:Name="CommandView" Visibility="Collapsed" />
                 <local:DropZones x:Name="DropView" Visibility="Collapsed" />
 
-                <!-- Page dots under the open panel, as on a phone's home screen. Click one, or swipe sideways. -->
+                <!-- The icon bar across the top of the open panel: one icon per page. Click one, or swipe sideways. -->
                 <StackPanel
                     x:Name="PanelRail"
-                    Margin="0,0,0,4"
+                    Margin="0,10,0,0"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Bottom"
+                    VerticalAlignment="Top"
+                    Spacing="2"
                     Orientation="Horizontal"
                     Visibility="Collapsed">
+                    <Button x:Name="HomeTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_HomeTab">
+                        <Border x:Name="HomeDot" />
+                    </Button>
                     <Button x:Name="MediaTab" Style="{StaticResource IslandDotStyle}" x:Uid="Island_MediaTab">
                         <Border x:Name="MediaDot" Height="6" CornerRadius="3" />
                     </Button>

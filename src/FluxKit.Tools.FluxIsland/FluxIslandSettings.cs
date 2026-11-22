@@ -65,6 +65,24 @@ public enum IslandLook
 
     /// <summary>Liquid metal: dark chrome with a highlight that follows the pointer (ADR-015).</summary>
     Mercury,
+
+    /// <summary>True #000 for OLED screens: the island's unused pixels stay off.</summary>
+    PureBlack,
+
+    /// <summary>A lighter, warm-grey black.</summary>
+    Graphite,
+
+    /// <summary>A soft rose tint.</summary>
+    Rose,
+
+    /// <summary>A soft lavender tint.</summary>
+    Lavender,
+
+    /// <summary>A soft peach tint.</summary>
+    Peach,
+
+    /// <summary>A soft cherry-blossom pink.</summary>
+    Sakura,
 }
 
 public enum IslandEffects

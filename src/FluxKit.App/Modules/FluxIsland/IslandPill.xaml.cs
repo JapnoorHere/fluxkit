@@ -23,14 +23,15 @@ namespace FluxKit.App.Modules.FluxIsland;
 public sealed partial class IslandPill : UserControl
 {
     public const double StageWidth = 460;
-    public const double StageHeight = 320;
+    public const double StageHeight = 380;
     public const double TopInset = 6;
 
     private const double CompactHeight = 36;
     private const double MinCompactWidth = 150;
     private const double MaxCompactWidth = 300;
     private const double DotsRoom = 20;
-    private const double PageDotsRoom = 18;
+    private const double IconBarRoom = 40;
+    private const double IconBarMinWidth = 420;
     private const float PageSlide = 28;
     private const float HoverScale = 1.04f;
     private const float PressScale = 0.94f;
@@ -110,6 +111,8 @@ public sealed partial class IslandPill : UserControl
         Surface.Margin = new Thickness(0, TopInset, 0, 0);
         _shape = new PillShape(ShapeHost, ContentLayer, Stage, new Vector2((float)StageWidth, (float)StageHeight), (float)TopInset);
         MediaView.UseArt(_art);
+        HomeView.UseArt(_art);
+        HomeView.PageRequested += (_, name) => OpenFromHome(name);
         _logo.Changed += (_, _) =>
         {
             if (_scene.Primary?.Kind == ActivityKind.Notification)
@@ -170,6 +173,7 @@ public sealed partial class IslandPill : UserControl
                 _closeTimer.Start();
             }
         };
+        HomeTab.Click += (_, _) => ShowPage(PanelPage.Home);
         MediaTab.Click += (_, _) => ShowPage(PanelPage.Media);
         TimerTab.Click += (_, _) => ShowPage(PanelPage.Timer);
         ShelfTab.Click += (_, _) => ShowPage(PanelPage.Shelf);
@@ -226,6 +230,7 @@ public sealed partial class IslandPill : UserControl
 
     private enum PanelPage
     {
+        Home,
         Media,
         Timer,
         Shelf,
@@ -248,6 +253,7 @@ public sealed partial class IslandPill : UserControl
             TimerView.Commands = value;
             ShelfView.Commands = value;
             GlanceView.Commands = value;
+            HomeView.Commands = value;
         }
     }
 
@@ -297,10 +303,11 @@ public sealed partial class IslandPill : UserControl
     public void Preview(IslandScene scene, bool open, bool dropping = false, string? sample = null)
     {
         _mode = sample == "command" ? PillMode.Command
-            : open || dropping || sample is "glance" or "notes" or "rewind" or "clips" or "inbox" or "peek" or "peek-live" or "stash" ? PillMode.Panel
+            : open || dropping || sample is "home" or "rose" or "lavender" or "peach" or "sakura" or "graphite" or "pureblack" or "glance" or "notes" or "rewind" or "clips" or "inbox" or "peek" or "peek-live" or "stash" ? PillMode.Panel
             : PillMode.Compact;
         _page = sample switch
         {
+            "home" or "rose" or "lavender" or "peach" or "sakura" or "graphite" or "pureblack" => PanelPage.Home,
             "glance" => PanelPage.Glance,
             "notes" => PanelPage.Notes,
             "rewind" => PanelPage.Rewind,
@@ -368,6 +375,7 @@ public sealed partial class IslandPill : UserControl
             _lingerTimer.Stop();
             _mode = PillMode.Compact;
             GlanceView.SetLive(false);
+            HomeView.SetLive(false);
             _meter.SetRunning(false);
             _callTimer?.Stop();
             ReleaseKeyboard();
@@ -410,6 +418,7 @@ public sealed partial class IslandPill : UserControl
         MorphTo(size);
         ScheduleTimers(now);
         GlanceView.SetLive(_active && _mode == PillMode.Panel && _page == PanelPage.Glance);
+        HomeView.SetLive(_active && _mode == PillMode.Panel && _page == PanelPage.Home);
         UpdateMeter(view);
         UpdateCallListener();
         UpdatePeek();

@@ -83,6 +83,9 @@ internal sealed class HaloWindow
             int height = (int)Math.Ceiling(Height * scale);
             var bounds = new PixelRect(centreX - (width / 2), top, centreX + (width / 2), top + height);
             _window.AppWindow.MoveAndResize(new RectInt32(bounds.Left, bounds.Top, width, height));
+            // Draw only inside the window's edge: at the very edge Windows shows a thin frame line (see the island window).
+            int inset = (int)Math.Ceiling(6 * scale);
+            WindowHelpers.SetHitRegion(_hwnd, new PixelRect(inset, inset, width - inset, height - inset), 0);
             WindowHelpers.ShowBelow(_hwnd, island, bounds);
             WindowHelpers.RemoveBorder(_hwnd);
             _shown = true;
