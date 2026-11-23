@@ -35,6 +35,9 @@ public sealed partial class IslandPill : UserControl
 
     /// <summary>The space kept between the icon bar and the island's sides.</summary>
     private const double RailInset = 16;
+
+    /// <summary>The widest the open panel gets: a little inside the window, so its round edges are never clipped.</summary>
+    private const double MaxPanelWidth = StageWidth - 20;
     private const float PageSlide = 28;
     private const float HoverScale = 1.04f;
     private const float PressScale = 0.94f;

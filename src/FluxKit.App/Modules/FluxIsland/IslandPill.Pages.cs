@@ -159,7 +159,7 @@ public sealed partial class IslandPill
     private void ShowRail(List<PanelPage> pages, PanelPage selected)
     {
         PanelRail.Visibility = pages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
-        double room = StageWidth - (2 * RailInset);
+        double room = MaxPanelWidth - (2 * RailInset);
         foreach ((bool named, double tabWidth) in (ReadOnlySpan<(bool, double)>)[(true, 34), (true, 28), (false, 28)])
         {
             StyleRail(pages, selected, named, tabWidth);
@@ -203,7 +203,7 @@ public sealed partial class IslandPill
     }
 
     /// <summary>The narrowest the open panel may be so the icon bar, as laid out by <see cref="ShowRail"/>, fits inside it.</summary>
-    private double RailWidth() => Math.Min(StageWidth, PanelRail.DesiredSize.Width + (2 * RailInset));
+    private double RailWidth() => Math.Min(MaxPanelWidth, PanelRail.DesiredSize.Width + (2 * RailInset));
 
 
     /// <summary>Moves to the next or previous page (a sideways swipe, PageUp or PageDown); at the ends it rubber-bands.</summary>

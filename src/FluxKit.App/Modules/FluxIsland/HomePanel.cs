@@ -22,11 +22,15 @@ namespace FluxKit.App.Modules.FluxIsland;
 /// </summary>
 public sealed partial class HomePanel : UserControl, IIslandPage
 {
-    private const double PageWidth = 460;
+    /// <summary>Narrower than the island's window (<see cref="IslandPill.StageWidth"/>), so its edges and round corners never touch the window's edge.</summary>
+    private const double PageWidth = 440;
     private const double Gap = 8;
+
+    /// <summary>The space between the tiles and the island's sides and bottom, clear of its round corners.</summary>
+    private const double Side = 16;
     private static readonly TimeSpan SampleEvery = TimeSpan.FromSeconds(2);
 
-    private readonly Grid _grid = new() { Padding = new Thickness(12, 4, 12, 12), ColumnSpacing = Gap, RowSpacing = Gap };
+    private readonly Grid _grid = new() { Padding = new Thickness(Side, 4, Side, Side), ColumnSpacing = Gap, RowSpacing = Gap };
     private readonly SystemStats _stats = new();
     private readonly DispatcherQueueTimer _sampler;
     private readonly List<Border> _cards = [];
@@ -110,7 +114,7 @@ public sealed partial class HomePanel : UserControl, IIslandPage
 
     UIElement[] IIslandPage.Rows => [.. _cards];
 
-    Size IIslandPage.PreferredSize => new(PageWidth, 4 + 112 + Gap + 92 + Gap + 44 + 12);
+    Size IIslandPage.PreferredSize => new(PageWidth, 4 + 112 + Gap + 92 + Gap + 44 + Side);
 
     string IIslandPage.State => "home";
 
@@ -335,7 +339,7 @@ public sealed partial class HomePanel : UserControl, IIslandPage
         if (timed)
         {
             double share = Math.Clamp(media.EstimatedPosition(now) / media.Duration, 0, 1);
-            _songProgress.Width = Math.Max(3, share * ((PageWidth - 24 - Gap) * 1.35 / 2.35 - 24));
+            _songProgress.Width = Math.Max(3, share * ((PageWidth - (2 * Side) - Gap) * 1.35 / 2.35 - 24));
         }
 
         ShowArt();
