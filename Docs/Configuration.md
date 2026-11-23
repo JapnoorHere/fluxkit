@@ -98,7 +98,8 @@ Section `utilities/flux-island`.
 | `clipboardHistory` | bool | `false` | Keep the last 25 pieces of copied text (memory only) for the Clipboard page. Turning it off forgets them, pins too. |
 | `interruptions` | `Everything`, `Important`, `Nothing` | `Everything` | Which quick moments may take over the island. Important: time's up, low battery, offline, talking while muted and your own file jobs. |
 | `sounds` | bool | `false` | Play Windows' reminder sound when a timer ends, and the default notification sound for low battery or talking while muted. |
-| `look` | `Onyx`, `Glass`, `Mercury`, `PureBlack`, `Graphite`, `Rose`, `Lavender`, `Peach`, `Sakura` | `Onyx` | The theme: colours the island, its cards, its bubble and its rim. Pure black keeps unused OLED pixels off; Mercury is liquid metal with a highlight that follows the pointer. |
+| `look` | `Onyx`, `PureBlack`, `Graphite`, `Glass`, `Mercury` | `Onyx` | The material: Onyx (black with depth), Pure black (OLED), Graphite (matte grey), Glass (smoked glass) or Mercury (liquid metal with a highlight that follows the pointer). The retired tints `Rose`, `Lavender`, `Peach` and `Sakura` load as `Onyx`. |
+| `useWindowsAccent` | bool | `false` | Tint the material with Windows' accent colour, following it when it changes. |
 | `soundRipples` | bool | `true` | The liquid edge: the underside ripples like ferrofluid with the music, and when the pointer touches it (ADR-015). Off with reduced motion and high contrast. |
 | `lightHalo` | bool | `false` | Labs: the island's colour spills onto the desktop under it like a lamp. A separate click-through window; hidden with the island. |
 | `droplets` | list | `[]` | Activities torn off the island into floating droplets (`kind`: `Media`, `Timer` or `Stopwatch`; `x`, `y`: screen pixels). Managed by FluxKit; a droplet docks itself when its activity ends. |

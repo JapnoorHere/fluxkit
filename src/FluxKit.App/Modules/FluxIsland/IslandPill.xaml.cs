@@ -81,6 +81,8 @@ public sealed partial class IslandPill : UserControl
     private bool _held;
     private Vector3 _lean;
     private FluxKit.Tools.FluxIsland.IslandLook _look;
+    private bool _useAccent;
+    private Windows.UI.ViewManagement.UISettings? _accentSettings;
     private bool _highContrast;
     private bool _struck;
     private int _pageSlide;
@@ -303,11 +305,11 @@ public sealed partial class IslandPill : UserControl
     public void Preview(IslandScene scene, bool open, bool dropping = false, string? sample = null)
     {
         _mode = sample == "command" ? PillMode.Command
-            : open || dropping || sample is "home" or "rose" or "lavender" or "peach" or "sakura" or "graphite" or "pureblack" or "glance" or "notes" or "rewind" or "clips" or "inbox" or "peek" or "peek-live" or "stash" ? PillMode.Panel
+            : open || dropping || sample is "home" or "accent" or "graphite" or "pureblack" or "glance" or "notes" or "rewind" or "clips" or "inbox" or "peek" or "peek-live" or "stash" ? PillMode.Panel
             : PillMode.Compact;
         _page = sample switch
         {
-            "home" or "rose" or "lavender" or "peach" or "sakura" or "graphite" or "pureblack" => PanelPage.Home,
+            "home" or "accent" or "graphite" or "pureblack" => PanelPage.Home,
             "glance" => PanelPage.Glance,
             "notes" => PanelPage.Notes,
             "rewind" => PanelPage.Rewind,
@@ -350,7 +352,7 @@ public sealed partial class IslandPill : UserControl
     {
         _scene = scene;
         Surface.AllowDrop = scene.Settings.ShelfEnabled;
-        ApplyLook(scene.Settings.Look);
+        ApplyLook(scene.Settings.Look, scene.Settings.UseWindowsAccent);
         _art.Set(scene.Media?.Thumbnail ?? ReadOnlyMemory<byte>.Empty);
         _logo.Set(scene.Primary is { Kind: ActivityKind.Notification } note ? note.Image : ReadOnlyMemory<byte>.Empty);
         Update();

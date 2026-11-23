@@ -81,6 +81,7 @@ public sealed partial class FluxIslandPage : Page
         InterruptionsCombo.SelectedIndex = (int)s.Interruptions;
         SoundsToggle.IsOn = s.Sounds;
         RipplesToggle.IsOn = s.SoundRipples;
+        AccentToggle.IsOn = s.UseWindowsAccent;
         HaloToggle.IsOn = s.LightHalo;
         LiveToggle.IsOn = s.LiveActivities;
         PeekToggle.IsOn = s.WindowPeek;
@@ -216,6 +217,7 @@ public sealed partial class FluxIslandPage : Page
             s.Interruptions = (IslandInterruptions)Math.Max(0, InterruptionsCombo.SelectedIndex);
             s.Sounds = SoundsToggle.IsOn;
             s.SoundRipples = RipplesToggle.IsOn;
+            s.UseWindowsAccent = AccentToggle.IsOn;
             s.LightHalo = HaloToggle.IsOn;
             s.LiveActivities = LiveToggle.IsOn;
             s.WindowPeek = PeekToggle.IsOn;

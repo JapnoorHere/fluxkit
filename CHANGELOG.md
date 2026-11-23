@@ -14,7 +14,7 @@ All notable changes to FluxKit are documented here. The format follows [Keep a C
 - **A richer Flux Island:**
   - **Icon bar:** a row of page icons across the top of the open island replaces the page dots.
   - **Home dashboard:** music on its album's colours with play/pause and progress, today with a week strip, the timer with quick starts, live CPU and RAM, and the newest notification or moment. Each tile opens its full page.
-  - **Nine themes:** Onyx, Pure black, Graphite, Glass, Mercury, Rosé, Lavender, Peach and Sakura colour the island and its cards.
+  - **Materials:** Onyx, Pure black, Graphite (matte), Glass and Mercury, optionally tinted with your Windows accent colour (and following it when it changes).
   - **Compact pill:** it now carries the moment's colour as a soft wash, and a progress line along its bottom edge for music, timers, downloads and Live Activities.
 - **Flux Island "Liquid"** (ADR-015, ADR-016), a look and gestures no other island has:
   - The island behaves like liquid:

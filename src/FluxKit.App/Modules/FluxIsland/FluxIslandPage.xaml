@@ -217,11 +217,10 @@
                                 <ComboBoxItem x:Uid="FluxIsland_LookMercury" />
                                 <ComboBoxItem x:Uid="FluxIsland_LookPureBlack" />
                                 <ComboBoxItem x:Uid="FluxIsland_LookGraphite" />
-                                <ComboBoxItem x:Uid="FluxIsland_LookRose" />
-                                <ComboBoxItem x:Uid="FluxIsland_LookLavender" />
-                                <ComboBoxItem x:Uid="FluxIsland_LookPeach" />
-                                <ComboBoxItem x:Uid="FluxIsland_LookSakura" />
                             </ComboBox>
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_WindowsAccent" Glyph="&#xE790;">
+                            <ToggleSwitch x:Name="AccentToggle" Toggled="OnChanged" />
                         </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_LightHalo" Glyph="&#xE781;">
                             <ToggleSwitch x:Name="HaloToggle" Toggled="OnChanged" />

@@ -65,16 +65,27 @@ public sealed partial class IslandPill
         IslandMotion.Exit(Bubble, () => !_bubbleShown, shrink: false);
     }
 
-    /// <summary>Paints the pill and the bubble in the chosen theme when the setting changes.</summary>
-    private void ApplyLook(FluxKit.Tools.FluxIsland.IslandLook look)
+    /// <summary>
+    /// Paints the pill and the bubble in the chosen material, tinted with Windows' accent colour when the user wants
+    /// that. Called when the setting changes, and when the accent changes in Windows.
+    /// </summary>
+    private void ApplyLook(FluxKit.Tools.FluxIsland.IslandLook look, bool useAccent)
     {
-        if (look == _look && IslandTheme.Current.Look == look)
+        _look = look;
+        _useAccent = useAccent;
+        if (useAccent && _accentSettings is null)
+        {
+            // Follow the accent live: Windows tells us when it changes (on a background thread).
+            _accentSettings = new Windows.UI.ViewManagement.UISettings();
+            _accentSettings.ColorValuesChanged += (_, _) => DispatcherQueue.TryEnqueue(() => ApplyLook(_look, _useAccent));
+        }
+
+        Windows.UI.Color? accent = useAccent ? _accentSettings!.GetColorValue(Windows.UI.ViewManagement.UIColorType.Accent) : null;
+        if (!IslandTheme.Use(look, accent))
         {
             return;
         }
 
-        _look = look;
-        IslandTheme.Use(look);
         IslandTheme theme = IslandTheme.Current;
         _shape.SetSurface(theme);
         BubbleFill.Fill = new LinearGradientBrush

@@ -72,16 +72,19 @@ public enum IslandLook
     /// <summary>A lighter, warm-grey black.</summary>
     Graphite,
 
-    /// <summary>A soft rose tint.</summary>
+    // Retired colour tints (Rose, Lavender, Peach, Sakura): kept only so older settings still load; the settings check
+    // turns them back into Onyx. Colour now comes from Windows' accent colour, when the user turns that on.
+
+    /// <summary>Retired: read as Onyx.</summary>
     Rose,
 
-    /// <summary>A soft lavender tint.</summary>
+    /// <summary>Retired: read as Onyx.</summary>
     Lavender,
 
-    /// <summary>A soft peach tint.</summary>
+    /// <summary>Retired: read as Onyx.</summary>
     Peach,
 
-    /// <summary>A soft cherry-blossom pink.</summary>
+    /// <summary>Retired: read as Onyx.</summary>
     Sakura,
 }
 
@@ -202,6 +205,9 @@ public sealed class FluxIslandSettings : ISettingsSection
 
     public IslandLook Look { get; set; } = IslandLook.Onyx;
 
+    /// <summary>Tints the chosen material with Windows' accent colour (Settings › Personalisation › Colours), and follows it when it changes.</summary>
+    public bool UseWindowsAccent { get; set; }
+
     /// <summary>Shows Windows notifications on the island (ADR-014). Off until the user turns it on and Windows allows it.</summary>
     public bool ShowNotifications { get; set; }
 
@@ -261,7 +267,7 @@ public sealed class FluxIslandSettings : ISettingsSection
             yield return "notificationPrivacy reset to Full";
         }
 
-        if (!Enum.IsDefined(Look))
+        if (!Enum.IsDefined(Look) || Look is IslandLook.Rose or IslandLook.Lavender or IslandLook.Peach or IslandLook.Sakura)
         {
             Look = IslandLook.Onyx;
             yield return "look reset to Onyx";
