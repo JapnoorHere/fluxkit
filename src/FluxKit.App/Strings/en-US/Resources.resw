@@ -838,7 +838,7 @@
     <value>Clock when idle</value>
   </data>
   <data name="FluxIsland_ShowClock.Description" xml:space="preserve">
-    <value>Shows the time when nothing else is happening.</value>
+    <value>Shows the time when nothing else is happening. Off: a slim handle that stays out of the way of tabs and title bars; hover it for the time.</value>
   </data>
   <data name="FluxIsland_InteractGroup.Header" xml:space="preserve">
     <value>Interactions</value>
@@ -1969,5 +1969,8 @@ While this is on, Windows' own banner is turned off for each app the island show
   </data>
   <data name="IslandPreview_GestureShortcut" xml:space="preserve">
     <value>Press your shortcut (Ctrl+Alt+I unless you changed it) for the command bar.</value>
+  </data>
+  <data name="Island_GlancePercentFormat" xml:space="preserve">
+    <value>{0}%</value>
   </data>
 </root>

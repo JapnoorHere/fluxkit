@@ -48,14 +48,15 @@
             </StackPanel>
         </Grid>
 
-        <!-- A running timer or stopwatch: the dial, then the label over big digits. -->
+        <!-- A running timer or stopwatch: the dial, then the label over big digits, centred over its buttons. -->
         <Grid
             x:Name="ActiveHeader"
+            HorizontalAlignment="Center"
             ColumnSpacing="16"
             Visibility="Collapsed">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <local:ProgressGlyph
                 x:Name="Dial"
@@ -74,6 +75,7 @@
                 <!-- The stopwatch's latest laps, newest first. -->
                 <TextBlock
                     x:Name="LapsText"
+                    MaxWidth="260"
                     Margin="0,2,0,0"
                     FontSize="12"
                     MaxLines="1"
@@ -137,6 +139,7 @@
         <StackPanel
             x:Name="ActiveRow"
             Grid.Row="1"
+            HorizontalAlignment="Center"
             VerticalAlignment="Bottom"
             Orientation="Horizontal"
             Spacing="10"

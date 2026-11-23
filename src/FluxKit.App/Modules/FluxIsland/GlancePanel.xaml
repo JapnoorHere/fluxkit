@@ -34,7 +34,7 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
                     <Grid Width="48" Height="48">
                         <local:ProgressGlyph x:Name="CpuRing" Width="48" Height="48" />
-                        <TextBlock x:Name="CpuText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Typography.NumeralAlignment="Tabular" />
+                        <TextBlock x:Name="CpuText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Typography.NumeralAlignment="Tabular" />
                     </Grid>
                     <TextBlock x:Name="CpuLabel" HorizontalAlignment="Center" Style="{StaticResource IslandCaptionText}" x:Uid="Island_GlanceCpu" />
                 </StackPanel>
@@ -43,7 +43,7 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
                     <Grid Width="48" Height="48">
                         <local:ProgressGlyph x:Name="MemoryRing" Width="48" Height="48" />
-                        <TextBlock x:Name="MemoryText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Typography.NumeralAlignment="Tabular" />
+                        <TextBlock x:Name="MemoryText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Typography.NumeralAlignment="Tabular" />
                     </Grid>
                     <TextBlock x:Name="MemoryLabel" HorizontalAlignment="Center" Style="{StaticResource IslandCaptionText}" x:Uid="Island_GlanceMemory" />
                 </StackPanel>
@@ -52,7 +52,7 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
                     <Grid Width="48" Height="48">
                         <local:ProgressGlyph x:Name="DiskRing" Width="48" Height="48" />
-                        <TextBlock x:Name="DiskText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Typography.NumeralAlignment="Tabular" />
+                        <TextBlock x:Name="DiskText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Typography.NumeralAlignment="Tabular" />
                     </Grid>
                     <TextBlock x:Name="DiskLabel" HorizontalAlignment="Center" Style="{StaticResource IslandCaptionText}" x:Uid="Island_GlanceDisk" />
                 </StackPanel>
@@ -61,7 +61,7 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
                     <Grid Width="48" Height="48">
                         <local:ProgressGlyph x:Name="BatteryRing" Width="48" Height="48" />
-                        <TextBlock x:Name="BatteryText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Typography.NumeralAlignment="Tabular" />
+                        <TextBlock x:Name="BatteryText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Typography.NumeralAlignment="Tabular" />
                     </Grid>
                     <TextBlock x:Name="BatteryLabel" HorizontalAlignment="Center" Style="{StaticResource IslandCaptionText}" x:Uid="Island_GlanceBattery" />
                 </StackPanel>

@@ -181,7 +181,7 @@ public sealed class FluxIslandSettings : ISettingsSection
 
     public bool HideInFullScreen { get; set; } = true;
 
-    public bool ShowClockWhenIdle { get; set; } = true;
+    public bool ShowClockWhenIdle { get; set; }
 
     /// <summary>The ferrofluid edge: the underside ripples with the music, and when the pointer touches it (ADR-015).</summary>
     public bool SoundRipples { get; set; } = true;

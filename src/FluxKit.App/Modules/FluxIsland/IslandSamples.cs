@@ -93,6 +93,7 @@ internal static class IslandSamples
             Settings = new FluxKit.Tools.FluxIsland.FluxIslandSettings
             {
                 ClipboardHistory = name == "clips",
+                ShowClockWhenIdle = name == "clock",
                 ShowNotifications = name is "notification" or "notifications" or "inbox",
                 LightHalo = name == "halo",
                 UseWindowsAccent = name == "accent",

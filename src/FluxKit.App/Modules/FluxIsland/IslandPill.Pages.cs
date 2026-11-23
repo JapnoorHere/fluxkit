@@ -46,7 +46,7 @@ public sealed partial class IslandPill
         var element = (FrameworkElement)view;
         element.Margin = new Thickness(0, bar, 0, 0);
         Size size = view.PreferredSize;
-        return (element, $"panel-{page}-{view.State}", new Size(Math.Max(size.Width, IconBarMinWidth), size.Height + bar));
+        return (element, $"panel-{page}-{view.State}", new Size(Math.Max(size.Width, Math.Max(IconBarMinWidth, RailWidth(pages.Count))), size.Height + bar));
     }
 
     private IIslandPage PageView(PanelPage page) => page switch
@@ -65,61 +65,32 @@ public sealed partial class IslandPill
     };
 
     /// <summary>
-    /// Every page that is turned on, so each can always be reached from the rail. Music and the shelf show an empty
-    /// state when there is nothing in them.
+    /// The pages, decided by the settings alone, so the icon bar is the same every time it opens and each icon stays
+    /// where the hand expects it. A page with nothing in it shows its empty state, which says how to fill it.
     /// </summary>
     private List<PanelPage> AvailablePages()
     {
-        // Home, the dashboard, always comes first.
+        FluxKit.Tools.FluxIsland.FluxIslandSettings settings = _scene.Settings;
         List<PanelPage> pages = [PanelPage.Home];
-        if (_scene.Settings.ShowMedia || _scene.Media is not null)
-        {
-            pages.Add(PanelPage.Media);
-        }
-
+        AddIf(settings.ShowMedia, PanelPage.Media);
         pages.Add(PanelPage.Timer);
-        if (_scene.Settings.ShelfEnabled)
-        {
-            pages.Add(PanelPage.Shelf);
-        }
-
-        if (_scene.Settings.ShowGlance)
-        {
-            pages.Add(PanelPage.Glance);
-        }
-
-        // A list stays reachable while it is the page on show, so Undo can bring back what Clear took away.
-        if (_scene.Notes.Count > 0 || _page == PanelPage.Notes)
-        {
-            pages.Add(PanelPage.Notes);
-        }
-
-        if (_scene.Rewind.Count > 0 || _page == PanelPage.Rewind)
-        {
-            pages.Add(PanelPage.Rewind);
-        }
-
-        if (_scene.Settings.ClipboardHistory)
-        {
-            pages.Add(PanelPage.Clips);
-        }
-
-        if (_scene.Settings.ShowNotifications || _scene.Inbox.Count > 0)
-        {
-            pages.Add(PanelPage.Inbox);
-        }
-
-        if (_scene.Settings.WindowPeek)
-        {
-            pages.Add(PanelPage.Peek);
-        }
-
-        if (_scene.Stash.Count > 0 || _page == PanelPage.Stash)
-        {
-            pages.Add(PanelPage.Stash);
-        }
-
+        AddIf(settings.ShelfEnabled, PanelPage.Shelf);
+        AddIf(settings.ShowGlance, PanelPage.Glance);
+        pages.Add(PanelPage.Notes);
+        pages.Add(PanelPage.Rewind);
+        AddIf(settings.ClipboardHistory, PanelPage.Clips);
+        AddIf(settings.ShowNotifications, PanelPage.Inbox);
+        AddIf(settings.WindowPeek, PanelPage.Peek);
+        AddIf(settings.WindowStash, PanelPage.Stash);
         return pages;
+
+        void AddIf(bool on, PanelPage page)
+        {
+            if (on)
+            {
+                pages.Add(page);
+            }
+        }
     }
 
     /// <summary>Opens on what the pill was showing: a running timer, the shelf, the music, else the clock and timers.</summary>
@@ -181,7 +152,7 @@ public sealed partial class IslandPill
 
     /// <summary>
     /// The icon bar across the top of the open panel (like a phone's tab bar, at the top): one icon per page, the
-    /// current one white on a soft pill, the others dimmed. Click one, or swipe sideways.
+    /// current one white on a soft pill with its name beside it, the others dimmed. Click one, or swipe sideways.
     /// </summary>
     private void ShowRail(List<PanelPage> pages, PanelPage selected)
     {
@@ -191,15 +162,31 @@ public sealed partial class IslandPill
         {
             bool isSelected = tabPage == selected;
             tab.Visibility = pages.Contains(tabPage) ? Visibility.Visible : Visibility.Collapsed;
-            dot.Width = 34;
+            dot.MinWidth = 34;
             dot.Height = 26;
             dot.CornerRadius = new CornerRadius(13);
-            dot.Child ??= new FontIcon { Glyph = PageGlyph(tabPage), FontSize = 13 };
-            ((FontIcon)dot.Child).Foreground = new SolidColorBrush(isSelected ? IslandPalette.TextPrimary : IslandPalette.TextTertiary);
+            if (dot.Child is not StackPanel content)
+            {
+                // The icon, and the page's name, shown only on the selected tab so the bar says where you are.
+                content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                content.Children.Add(new FontIcon { Glyph = PageGlyph(tabPage), FontSize = 13 });
+                content.Children.Add(new TextBlock { Text = AutomationProperties.GetName(tab), FontSize = 12, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center });
+                dot.Child = content;
+            }
+
+            var ink = new SolidColorBrush(isSelected ? IslandPalette.TextPrimary : IslandPalette.TextTertiary);
+            ((FontIcon)content.Children[0]).Foreground = ink;
+            var name = (TextBlock)content.Children[1];
+            name.Foreground = ink;
+            name.Visibility = isSelected ? Visibility.Visible : Visibility.Collapsed;
+            dot.Padding = new Thickness(isSelected ? 12 : 0, 0, isSelected ? 12 : 0, 0);
             dot.Background = new SolidColorBrush(isSelected ? IslandTheme.Current.Chip : Microsoft.UI.Colors.Transparent);
-            ToolTipService.SetToolTip(tab, AutomationProperties.GetName(tab));
+            ToolTipService.SetToolTip(tab, isSelected ? null : AutomationProperties.GetName(tab));
         }
     }
+
+    /// <summary>The narrowest the open panel may be so the icon bar, with the selected page's name, fits inside it.</summary>
+    private static double RailWidth(int pages) => (pages * 36) + 80 + 32;
 
     /// <summary>Moves to the next or previous page (a sideways swipe, PageUp or PageDown); at the ends it rubber-bands.</summary>
     private void StepPage(int direction)

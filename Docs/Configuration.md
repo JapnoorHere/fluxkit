@@ -113,7 +113,7 @@ Section `utilities/flux-island`.
 | `tourSeen` | bool | `false` | Set once the first-run tour has played. Set it to `false` to see the tour again (or use Settings › Try it). |
 | `seenHints` | flags | `None` | One-time gesture tips already shown: `Bubble`, `Dismiss`, `Volume`, `Pages`. |
 | `hideInFullScreen` | bool | `true` | Hide while a full-screen app covers the main screen. |
-| `showClockWhenIdle` | bool | `true` | The time on the idle pill. Off leaves a small empty pill. |
+| `showClockWhenIdle` | bool | `false` | The time on the idle pill. Off leaves a slim handle at the top edge (hover it for the time), so it doesn't cover the tabs of maximised windows. |
 | `effects` | `Full`, `Light` | `Full` | Springs, glow and playing bars, or short fades only. Light is also used whenever Windows animations are off. |
 | `focusMinutes` | 5–90 | 25 | Focus round length. Clamped. |
 | `breakMinutes` | 1–30 | 5 | Break length. Clamped. |

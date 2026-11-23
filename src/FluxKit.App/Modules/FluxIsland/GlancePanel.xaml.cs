@@ -137,7 +137,7 @@ public sealed partial class GlancePanel : UserControl, IIslandPage
         int rounded = (int)Math.Round(Math.Clamp(percent, 0, 100));
         ring.SetColor(color);
         ring.SetProgress(rounded / 100.0, _animate);
-        text.Text = rounded.ToString(System.Globalization.CultureInfo.CurrentCulture);
+        text.Text = Strings.Format("Island_GlancePercentFormat", rounded);
         AutomationProperties.SetName(ring, Strings.Format("Island_GlanceGaugeName", label.Text, rounded));
     }
 
@@ -166,6 +166,12 @@ public sealed partial class GlancePanel : UserControl, IIslandPage
     /// <summary>The last minute of download speed as a line, scaled to its own peak so small activity still shows.</summary>
     private void DrawSpark(long download)
     {
+        // Until a minute has passed, the earlier samples read as nothing, so the line always spans the tile.
+        while (_spark.Count < SparkSamples - 1)
+        {
+            _spark.Enqueue(0);
+        }
+
         _spark.Enqueue(download);
         while (_spark.Count > SparkSamples)
         {

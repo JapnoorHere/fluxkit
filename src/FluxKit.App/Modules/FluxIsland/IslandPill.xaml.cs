@@ -41,6 +41,12 @@ public sealed partial class IslandPill : UserControl
     private const double BubbleGap = 8;
     private static readonly Size IdleSize = new(120, 32);
     private static readonly Size BareSize = new(88, 28);
+
+    /// <summary>
+    /// The idle island with no clock and no mic or camera dot: a slim handle at the top edge, easy to reach (the edge
+    /// stops the pointer) but too thin to cover the tabs and title bars of maximised windows. Hover it for the time.
+    /// </summary>
+    private static readonly Size HandleSize = new(72, 10);
     private static readonly Size PeekSize = new(320, 52);
     private static readonly TimeSpan PeekDelay = TimeSpan.FromMilliseconds(350);
     private static readonly TimeSpan CloseDelay = TimeSpan.FromMilliseconds(600);
@@ -702,6 +708,11 @@ public sealed partial class IslandPill : UserControl
                 IdleDots.Update(_scene.Privacy, Springs);
                 _shape.SetWash(IslandPalette.TextPrimary, on: false, Springs);
                 _shape.SetProgress(null, IslandPalette.TextPrimary, Springs);
+                if (!_scene.Settings.ShowClockWhenIdle && !IdleDots.IsShowing)
+                {
+                    return (IdleView, "idle", HandleSize);
+                }
+
                 Size idle = _scene.Settings.ShowClockWhenIdle ? IdleSize : BareSize;
                 return (IdleView, "idle", IdleDots.IsShowing ? new Size(idle.Width + DotsRoom, idle.Height) : idle);
             }
