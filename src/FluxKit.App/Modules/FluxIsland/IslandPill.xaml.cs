@@ -698,6 +698,8 @@ public sealed partial class IslandPill : UserControl
                 IdleClock.Visibility = _scene.Settings.ShowClockWhenIdle ? Visibility.Visible : Visibility.Collapsed;
                 AutomationProperties.SetName(Surface, IdleClock.Text);
                 IdleDots.Update(_scene.Privacy, Springs);
+                _shape.SetWash(IslandPalette.TextPrimary, on: false, Springs);
+                _shape.SetProgress(null, IslandPalette.TextPrimary, Springs);
                 Size idle = _scene.Settings.ShowClockWhenIdle ? IdleSize : BareSize;
                 return (IdleView, "idle", IdleDots.IsShowing ? new Size(idle.Width + DotsRoom, idle.Height) : idle);
             }
@@ -756,6 +758,19 @@ public sealed partial class IslandPill : UserControl
             CompactBars.SetPlaying(media.IsPlaying, Springs);
             content = content with { Accent = _art.Accent };
         }
+
+        // The pill's own light: the moment's colour washes in from the left, and progress runs along the bottom edge.
+        DateTimeOffset at = DateTimeOffset.Now;
+        double? share = activity switch
+        {
+            { Kind: ActivityKind.Media, Media: { } song } when song.Duration > TimeSpan.Zero => song.EstimatedPosition(at) / song.Duration,
+            { Kind: ActivityKind.Timer, Timer: { IsActive: true } timer } when timer.Total > TimeSpan.Zero => 1 - (timer.RemainingAt(at) / timer.Total),
+            { Kind: ActivityKind.Download or ActivityKind.Live } => content.Progress,
+            _ => null,
+        };
+        bool tinted = activity is not null && content.Accent != IslandPalette.TextPrimary && !HighContrast;
+        _shape.SetWash(content.Accent, tinted, Springs);
+        _shape.SetProgress(HighContrast ? null : share, content.Accent, Springs);
 
         // Leading: every moment shows its icon in a badge of its colour (plan §4.1).
         CompactGlyph.Show(content.Glyph, content.Accent);

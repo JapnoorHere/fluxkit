@@ -21,6 +21,9 @@ internal sealed class PillShape
     /// <summary>How far the glow and shadow reach past the body, so the window can leave room for them.</summary>
     public const float Bleed = 12;
 
+    /// <summary>How far in from the pill's round ends the progress line starts and stops.</summary>
+    private const float ProgressInset = 18;
+
     // Shadow layers from the outside in: how far each spreads past the pill, how far it drops, and its opacity.
     private static readonly (float Spread, float Drop, byte Alpha)[] Shadow = [(10, 5, 0x0A), (7, 4, 0x10), (4, 2, 0x18), (2, 1, 0x24)];
 
@@ -33,6 +36,11 @@ internal sealed class PillShape
     private readonly CompositionRadialGradientBrush _specular;
     private readonly CompositionSpriteShape _fill;
     private readonly CompositionSpriteShape _shine;
+    private readonly CompositionSpriteShape _wash;
+    private readonly CompositionColorGradientStop _washStop;
+    private readonly CompositionRoundedRectangleGeometry _progress;
+    private readonly CompositionColorBrush _progressFill;
+    private readonly CompositionPropertySet _progressShare;
     private readonly LiquidShape _liquid;
     private CompositionColorGradientStop? _rim;
     private readonly ShapeVisual _glow;
@@ -95,6 +103,35 @@ internal sealed class PillShape
         // Mercury's highlight: a soft spot of light on the metal that slides toward the pointer (see SetLight).
         _shine = _compositor.CreateSpriteShape(_geometry);
         body.Shapes.Add(_shine);
+
+        // The compact pill's accent wash and progress line (see SetWash and SetProgress).
+        _washStop = _compositor.CreateColorGradientStop(0, IslandPalette.WithAlpha(_accent, 0));
+        CompositionLinearGradientBrush wash = _compositor.CreateLinearGradientBrush();
+        wash.StartPoint = Vector2.Zero;
+        wash.EndPoint = new Vector2(1, 0);
+        wash.ColorStops.Add(_washStop);
+        wash.ColorStops.Add(_compositor.CreateColorGradientStop(0.55f, Color.FromArgb(0, 0, 0, 0)));
+        _wash = _compositor.CreateSpriteShape(_geometry);
+        _wash.FillBrush = wash;
+        body.Shapes.Add(_wash);
+        _progress = _compositor.CreateRoundedRectangleGeometry();
+        _progress.CornerRadius = new Vector2(1.25f, 1.25f);
+        _progressFill = _compositor.CreateColorBrush(Color.FromArgb(0, 0, 0, 0));
+        CompositionSpriteShape bar = _compositor.CreateSpriteShape(_progress);
+        bar.FillBrush = _progressFill;
+        body.Shapes.Add(bar);
+        _progressShare = _compositor.CreatePropertySet();
+        _progressShare.InsertScalar("p", 0);
+        ExpressionAnimation barOffset = _compositor.CreateExpressionAnimation("Vector2((w - g.Size.X) / 2 + inset, g.Offset.Y + g.Size.Y - 4)");
+        barOffset.SetReferenceParameter("g", _geometry);
+        barOffset.SetScalarParameter("w", _stageWidth);
+        barOffset.SetScalarParameter("inset", ProgressInset);
+        _progress.StartAnimation("Offset", barOffset);
+        ExpressionAnimation barSize = _compositor.CreateExpressionAnimation("Vector2(Max(0, (g.Size.X - inset * 2) * s.p), 2.5)");
+        barSize.SetReferenceParameter("g", _geometry);
+        barSize.SetReferenceParameter("s", _progressShare);
+        barSize.SetScalarParameter("inset", ProgressInset);
+        _progress.StartAnimation("Size", barSize);
         root.Children.InsertAtTop(body);
         ElementCompositionPreview.SetElementChildVisual(shapeHost, root);
 
@@ -159,6 +196,46 @@ internal sealed class PillShape
     /// Tints the glow with the current moment's colour and sets how strongly it shows (0 hides it). The colour
     /// cross-fades and the strength springs, so moments hand over smoothly.
     /// </summary>
+    /// <summary>
+    /// The compact pill's accent wash: a soft tint of the moment's colour flowing in from the left, so each moment has
+    /// its own light on the pill itself, not just around it. Off on the open panel.
+    /// </summary>
+    public void SetWash(Color accent, bool on, bool springs)
+    {
+
+        Color to = IslandPalette.WithAlpha(accent, on ? (byte)0x5C : (byte)0);
+        if (!springs)
+        {
+            _washStop.Color = to;
+            return;
+        }
+
+        ColorKeyFrameAnimation fade = _compositor.CreateColorKeyFrameAnimation();
+        fade.InsertKeyFrame(1, to);
+        fade.Duration = TimeSpan.FromMilliseconds(380);
+        _washStop.StartAnimation("Color", fade);
+    }
+
+    /// <summary>
+    /// The progress line along the pill's bottom edge: how far a song, timer, download or Live Activity has got, in its
+    /// colour (null hides it). The length eases; nothing ticks on the GPU between updates.
+    /// </summary>
+    public void SetProgress(double? share, Color accent, bool springs)
+    {
+        _progressFill.Color = share is null ? Color.FromArgb(0, 0, 0, 0) : IslandPalette.WithAlpha(accent, 0xE6);
+        float to = (float)Math.Clamp(share ?? 0, 0, 1);
+        if (!springs || share is null)
+        {
+            _progressShare.InsertScalar("p", to);
+            return;
+        }
+
+        ScalarKeyFrameAnimation grow = _compositor.CreateScalarKeyFrameAnimation();
+        grow.InsertKeyFrame(1, to, _compositor.CreateLinearEasingFunction());
+        grow.Duration = TimeSpan.FromMilliseconds(900);
+        _progressShare.StartAnimation("p", grow);
+    }
+
     public void SetAccent(Color accent, float intensity, bool springs)
     {
         intensity = Math.Clamp(intensity, 0, 1);

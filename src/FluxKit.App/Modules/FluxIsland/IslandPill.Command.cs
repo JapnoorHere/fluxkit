@@ -14,6 +14,8 @@ public sealed partial class IslandPill
 
     private (UIElement View, string Key, Size Size) BuildCommand()
     {
+        _shape.SetWash(IslandPalette.TextPrimary, on: false, Springs);
+        _shape.SetProgress(null, IslandPalette.TextPrimary, Springs);
         CommandView.Animate = Springs;
         PanelRail.Visibility = Visibility.Collapsed;
         AutomationProperties.SetName(Surface, Strings.Get("Island_CommandName"));

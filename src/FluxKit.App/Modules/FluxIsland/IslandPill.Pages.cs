@@ -14,6 +14,9 @@ public sealed partial class IslandPill
 {
     private (UIElement View, string Key, Size Size) BuildPanel(DateTimeOffset now)
     {
+        // The open panel has its own colours: no wash or progress line on it.
+        _shape.SetWash(IslandPalette.TextPrimary, on: false, Springs);
+        _shape.SetProgress(null, IslandPalette.TextPrimary, Springs);
         if (_dragging)
         {
             // Files are being dragged over the island: offer what can be done with them.
