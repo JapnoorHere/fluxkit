@@ -46,7 +46,7 @@ public sealed partial class IslandPill
         var element = (FrameworkElement)view;
         element.Margin = new Thickness(0, bar, 0, 0);
         Size size = view.PreferredSize;
-        return (element, $"panel-{page}-{view.State}", new Size(Math.Max(size.Width, Math.Max(IconBarMinWidth, RailWidth(pages.Count))), size.Height + bar));
+        return (element, $"panel-{page}-{view.State}", new Size(Math.Max(size.Width, Math.Max(IconBarMinWidth, RailWidth())), size.Height + bar));
     }
 
     private IIslandPage PageView(PanelPage page) => page switch
@@ -152,17 +152,34 @@ public sealed partial class IslandPill
 
     /// <summary>
     /// The icon bar across the top of the open panel (like a phone's tab bar, at the top): one icon per page, the
-    /// current one white on a soft pill with its name beside it, the others dimmed. Click one, or swipe sideways.
+    /// current one white on a soft pill with its name beside it, the others dimmed. Click one, or swipe sideways. With
+    /// many pages the icons pack closer, and if the name still doesn't fit the selected icon shows without it, so the
+    /// bar always stays inside the island.
     /// </summary>
     private void ShowRail(List<PanelPage> pages, PanelPage selected)
     {
         PanelRail.Visibility = pages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
+        double room = StageWidth - (2 * RailInset);
+        foreach ((bool named, double tabWidth) in (ReadOnlySpan<(bool, double)>)[(true, 34), (true, 28), (false, 28)])
+        {
+            StyleRail(pages, selected, named, tabWidth);
+            PanelRail.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            if (PanelRail.DesiredSize.Width <= room)
+            {
+                break;
+            }
+        }
+    }
+
+    private void StyleRail(List<PanelPage> pages, PanelPage selected, bool named, double tabWidth)
+    {
         (Button Tab, Border Dot, PanelPage Page)[] tabs = [(HomeTab, HomeDot, PanelPage.Home), (MediaTab, MediaDot, PanelPage.Media), (TimerTab, TimerDot, PanelPage.Timer), (ShelfTab, ShelfDot, PanelPage.Shelf), (GlanceTab, GlanceDot, PanelPage.Glance), (NotesTab, NotesDot, PanelPage.Notes), (RewindTab, RewindDot, PanelPage.Rewind), (ClipsTab, ClipsDot, PanelPage.Clips), (InboxTab, InboxDot, PanelPage.Inbox), (PeekTab, PeekDot, PanelPage.Peek), (StashTab, StashDot, PanelPage.Stash)];
         foreach ((Button tab, Border dot, PanelPage tabPage) in tabs)
         {
             bool isSelected = tabPage == selected;
+            bool showName = isSelected && named;
             tab.Visibility = pages.Contains(tabPage) ? Visibility.Visible : Visibility.Collapsed;
-            dot.MinWidth = 34;
+            dot.MinWidth = tabWidth;
             dot.Height = 26;
             dot.CornerRadius = new CornerRadius(13);
             if (dot.Child is not StackPanel content)
@@ -178,15 +195,16 @@ public sealed partial class IslandPill
             ((FontIcon)content.Children[0]).Foreground = ink;
             var name = (TextBlock)content.Children[1];
             name.Foreground = ink;
-            name.Visibility = isSelected ? Visibility.Visible : Visibility.Collapsed;
-            dot.Padding = new Thickness(isSelected ? 12 : 0, 0, isSelected ? 12 : 0, 0);
+            name.Visibility = showName ? Visibility.Visible : Visibility.Collapsed;
+            dot.Padding = new Thickness(showName ? 12 : 0, 0, showName ? 12 : 0, 0);
             dot.Background = new SolidColorBrush(isSelected ? IslandTheme.Current.Chip : Microsoft.UI.Colors.Transparent);
-            ToolTipService.SetToolTip(tab, isSelected ? null : AutomationProperties.GetName(tab));
+            ToolTipService.SetToolTip(tab, showName ? null : AutomationProperties.GetName(tab));
         }
     }
 
-    /// <summary>The narrowest the open panel may be so the icon bar, with the selected page's name, fits inside it.</summary>
-    private static double RailWidth(int pages) => (pages * 36) + 80 + 32;
+    /// <summary>The narrowest the open panel may be so the icon bar, as laid out by <see cref="ShowRail"/>, fits inside it.</summary>
+    private double RailWidth() => Math.Min(StageWidth, PanelRail.DesiredSize.Width + (2 * RailInset));
+
 
     /// <summary>Moves to the next or previous page (a sideways swipe, PageUp or PageDown); at the ends it rubber-bands.</summary>
     private void StepPage(int direction)

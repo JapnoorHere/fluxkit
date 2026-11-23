@@ -32,6 +32,9 @@ public sealed partial class IslandPill : UserControl
     private const double DotsRoom = 20;
     private const double IconBarRoom = 40;
     private const double IconBarMinWidth = 420;
+
+    /// <summary>The space kept between the icon bar and the island's sides.</summary>
+    private const double RailInset = 16;
     private const float PageSlide = 28;
     private const float HoverScale = 1.04f;
     private const float PressScale = 0.94f;

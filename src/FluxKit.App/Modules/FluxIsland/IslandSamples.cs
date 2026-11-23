@@ -92,13 +92,13 @@ internal static class IslandSamples
                 : [],
             Settings = new FluxKit.Tools.FluxIsland.FluxIslandSettings
             {
-                ClipboardHistory = name == "clips",
+                ClipboardHistory = name is "clips" or "home" or "accent",
                 ShowClockWhenIdle = name == "clock",
-                ShowNotifications = name is "notification" or "notifications" or "inbox",
+                ShowNotifications = name is "notification" or "notifications" or "inbox" or "home" or "accent",
                 LightHalo = name == "halo",
                 UseWindowsAccent = name == "accent",
-                WindowPeek = name is "peek" or "peek-live",
-                WindowStash = name == "stash",
+                WindowPeek = name is "peek" or "peek-live" or "home" or "accent",
+                WindowStash = name is "stash" or "home" or "accent",
                 Look = name switch
                 {
                     "glass" => FluxKit.Tools.FluxIsland.IslandLook.Glass,
