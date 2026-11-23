@@ -1934,4 +1934,40 @@ While this is on, Windows' own banner is turned off for each app the island show
   <data name="FluxIsland_WindowsAccent.Description" xml:space="preserve">
     <value>Tints the island with your accent colour from Windows Settings › Personalisation › Colours, and follows it when you change it. Off: the material&apos;s own colour.</value>
   </data>
+  <data name="IslandPreview_GestureOpen" xml:space="preserve">
+    <value>Hover to peek, click to open. Scroll sideways on the open island to change page.</value>
+  </data>
+  <data name="FluxIsland_ShowLess" xml:space="preserve">
+    <value>Show less</value>
+  </data>
+  <data name="IslandPreview_GestureDrop" xml:space="preserve">
+    <value>Drop files on the island to keep them on the shelf, zip them or copy their paths.</value>
+  </data>
+  <data name="IslandPreview_GestureDismiss" xml:space="preserve">
+    <value>Right-click or middle-click a moment to wave it away.</value>
+  </data>
+  <data name="IslandPreview_GesturesTitle.Text" xml:space="preserve">
+    <value>Things to try on the island</value>
+  </data>
+  <data name="IslandPreview_GestureVolume" xml:space="preserve">
+    <value>Scroll over the island to change the volume.</value>
+  </data>
+  <data name="FluxIsland_ShowMoreFormat" xml:space="preserve">
+    <value>Show {0} more</value>
+  </data>
+  <data name="IslandPreview_GestureFlick" xml:space="preserve">
+    <value>Flick a moment down to keep it, up to dismiss it, or sideways to snooze it for 10 minutes.</value>
+  </data>
+  <data name="IslandPreview_GestureTearOff" xml:space="preserve">
+    <value>Drag music, a timer or the stopwatch off the island to make a floating droplet.</value>
+  </data>
+  <data name="IslandPreview_GestureScrub" xml:space="preserve">
+    <value>Scroll sideways over the closed island (or Shift+scroll) to rewind through today.</value>
+  </data>
+  <data name="FluxIsland_ShowAllFormat" xml:space="preserve">
+    <value>Show all {0}</value>
+  </data>
+  <data name="IslandPreview_GestureShortcut" xml:space="preserve">
+    <value>Press your shortcut (Ctrl+Alt+I unless you changed it) for the command bar.</value>
+  </data>
 </root>

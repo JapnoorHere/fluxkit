@@ -23,10 +23,23 @@ public sealed partial class FluxIslandPage : Page
         Unloaded += (_, _) => _host.StatusChanged -= OnStatusChanged;
     }
 
-    /// <summary>The moments offered in the "Try it" gallery: sample name, whether it opens the panel, and its label.</summary>
+    /// <summary>How many "Try it" buttons show before "Show all": one row of the island's signature moments.</summary>
+    private const int FeaturedSamples = 5;
+
+    /// <summary>How many "What it shows" switches show before "Show more": the moments most people care about.</summary>
+    private const int FeaturedMoments = 6;
+
+    /// <summary>
+    /// The moments offered in the "Try it" gallery: sample name, whether it opens the panel, and its label. The first
+    /// <see cref="FeaturedSamples"/> are what makes this island different; the rest fold away.
+    /// </summary>
     private static readonly (string Sample, bool Open, string Key)[] TrySamples =
     [
         ("music", true, "FluxIsland_TryMusic"),
+        ("ferro", false, "FluxIsland_TryLiquid"),
+        ("mercury", false, "FluxIsland_TryMercury"),
+        ("droplet", false, "FluxIsland_TryDroplet"),
+        ("scrub", false, "FluxIsland_TryScrub"),
         ("timer", false, "FluxIsland_TryTimer"),
         ("both", true, "FluxIsland_TryStopwatch"),
         ("charging", false, "FluxIsland_TryCharging"),
@@ -40,11 +53,7 @@ public sealed partial class FluxIslandPage : Page
         ("glance", false, "FluxIsland_TryGlance"),
         ("rewind", false, "FluxIsland_TryRecent"),
         ("glass", true, "FluxIsland_TryGlass"),
-        ("ferro", false, "FluxIsland_TryLiquid"),
-        ("mercury", false, "FluxIsland_TryMercury"),
         ("halo", false, "FluxIsland_TryHalo"),
-        ("scrub", false, "FluxIsland_TryScrub"),
-        ("droplet", false, "FluxIsland_TryDroplet"),
         ("peek", false, "FluxIsland_TryPeek"),
     ];
 
@@ -106,12 +115,54 @@ public sealed partial class FluxIslandPage : Page
 
     private void BuildGallery()
     {
-        foreach ((string sample, bool open, string key) in TrySamples)
+        for (int i = 0; i < TrySamples.Length; i++)
         {
+            (string sample, bool open, string key) = TrySamples[i];
             var button = new Button { Content = Strings.Get(key), HorizontalAlignment = HorizontalAlignment.Stretch, Margin = new Thickness(0, 0, 8, 8) };
             button.Click += (_, _) => _host.PreviewIsland(sample, open);
-            Gallery.Children.Add(button);
+            (i < FeaturedSamples ? Gallery : MoreGallery).Children.Add(button);
         }
+
+        MoreButton.Content = Strings.Format("FluxIsland_ShowAllFormat", TrySamples.Length);
+        FoldRows(ShowRows, FeaturedMoments);
+    }
+
+    private void OnMoreClicked(object sender, RoutedEventArgs e)
+    {
+        bool show = MoreGallery.Visibility == Visibility.Collapsed;
+        MoreGallery.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        MoreButton.Content = show ? Strings.Get("FluxIsland_ShowLess") : Strings.Format("FluxIsland_ShowAllFormat", TrySamples.Length);
+    }
+
+    /// <summary>
+    /// Shows only the first <paramref name="keep"/> rows of a long group, with a link under them that unfolds the
+    /// rest, so the page reads as a short list of what matters before the details.
+    /// </summary>
+    private static void FoldRows(StackPanel rows, int keep)
+    {
+        UIElement[] extra = [.. rows.Children.Skip(keep)];
+        if (extra.Length == 0)
+        {
+            return;
+        }
+
+        var link = new HyperlinkButton { Margin = new Thickness(16, 4, 16, 8), Content = Strings.Format("FluxIsland_ShowMoreFormat", extra.Length) };
+        link.Click += (_, _) =>
+        {
+            bool show = extra[0].Visibility == Visibility.Collapsed;
+            foreach (UIElement row in extra)
+            {
+                row.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            link.Content = show ? Strings.Get("FluxIsland_ShowLess") : Strings.Format("FluxIsland_ShowMoreFormat", extra.Length);
+        };
+        foreach (UIElement row in extra)
+        {
+            row.Visibility = Visibility.Collapsed;
+        }
+
+        rows.Children.Add(link);
     }
 
     private void OnTourClicked(object sender, RoutedEventArgs e) => _host.PlayIslandTour();

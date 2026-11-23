@@ -46,34 +46,92 @@
                         </Grid>
                         <VariableSizedWrapGrid
                             x:Name="Gallery"
-                            ItemHeight="36"
+                            ItemHeight="40"
                             ItemWidth="132"
                             Orientation="Horizontal" />
+                        <VariableSizedWrapGrid
+                            x:Name="MoreGallery"
+                            ItemHeight="40"
+                            ItemWidth="132"
+                            Orientation="Horizontal"
+                            Visibility="Collapsed" />
+                        <HyperlinkButton x:Name="MoreButton" Padding="0" Click="OnMoreClicked" />
+                    </StackPanel>
+                </c:SettingsGroup>
+
+                <c:SettingsGroup x:Uid="FluxIsland_AppearanceGroup">
+                    <StackPanel>
+                        <c:SettingRow x:Uid="FluxIsland_Look" Glyph="&#xE790;">
+                            <ComboBox x:Name="LookCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
+                                <ComboBoxItem x:Uid="FluxIsland_LookOnyx" />
+                                <ComboBoxItem x:Uid="FluxIsland_LookGlass" />
+                                <ComboBoxItem x:Uid="FluxIsland_LookMercury" />
+                                <ComboBoxItem x:Uid="FluxIsland_LookPureBlack" />
+                                <ComboBoxItem x:Uid="FluxIsland_LookGraphite" />
+                            </ComboBox>
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_WindowsAccent" Glyph="&#xE790;">
+                            <ToggleSwitch x:Name="AccentToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_LightHalo" Glyph="&#xE781;">
+                            <ToggleSwitch x:Name="HaloToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Name="EffectsRow" x:Uid="FluxIsland_Effects" Glyph="&#xE8B1;">
+                            <ComboBox x:Name="EffectsCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
+                                <ComboBoxItem x:Uid="FluxIsland_EffectsFull" />
+                                <ComboBoxItem x:Uid="FluxIsland_EffectsLight" />
+                            </ComboBox>
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_Monitor" Glyph="&#xE7F4;">
+                            <ComboBox x:Name="MonitorCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
+                                <ComboBoxItem x:Uid="FluxIsland_MonitorMain" />
+                                <ComboBoxItem x:Uid="FluxIsland_MonitorMouse" />
+                            </ComboBox>
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_Interruptions" Glyph="&#xE7E7;">
+                            <ComboBox x:Name="InterruptionsCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
+                                <ComboBoxItem x:Uid="FluxIsland_InterruptEverything" />
+                                <ComboBoxItem x:Uid="FluxIsland_InterruptImportant" />
+                                <ComboBoxItem x:Uid="FluxIsland_InterruptNothing" />
+                            </ComboBox>
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_SoundRipples" Glyph="&#xE9E9;">
+                            <ToggleSwitch x:Name="RipplesToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_Sounds" Glyph="&#xE767;">
+                            <ToggleSwitch x:Name="SoundsToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_HideFullScreen" Glyph="&#xE740;">
+                            <ToggleSwitch x:Name="FullScreenToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                     </StackPanel>
                 </c:SettingsGroup>
 
                 <c:SettingsGroup x:Uid="FluxIsland_ShowGroup">
-                    <StackPanel>
+                    <StackPanel x:Name="ShowRows">
                         <c:SettingRow x:Uid="FluxIsland_ShowMedia" Glyph="&#xE8D6;">
                             <ToggleSwitch x:Name="MediaToggle" Toggled="OnChanged" />
                         </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowCalls" Glyph="&#xE717;">
+                            <ToggleSwitch x:Name="CallsToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowPrivacy" Glyph="&#xE720;">
+                            <ToggleSwitch x:Name="PrivacyToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowPower" Glyph="&#xE945;">
                             <ToggleSwitch x:Name="PowerToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowNetwork" Glyph="&#xE774;">
+                            <ToggleSwitch x:Name="NetworkToggle" Toggled="OnChanged" />
+                        </c:SettingRow>
+                        <c:SettingRow x:Uid="FluxIsland_ShowClipboard" Glyph="&#xE8C8;">
+                            <ToggleSwitch x:Name="ClipboardToggle" Toggled="OnChanged" />
                         </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowSaver" Glyph="&#xEC0A;">
                             <ToggleSwitch x:Name="SaverToggle" Toggled="OnChanged" />
                         </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowBrightness" Glyph="&#xE706;">
                             <ToggleSwitch x:Name="BrightnessToggle" Toggled="OnChanged" />
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_ShowNetwork" Glyph="&#xE774;">
-                            <ToggleSwitch x:Name="NetworkToggle" Toggled="OnChanged" />
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_ShowPrivacy" Glyph="&#xE720;">
-                            <ToggleSwitch x:Name="PrivacyToggle" Toggled="OnChanged" />
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_ShowClipboard" Glyph="&#xE8C8;">
-                            <ToggleSwitch x:Name="ClipboardToggle" Toggled="OnChanged" />
                         </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_SmartCopy" Glyph="&#xE71B;">
                             <ToggleSwitch x:Name="SmartCopyToggle" Toggled="OnChanged" />
@@ -89,9 +147,6 @@
                         </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowMicMute" Glyph="&#xE720;">
                             <ToggleSwitch x:Name="MicMuteToggle" Toggled="OnChanged" />
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_ShowCalls" Glyph="&#xE717;">
-                            <ToggleSwitch x:Name="CallsToggle" Toggled="OnChanged" />
                         </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_ShowDesktops" Glyph="&#xE7C4;">
                             <ToggleSwitch x:Name="DesktopsToggle" Toggled="OnChanged" />
@@ -175,56 +230,8 @@
                     </StackPanel>
                 </c:SettingsGroup>
 
-                <c:SettingsGroup x:Uid="FluxIsland_AppearanceGroup">
-                    <StackPanel>
-                        <c:SettingRow x:Name="EffectsRow" x:Uid="FluxIsland_Effects" Glyph="&#xE8B1;">
-                            <ComboBox x:Name="EffectsCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
-                                <ComboBoxItem x:Uid="FluxIsland_EffectsFull" />
-                                <ComboBoxItem x:Uid="FluxIsland_EffectsLight" />
-                            </ComboBox>
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_Monitor" Glyph="&#xE7F4;">
-                            <ComboBox x:Name="MonitorCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
-                                <ComboBoxItem x:Uid="FluxIsland_MonitorMain" />
-                                <ComboBoxItem x:Uid="FluxIsland_MonitorMouse" />
-                            </ComboBox>
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_Interruptions" Glyph="&#xE7E7;">
-                            <ComboBox x:Name="InterruptionsCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
-                                <ComboBoxItem x:Uid="FluxIsland_InterruptEverything" />
-                                <ComboBoxItem x:Uid="FluxIsland_InterruptImportant" />
-                                <ComboBoxItem x:Uid="FluxIsland_InterruptNothing" />
-                            </ComboBox>
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_SoundRipples" Glyph="&#xE9E9;">
-                            <ToggleSwitch x:Name="RipplesToggle" Toggled="OnChanged" />
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_Sounds" Glyph="&#xE767;">
-                            <ToggleSwitch x:Name="SoundsToggle" Toggled="OnChanged" />
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_HideFullScreen" Glyph="&#xE740;">
-                            <ToggleSwitch x:Name="FullScreenToggle" Toggled="OnChanged" />
-                        </c:SettingRow>
-                    </StackPanel>
-                </c:SettingsGroup>
-
                 <c:SettingsGroup x:Uid="FluxIsland_LabsGroup">
                     <StackPanel>
-                        <c:SettingRow x:Uid="FluxIsland_Look" Glyph="&#xE790;">
-                            <ComboBox x:Name="LookCombo" SelectionChanged="OnChanged" Style="{StaticResource SettingComboStyle}">
-                                <ComboBoxItem x:Uid="FluxIsland_LookOnyx" />
-                                <ComboBoxItem x:Uid="FluxIsland_LookGlass" />
-                                <ComboBoxItem x:Uid="FluxIsland_LookMercury" />
-                                <ComboBoxItem x:Uid="FluxIsland_LookPureBlack" />
-                                <ComboBoxItem x:Uid="FluxIsland_LookGraphite" />
-                            </ComboBox>
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_WindowsAccent" Glyph="&#xE790;">
-                            <ToggleSwitch x:Name="AccentToggle" Toggled="OnChanged" />
-                        </c:SettingRow>
-                        <c:SettingRow x:Uid="FluxIsland_LightHalo" Glyph="&#xE781;">
-                            <ToggleSwitch x:Name="HaloToggle" Toggled="OnChanged" />
-                        </c:SettingRow>
                         <c:SettingRow x:Uid="FluxIsland_LiveActivities" Glyph="&#xE756;">
                             <ToggleSwitch x:Name="LiveToggle" Toggled="OnChanged" />
                         </c:SettingRow>
