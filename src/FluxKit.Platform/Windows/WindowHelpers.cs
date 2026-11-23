@@ -260,9 +260,18 @@ public static partial class WindowHelpers
     /// Limits where the window is drawn and takes clicks to a rounded rectangle in window pixels; clicks outside it
     /// reach the windows below. Pass null to remove the limit.
     /// </summary>
-    public static void SetHitRegion(nint hwnd, PixelRect? rect, int cornerRadius)
+    /// <param name="squareTop">Square top corners: for an overlay that hangs from the screen's top edge, so a shape that
+    /// swells or leans near the top is never cut by the region's rounding.</param>
+    public static void SetHitRegion(nint hwnd, PixelRect? rect, int cornerRadius, bool squareTop = false)
     {
         nint region = rect is { } r ? CreateRoundRectRgn(r.Left, r.Top, r.Right + 1, r.Bottom + 1, cornerRadius * 2, cornerRadius * 2) : 0;
+        if (squareTop && rect is { } box && region != 0)
+        {
+            nint top = CreateRectRgn(box.Left, box.Top, box.Right + 1, box.Top + Math.Min(cornerRadius, box.Height / 2) + 1);
+            _ = CombineRgn(region, region, top, 2); // RGN_OR
+            _ = DeleteObject(top);
+        }
+
 
         // On success the system owns the region, so it is only deleted when the call fails.
         if (SetWindowRgn(hwnd, region, true) == 0 && region != 0)
@@ -413,6 +422,12 @@ public static partial class WindowHelpers
 
     [LibraryImport("gdi32.dll")]
     private static partial nint CreateRoundRectRgn(int left, int top, int right, int bottom, int widthEllipse, int heightEllipse);
+
+    [LibraryImport("gdi32.dll")]
+    private static partial nint CreateRectRgn(int left, int top, int right, int bottom);
+
+    [LibraryImport("gdi32.dll")]
+    private static partial int CombineRgn(nint destination, nint first, nint second, int mode);
 
     [LibraryImport("gdi32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

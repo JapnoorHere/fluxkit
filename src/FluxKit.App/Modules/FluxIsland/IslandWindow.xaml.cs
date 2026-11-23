@@ -502,7 +502,7 @@ public sealed partial class IslandWindow : Window
             Math.Min(maxRight, (int)Math.Ceiling((bounds.Right + ShadowSide) * _scale)),
             Math.Min(maxBottom, (int)Math.Ceiling((bounds.Bottom + ShadowBottom) * _scale)));
         int radius = (int)Math.Ceiling((Math.Min(bounds.Height / 2, PillShape.MaxCornerRadius) + ShadowSide) * _scale);
-        WindowHelpers.SetHitRegion(_hwnd, pixels, radius);
+        WindowHelpers.SetHitRegion(_hwnd, pixels, radius, squareTop: true);
     }
 
     private async Task PinAsync()

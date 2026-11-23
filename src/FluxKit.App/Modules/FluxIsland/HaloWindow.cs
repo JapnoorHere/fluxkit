@@ -53,7 +53,8 @@ internal sealed class HaloWindow
         Compositor compositor = ElementCompositionPreview.GetElementVisual(root).Compositor;
         _brush = compositor.CreateRadialGradientBrush();
         _brush.EllipseCenter = new Vector2(0.5f, 0);
-        _brush.EllipseRadius = new Vector2(0.5f, 1);
+        // Fades out well inside the window, so its edges never show as straight lines.
+        _brush.EllipseRadius = new Vector2(0.42f, 0.9f);
         _core = compositor.CreateColorGradientStop(0, Color.FromArgb(0, 0, 0, 0));
         _middle = compositor.CreateColorGradientStop(0.45f, Color.FromArgb(0, 0, 0, 0));
         _brush.ColorStops.Add(_core);
@@ -81,10 +82,12 @@ internal sealed class HaloWindow
         {
             int width = (int)Math.Ceiling(Width * scale);
             int height = (int)Math.Ceiling(Height * scale);
-            var bounds = new PixelRect(centreX - (width / 2), top, centreX + (width / 2), top + height);
-            _window.AppWindow.MoveAndResize(new RectInt32(bounds.Left, bounds.Top, width, height));
-            // Draw only inside the window's edge: at the very edge Windows shows a thin frame line (see the island window).
+
+            // Draw only inside the window's edge (at the very edge Windows shows a thin frame line), and start the
+            // window that much above the screen, so the light still begins right at the top edge, with no dark strip.
             int inset = (int)Math.Ceiling(6 * scale);
+            var bounds = new PixelRect(centreX - (width / 2), top - inset, centreX + (width / 2), top - inset + height);
+            _window.AppWindow.MoveAndResize(new RectInt32(bounds.Left, bounds.Top, width, height));
             WindowHelpers.SetHitRegion(_hwnd, new PixelRect(inset, inset, width - inset, height - inset), 0);
             WindowHelpers.ShowBelow(_hwnd, island, bounds);
             WindowHelpers.RemoveBorder(_hwnd);
