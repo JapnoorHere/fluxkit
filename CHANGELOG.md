@@ -9,6 +9,14 @@ All notable changes to FluxKit are documented here. The format follows [Keep a C
 - The Drag-to-Switch page shows a live preview of the picker that follows your settings (position, size, previews, theme, hold time and animations).
 - All app text, including the picker and tray menu, now comes from one resource file, ready for translation.
 - The code says "tool" everywhere, the same as the app. Saved settings keep their old keys, so nothing is lost (ADR-013).
+- Flux Island is easier to find your way around:
+  - Its icon bar always shows the same pages, and the selected one shows its name.
+  - Its settings put Theme first, under Appearance. The Try it gallery and the long "What it shows" list start short and unfold.
+  - A "Things to try on the island" card lists its gestures.
+  - Home has a Try Flux Island card.
+- When idle with the clock off (now the default), the island is a slim handle that stays clear of tabs and title bars. Hover it for the time.
+- The open timer is centred, Glance shows percentages, and its network line spans the whole tile.
+- The privacy text on About covers notifications, smart copy, clipboard history, Peek, Stash and Live Activities.
 
 ### Added
 - **A richer Flux Island:**
