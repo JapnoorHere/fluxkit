@@ -307,7 +307,7 @@
     <value>Privacy</value>
   </data>
   <data name="About_PrivacyText.Text" xml:space="preserve">
-    <value>FluxKit works entirely on this PC. It collects no usage data and never connects to the internet. Its tools watch only the mouse and keyboard input they need, such as when a drag starts. It never reads, copies, moves or uploads your files. Settings and logs stay on this PC, and logs leave out file names and window titles.</value>
+    <value>FluxKit works entirely on this PC. It collects no usage data and never connects to the internet. Drag-to-Switch watches only the mouse and keyboard input it needs, such as when a drag starts. Flux Island shows what Windows already tells apps: what is playing, battery, network and devices. Only if you turn them on does it show your notifications, read copied text for smart copy and clipboard history (skipping copies apps mark as private), or show window titles for Peek and Stash. Live Activities come through a channel only your own account can reach. FluxKit never uploads your files or anything you copy. Settings and logs stay on this PC, and logs leave out file names, window titles and message text.</value>
   </data>
   <data name="DragToSwitch_Header.Title" xml:space="preserve">
     <value>Drag-to-Switch</value>
@@ -1972,5 +1972,14 @@ While this is on, Windows' own banner is turned off for each app the island show
   </data>
   <data name="Island_GlancePercentFormat" xml:space="preserve">
     <value>{0}%</value>
+  </data>
+  <data name="Home_IslandTour.Content" xml:space="preserve">
+    <value>Take the tour</value>
+  </data>
+  <data name="Home_IslandText.Text" xml:space="preserve">
+    <value>See a moment on the real island at the top of your screen. Nothing changes in your music or timers.</value>
+  </data>
+  <data name="Home_IslandTitle.Text" xml:space="preserve">
+    <value>Try Flux Island</value>
   </data>
 </root>

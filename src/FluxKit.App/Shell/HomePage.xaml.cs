@@ -1,5 +1,6 @@
 using FluxKit.App.Controls;
 using FluxKit.Core.Tools;
+using FluxKit.Tools.FluxIsland;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -10,6 +11,15 @@ public sealed partial class HomePage : Page
 {
     private readonly AppHost _host = AppHost.Current;
     private readonly Dictionary<string, ToolTile> _tiles = [];
+
+    /// <summary>The Flux Island moments offered on Home: the ones that show what makes it different.</summary>
+    private static readonly (string Sample, bool Open, string Key)[] IslandSamples =
+    [
+        ("music", true, "FluxIsland_TryMusic"),
+        ("ferro", false, "FluxIsland_TryLiquid"),
+        ("droplet", false, "FluxIsland_TryDroplet"),
+        ("scrub", false, "FluxIsland_TryScrub"),
+    ];
 
     public HomePage()
     {
@@ -60,7 +70,16 @@ public sealed partial class HomePage : Page
         more.MakePlaceholder();
         tiles.Add(more);
         ToolTiles.ItemsSource = tiles;
+
+        foreach ((string sample, bool open, string key) in IslandSamples)
+        {
+            var button = new Button { Content = Strings.Get(key) };
+            button.Click += (_, _) => _host.PreviewIsland(sample, open);
+            IslandTries.Children.Add(button);
+        }
     }
+
+    private void OnTourClicked(object sender, RoutedEventArgs e) => _host.PlayIslandTour();
 
     private void Refresh()
     {
@@ -76,6 +95,7 @@ public sealed partial class HomePage : Page
             limited |= tool.State.Status is ToolStatus.Degraded or ToolStatus.Faulted;
         }
 
+        IslandCard.Visibility = _host.Registry.IsEnabled(FluxIslandTool.Id) ? Visibility.Visible : Visibility.Collapsed;
         ChipText.Text = Strings.Format("Home_ToolsOnFormat", on, _tiles.Count);
         ChipDot.Fill = StatusTones.Brush(limited ? StatusTone.Caution : on > 0 ? StatusTone.Good : StatusTone.Neutral);
         UpdateAttention();

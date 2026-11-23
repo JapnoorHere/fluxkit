@@ -43,6 +43,36 @@
                 </ItemsRepeater.Layout>
             </ItemsRepeater>
 
+            <!-- While Flux Island is on: a few of its moments to try on the real island, and the tour. -->
+            <Border x:Name="IslandCard" Padding="20,16" Style="{StaticResource GroupCardStyle}" Visibility="Collapsed">
+                <Grid ColumnSpacing="16" RowSpacing="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock x:Uid="Home_IslandTitle" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock x:Uid="Home_IslandText" Style="{StaticResource TertiaryCaptionStyle}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Click="OnTourClicked"
+                        Style="{StaticResource AccentButtonStyle}"
+                        x:Uid="Home_IslandTour" />
+                    <StackPanel
+                        x:Name="IslandTries"
+                        Grid.Row="1"
+                        Grid.ColumnSpan="2"
+                        Orientation="Horizontal"
+                        Spacing="8" />
+                </Grid>
+            </Border>
+
             <!-- Three short facts instead of a long "how it works" card. -->
             <Border Padding="20,14" Style="{StaticResource GroupCardStyle}">
                 <Grid ColumnSpacing="24" RowSpacing="12">
