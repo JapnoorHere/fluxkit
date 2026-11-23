@@ -16,10 +16,10 @@
     <Grid>
         <!--
             The colour wash: the art at 6 px, stretched (a free blur), then darkened toward the bottom so text and controls
-            stay readable. Without art, a glow in the accent colour takes its place. The negative bottom margin lets it run
-            under the page dots.
+            stay readable. Without art, a glow in the accent colour takes its place. The negative top margin (the icon bar's
+            room, IslandPill.IconBarRoom) lets it run up behind the icon bar, so the whole island takes the music's colour.
         -->
-        <Grid Margin="0,0,0,-18" IsHitTestVisible="False">
+        <Grid Margin="0,-40,0,0" IsHitTestVisible="False">
             <Rectangle x:Name="Glow">
                 <Rectangle.Fill>
                     <RadialGradientBrush
